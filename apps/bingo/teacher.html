@@ -169,11 +169,15 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-close{position:absolute;top:16px;right:18px;background:none;border:none;color:#8c94b3;font-size:2rem;line-height:1;cursor:pointer}
 .live-kicker{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
 .live-join-wrap{display:flex;justify-content:flex-start;margin:4px 0 18px}
-.live-join-box{position:relative;display:inline-flex;flex-direction:column;gap:8px;padding:18px 24px;border-radius:22px;border:2px solid rgba(255,185,50,.65);background:linear-gradient(135deg,rgba(255,168,30,.18),rgba(43,72,120,.24));box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 28px rgba(255,168,30,.18);overflow:hidden}
+.live-join-box{position:relative;display:flex;align-items:center;gap:18px;padding:18px 24px;border-radius:22px;border:2px solid rgba(255,185,50,.65);background:linear-gradient(135deg,rgba(255,168,30,.18),rgba(43,72,120,.24));box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 28px rgba(255,168,30,.18);overflow:hidden}
 .live-join-box::after{content:'';position:absolute;inset:-2px;border-radius:22px;border:2px solid rgba(122,191,255,.35);animation:liveJoinPulse 3.2s ease-in-out infinite;pointer-events:none}
+.live-join-copy{display:flex;flex-direction:column;gap:8px;min-width:0}
 .live-join-label{font-size:.76rem;color:#f8d694;text-transform:uppercase;letter-spacing:2px;font-weight:700}
 .live-join-code{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3.6rem,10vw,8.5rem);line-height:.9;letter-spacing:.18em;color:#fff;text-shadow:0 0 18px rgba(122,191,255,.22)}
 .live-join-hint{font-size:1rem;color:#d9e6ff;line-height:1.3}
+.live-qr-panel{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.live-qr-wrap{background:#fff;border-radius:18px;padding:12px;min-width:156px;min-height:156px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(7,12,22,.24)}
+.live-qr-link{max-width:156px;font-size:.72rem;color:#d9e6ff;text-align:center;line-height:1.35;word-break:break-word}
 .live-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(1.8rem,4vw,3.3rem);line-height:1.05;color:#f3f6ff;max-width:90%;margin-bottom:10px}
 .live-answer{font-size:clamp(1rem,2vw,1.35rem);color:#aeb7d5;line-height:1.35;margin-bottom:16px;font-weight:400}
 .live-answer.revealable{cursor:pointer}
@@ -249,7 +253,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   .live-main{min-height:52vh}
   .live-title{max-width:100%;padding-right:40px}
   .live-join-wrap{justify-content:stretch}
-  .live-join-box{width:100%}
+  .live-join-box{width:100%;flex-direction:column;align-items:flex-start}
+  .live-qr-panel{width:100%;align-items:flex-start}
+  .live-qr-link{max-width:none;text-align:left}
   .live-join-code{font-size:clamp(2.8rem,16vw,5rem);letter-spacing:.12em}
   .lobby-shell,.lobby-grid{grid-template-columns:1fr}
   .lobby-qr-box{min-height:240px}
@@ -580,7 +586,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ===== STATE =====
-const APP_VERSION='2026.04.12.1';
+const APP_VERSION='2026.04.12.2';
 const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
 const defaultWords=[['Answer','Svar'],['Because','Fordi'],['School','Skole'],['Where','Hvor'],['Could','Kunne'],['Should','Burde'],['Important','Viktig'],['Opposite','Motsatt'],['Knowledge','Kunnskap'],['Possible','Mulig'],['Probably','Sannsynligvis'],['Strength','Styrke'],['Beautiful','Vakker / Fin'],['Ordinary','Vanlig'],['Again','Igjen'],['Early','Tidlig'],['Freedom','Frihet'],['History','Historie'],['Language','Språk'],['Society','Samfunn'],['Change','Endring'],['Power','Makt'],['Between','Mellom'],['Almost','Nesten'],['Together','Sammen']];
 let gloseMode='no';
@@ -1388,14 +1394,54 @@ function renderQRCodeInto(url,wrapId,labelId){
   const wrap=document.getElementById(wrapId);
   const urlLabel=document.getElementById(labelId);
   if(!wrap) return;
+  if(wrap.dataset.qrUrl===url&&wrap.dataset.qrReady==='true'){
+    if(urlLabel) urlLabel.textContent=url.length>60?url.substring(0,57)+'...':url;
+    return;
+  }
+  wrap.dataset.qrUrl=url;
+  wrap.dataset.qrReady='false';
   wrap.innerHTML='<p style="color:#7c8099;font-size:0.8rem;padding:20px">Laster...</p>';
   if(urlLabel) urlLabel.textContent=url.length>60?url.substring(0,57)+'...':url;
+  const sources=[
+    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`,
+    `https://quickchart.io/qr?size=200&text=${encodeURIComponent(url)}`
+  ];
+  let sourceIndex=0;
   const img=document.createElement('img');
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
   img.alt='QR-kode';
   img.style.cssText='width:200px;height:200px;display:block;border-radius:4px';
-  img.onload=()=>{ wrap.innerHTML=''; wrap.appendChild(img); };
-  img.onerror=()=>{ wrap.innerHTML='<p style="color:#e05a5a;font-size:0.8rem;padding:20px">Kunne ikke laste QR-kode.<br>Sjekk internettforbindelsen.</p>'; };
+  img.onload=()=>{
+    wrap.dataset.qrReady='true';
+    wrap.innerHTML='';
+    wrap.appendChild(img);
+  };
+  img.onerror=()=>{
+    sourceIndex+=1;
+    if(sourceIndex<sources.length){
+      img.src=sources[sourceIndex];
+      return;
+    }
+    wrap.dataset.qrReady='false';
+    wrap.innerHTML='<p style="color:#e05a5a;font-size:0.8rem;padding:20px">Kunne ikke laste QR-kode.<br>Sjekk internettforbindelsen.</p>';
+  };
+  img.src=sources[sourceIndex];
+}
+function renderLiveJoinQr(){
+  const liveModal=document.getElementById('live-modal');
+  if(!liveModal?.classList.contains('show')) return;
+  const url=buildElevURL();
+  if(!url){
+    const wrap=document.getElementById('live-qr-wrap');
+    const label=document.getElementById('live-url-label');
+    if(wrap){
+      wrap.dataset.qrUrl='';
+      wrap.dataset.qrReady='false';
+      wrap.innerHTML='<p style="color:#7c8099;font-size:0.8rem;padding:20px;text-align:center">QR vises når liveøkten er klar.</p>';
+    }
+    if(label) label.textContent='';
+    return;
+  }
+  renderQRCodeInto(url,'live-qr-wrap','live-url-label');
 }
 
 let _refreshTimer=null;
@@ -1545,6 +1591,7 @@ async function openLiveMode(){
   if(activeLiveSession?.id){
     stopLiveCountdown();
     document.getElementById('live-modal').classList.add('show');
+    renderLiveJoinQr();
     try{
       await refreshTeacherLiveState({silent:true});
       startTeacherLivePolling();
@@ -1573,6 +1620,7 @@ function renderLiveMode(){
   document.getElementById('live-kicker').textContent=liveLabel;
   document.getElementById('live-round-label').textContent=`Runde ${liveRoundIndex+1} av ${liveRounds.length}`;
   document.getElementById('live-join-code').textContent=activeLiveSession?.joinCode||'------';
+  renderLiveJoinQr();
   document.getElementById('live-progress-label').textContent=`${drawn} / ${total}`;
   document.getElementById('live-left-label').textContent=String(Math.max(total-drawn,0));
   document.getElementById('live-timer-label').textContent=`${getLiveCountdownSeconds()} sek`;
@@ -1652,6 +1700,7 @@ function renderStrictTeacherLiveMode(){
   document.getElementById('live-kicker').textContent=teacherLiveState?.session?.title||liveLabel||'Live trekning';
   document.getElementById('live-round-label').textContent=`Runde ${roundNumber} av ${roundCount}`;
   document.getElementById('live-join-code').textContent=activeLiveSession?.joinCode||teacherLiveState?.session?.join_code||'------';
+  renderLiveJoinQr();
   document.getElementById('live-progress-label').textContent=`${drawIndex} / ${totalDraws||0}`;
   document.getElementById('live-left-label').textContent=`${summary.total_answers||0} / ${summary.participant_count||0}`;
   document.getElementById('live-timer-label').textContent=state.phase==='draw_open'?`${remainingSeconds}s`:phaseLabel(state.phase);
@@ -1964,9 +2013,15 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
       <div class="live-kicker" id="live-kicker">Live trekning</div>
       <div class="live-join-wrap">
         <div class="live-join-box">
-          <div class="live-join-label">Bli med med kode</div>
-          <div class="live-join-code" id="live-join-code">------</div>
-          <div class="live-join-hint">Be elevene skanne QR-koden eller skrive inn denne koden.</div>
+          <div class="live-join-copy">
+            <div class="live-join-label">Bli med med kode</div>
+            <div class="live-join-code" id="live-join-code">------</div>
+            <div class="live-join-hint">Be elevene skanne QR-koden eller skrive inn denne koden.</div>
+          </div>
+          <div class="live-qr-panel">
+            <div class="live-qr-wrap" id="live-qr-wrap"></div>
+            <div class="live-qr-link" id="live-url-label"></div>
+          </div>
         </div>
       </div>
       <div class="live-title" id="live-round-label">Runde 1 av 1</div>
