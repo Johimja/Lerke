@@ -1,0 +1,71 @@
+Lerke Source-Available License v1.0
+
+Copyright (c) 2026 Atle Stray (Johimja)
+All rights reserved.
+
+1. Purpose
+
+This repository is made available for reading, learning, review, and limited
+non-commercial evaluation. It is not open source.
+
+1. Permitted Use
+
+You may:
+
+- view and study the source code
+- clone the repository for personal, educational, or internal non-commercial evaluation
+- run the software locally for personal, educational, or internal non-commercial testing
+- use the software in ordinary classroom teaching by an individual teacher with their own students
+
+Classroom Use: Ordinary live classroom use by a teacher in an educational setting counts as Educational Use under this license, regardless of whether the school is public or private.
+
+1. Prohibited Use
+
+Without prior written permission from the copyright holder, you may not:
+
+- sell, sublicense, lease, or commercially redistribute this software
+- offer this software, or a modified version of it, as a hosted or managed service
+- use this software, or a modified version of it, in a commercial product or commercial service
+- distribute modified versions of this software
+- remove or alter copyright, attribution, or license notices
+
+1. Commercial Use
+
+Any commercial use, commercial redistribution, commercial hosting, or
+commercial licensing requires prior written permission from the copyright
+holder.
+
+Clarification: Ordinary teaching use by an employee or contractor of an educational institution does not by itself count as commercial use under this license, even if the institution charges tuition or receives public funding.
+
+Commercial Actions: The following always require prior written permission from the copyright holder:
+
+- sale of access to Lerke as software or as a service
+- bundling Lerke into a paid product, paid platform, or paid service
+- third-party hosted, managed, or white-label deployments of Lerke
+- redistribution of Lerke, with or without modifications, for commercial purposes
+- institution-wide, municipal, or large-scale deployments where Lerke is operated, maintained, integrated, or monetized by a third party
+
+1. Derivatives
+
+You may make local modifications for your own personal, educational, or
+internal non-commercial evaluation, but you may not distribute or commercially
+use those modifications without prior written permission.
+
+1. No Trademark Rights
+
+This license does not grant any right to use the name "Lerke", associated
+branding, logos, or other project marks except to refer to the project
+accurately.
+
+1. Ownership
+
+All rights not expressly granted under this license are reserved by the
+copyright holder.
+
+1. No Warranty
+
+This software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to warranties of merchantability, fitness
+for a particular purpose, and noninfringement. In no event shall the copyright
+holder be liable for any claim, damages, or other liability arising from, out
+of, or in connection with the software or the use of the software.

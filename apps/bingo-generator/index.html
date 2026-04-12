@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Generator - Lerke</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--accent:#f5a623;--accent2:#e05a5a;--green:#4caf7d;--blue:#5b8dee;--text:#e8eaf0;--muted:#7c8099;--border:#2e3248}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;min-height:100vh;padding:clamp(8px,1.5vw,16px);overflow-x:hidden}
+h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(1.4rem,4vw,2.2rem);letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:var(--muted);font-size:0.85rem;margin-top:2px}
+header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.menu-strip{margin-bottom:12px}
+.menu-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:6px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#000}
+.panel{display:none}.panel.active{display:block}
+.layout{display:grid;grid-template-columns:clamp(180px,22vw,280px) minmax(0,1fr);gap:clamp(8px,1.5vw,16px);align-items:start}
+@media(max-width:600px){.layout{grid-template-columns:1fr}}
+.sidebar{background:var(--surface);border-radius:10px;padding:clamp(10px,1.2vw,16px);border:1px solid var(--border)}
+@media(min-width:601px){.sidebar{position:sticky;top:clamp(8px,1.5vw,16px);max-height:calc(100vh - clamp(16px,3vw,32px));overflow-y:auto}}
+.sidebar h2{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;color:var(--accent);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+.sidebar-section{padding-top:2px}
+.sidebar-section+.sidebar-section{border-top:1px solid var(--border);margin-top:14px;padding-top:14px}
+.sidebar-section-title{font-family:'Raleway',sans-serif;font-weight:800;font-size:.72rem;color:#9fb4e7;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:10px}
+.field-group{margin-bottom:16px}
+.field-group label{display:block;font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.field-group.collapsible>label{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;margin-bottom:6px;color:var(--accent)}
+.field-group.collapsible>label:hover{color:var(--text)}
+.field-group.collapsible>label::after{content:'▲';font-size:0.6rem;transition:transform .15s}
+.field-group.collapsible.collapsed>label{margin-bottom:0}
+.field-group.collapsible.collapsed>label::after{content:'▼'}
+.field-group.collapsible.collapsed>*:not(label){display:none!important}
+.word-list{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto}
+.word-row{display:grid;grid-template-columns:1fr 1fr auto;gap:5px;align-items:center}
+.word-row input{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:5px 8px;width:100%}
+.word-row input:focus{outline:none;border-color:var(--blue)}
+.del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 4px;border-radius:4px;line-height:1}
+.del-btn:hover{color:var(--accent2)}
+.add-btn{margin-top:6px;background:var(--surface2);border:1px dashed var(--border);border-radius:5px;color:var(--muted);padding:6px;width:100%;cursor:pointer;font-family:'Raleway',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.table-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:8px}
+.table-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:6px 4px;font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none}
+.table-toggle.active{background:var(--green);border-color:var(--green);color:#000}
+.count-input{display:flex;align-items:center;gap:8px}
+.count-input input{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.9rem;padding:7px 10px;width:60px;text-align:center}
+.count-input input:focus{outline:none;border-color:var(--blue)}
+.text-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.85rem;padding:7px 10px}
+.text-input:focus{outline:none;border-color:var(--blue)}
+.generate-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent),#e09010);border:none;border-radius:8px;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.9rem;color:#000;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:6px;transition:opacity .15s}
+.generate-btn:hover{opacity:.88}
+.print-btn{width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'Raleway',sans-serif;font-weight:700;font-size:0.82rem;color:var(--text);cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:6px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.print-btn:hover{border-color:var(--blue);color:var(--blue)}
+.print-btn.teacher{border-color:#9b6dff;color:#9b6dff}
+.print-btn.teacher:hover{background:#9b6dff22}
+.print-btn.qr{border-color:#4caf7d;color:#4caf7d}
+.print-btn.qr:hover{background:#4caf7d22}
+.action-stack{display:flex;flex-direction:column;gap:6px}
+.mode-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.mode-btn{flex:1;padding:7px 4px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;text-align:center;line-height:1.3;transition:all .15s}
+.mode-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.rounds-row{display:flex;align-items:center;gap:8px}
+.rounds-row input{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.9rem;padding:6px 10px;width:50px;text-align:center}
+.rounds-row input:focus{outline:none;border-color:var(--blue)}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+.cards-header{margin-bottom:12px}
+.cards-header h2{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.95rem;color:var(--muted)}
+.print-cards{min-width:0}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(14rem,100%),1fr));gap:clamp(8px,1vw,14px)}
+.bingo-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.35)}
+.card-header{background:#1a1d27;color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+.card-header .card-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:0.9rem;letter-spacing:2px;color:var(--accent)}
+.card-header .card-num{font-size:0.7rem;color:var(--muted)}
+.card-subtitle{background:#f8f9ff;padding:4px 12px;font-size:0.67rem;color:#555;border-bottom:1px solid #e8eaf0}
+.bingo-grid{display:grid;padding:clamp(3px,0.5vw,6px);gap:clamp(1px,0.3vw,3px)}
+.bingo-grid.g5{grid-template-columns:repeat(5,1fr)}
+.bingo-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Source Sans 3',sans-serif;font-size:clamp(.42rem,1.2vw,.7rem);font-weight:600;text-align:center;padding:2px 1px;line-height:1.15;background:#f0f4ff;color:#222;border:1px solid #dce0f5;overflow-wrap:break-word;word-break:break-word;overflow:hidden;min-width:0}
+.bingo-cell.dark{background:#3a4068;color:#fff;border-color:#4a5090}
+.bingo-cell.free{background:var(--accent);color:#000;font-size:0.58rem;font-weight:700;letter-spacing:.5px}
+.answer-key{background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);margin-bottom:14px}
+.answer-key h2{font-family:'Raleway',sans-serif;font-weight:700;color:var(--accent);font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.answer-key h2:hover{color:var(--blue)}
+.answer-key h2 .chevron{font-size:0.7rem;transition:transform .2s}
+.answer-key.open h2{margin-bottom:8px}
+.answer-key.open h2 .chevron{transform:rotate(180deg)}
+.answer-key-grid{display:none;grid-template-columns:repeat(auto-fill,minmax(min(10rem,100%),1fr));gap:5px}
+.answer-key.open .answer-key-grid{display:grid}
+.answer-pair{display:flex;gap:6px;align-items:center;background:var(--surface2);border-radius:5px;padding:5px 8px;font-size:0.78rem}
+.answer-pair .eng{color:var(--blue);font-weight:600}
+.answer-pair .arr{color:var(--muted)}
+.info-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:7px;padding:10px 14px;font-size:0.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.info-box strong{color:var(--text)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:10px}
+.empty-state p{font-size:0.9rem}
+.list-manager{margin-bottom:14px}
+.list-manager-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.list-manager-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:5px 8px}
+.list-manager-row input:focus{outline:none;border-color:var(--blue)}
+.list-small-btn{padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;white-space:nowrap;transition:all .15s;letter-spacing:.5px}
+.list-small-btn:hover{border-color:var(--accent);color:var(--accent)}
+.list-small-btn.green:hover{border-color:var(--green);color:var(--green)}
+.list-small-btn.red:hover{border-color:var(--accent2);color:var(--accent2)}
+.saved-lists{display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto;margin-top:6px}
+.saved-list-item{display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:0.8rem}
+.saved-list-item .list-name{color:var(--text);font-weight:600;flex:1;cursor:pointer}
+.saved-list-item .list-name:hover{color:var(--accent)}
+.saved-list-item .list-meta{color:var(--muted);font-size:0.7rem;margin-right:8px}
+.saved-list-item .list-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px}
+.saved-list-item .list-del:hover{color:var(--accent2)}
+.no-saved{color:var(--muted);font-size:0.78rem;text-align:center;padding:8px}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body{background:#fff!important;color:#000!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  header,nav,.tabs,.sidebar,.cards-header,.answer-key,.info-box,.no-print{display:none!important}
+  .layout{grid-template-columns:1fr!important}
+  .panel.active{display:block!important}
+  .print-cards .cards-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px}
+  .bingo-card{break-inside:avoid;box-shadow:none!important;border:1px solid #bbb!important;margin-bottom:0}
+  .bingo-grid{padding:4px!important;gap:2px!important}
+  .card-header{padding:5px 10px!important}
+  .card-subtitle{padding:3px 10px!important}
+  .card-header{background:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-header .card-title{color:#f5a623!important}
+  .bingo-cell.dark{background:#c8d2ee!important;color:#000!important;border-color:#999!important}
+  .bingo-cell.free{background:#f5a623!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .teacher-print{display:none!important}
+}
+.teacher-print{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BINGO GENERATOR</h1>
+  <p class="subtitle">Klassisk kortgenerering og utskrift for klasserommet</p>
+</header>
+
+<div class="menu-strip no-print">
+  <div class="menu-label">Velg bingotype</div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('glose')">📚 Glosebingo</button>
+    <button class="tab" onclick="switchTab('matte')">🔢 Mattebingo</button>
+  </div>
+</div>
+
+<!-- ===== GLOSE PANEL ===== -->
+<div class="panel active" id="panel-glose">
+  <div class="layout">
+    <div class="sidebar no-print">
+      <h2>Lærermeny</h2>
+      <div class="sidebar-section">
+      <div class="sidebar-section-title">Spilloppsett</div>
+      <div class="field-group">
+        <label>Modus</label>
+        <div class="mode-row">
+          <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til norsk<br><small>Læreren leser øveordet</small></button>
+          <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra norsk<br><small>Læreren leser på norsk</small></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Antall elevkort</label>
+        <div class="count-input">
+          <input type="number" id="glose-count" value="6" min="1" max="36">
+          <span style="color:var(--muted);font-size:0.82rem">kort</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Runder (lærerlister)</label>
+        <div class="rounds-row">
+          <input type="number" id="glose-rounds" value="3" min="1" max="10">
+          <span style="color:var(--muted);font-size:0.82rem">runder</span>
+        </div>
+      </div>
+      <div class="field-group list-manager collapsible collapsed">
+        <label>Ordlister</label>
+        <div class="list-manager-row">
+          <input type="text" id="list-name-input" placeholder="Navn på liste...">
+          <button class="list-small-btn green" onclick="saveList()">💾 Lagre</button>
+        </div>
+        <div class="list-manager-row">
+          <button class="list-small-btn" onclick="toggleSavedLists()" style="flex:1">📂 Lagrede lister</button>
+        </div>
+        <div class="list-manager-row">
+          <button class="list-small-btn" onclick="exportList()" style="flex:1;text-align:center">⬇️ Eksporter</button>
+          <label class="list-small-btn" style="cursor:pointer;flex:1;text-align:center">⬆️ Importer<input type="file" accept=".json" onchange="importList(event)" style="display:none"></label>
+        </div>
+        <div class="saved-lists" id="saved-lists" style="display:none"></div>
+      </div>
+      <div class="field-group collapsible collapsed">
+        <label>Gjeldende Ordliste</label>
+        <div class="word-list" id="word-list"></div>
+        <button class="add-btn" onclick="addWord()">+ Legg til ord</button>
+      </div>
+      </div>
+      <div class="sidebar-section">
+      <div class="sidebar-section-title">Kort og utskrift</div>
+      <button class="generate-btn" onclick="generateGlose()">🎲 Generer kort</button>
+      <div class="action-stack">
+        <button class="print-btn" onclick="printStudents()">🖨️ Skriv ut elevkort</button>
+        <button class="print-btn teacher" onclick="printTeacher()">📋 Skriv ut lærerark</button>
+      </div>
+      </div>
+    </div>
+
+    <div class="print-cards">
+      <div class="answer-key no-print" id="answer-key" style="display:none">
+        <h2 onclick="this.closest('.answer-key').classList.toggle('open')">Fasit <span class="chevron">▼</span></h2>
+        <div class="answer-key-grid" id="answer-key-grid"></div>
+      </div>
+      <div class="info-box no-print">
+        <strong>Slik spiller du:</strong> Læreren leser opp et ord. Elevene finner og krysser av svaret på kortet. Fem på rad gir BINGO! Med flere runder kan elevene bruke brikker slik at kortene gjenbrukes. Best av <span id="info-rounds">3</span> vinner.
+      </div>
+      <div class="cards-header no-print"><h2 id="glose-cards-label">0 kort generert</h2></div>
+      <div class="cards-grid" id="glose-cards">
+        <div class="empty-state"><div class="icon">🃏</div><p>Trykk "Generer kort" for å lage bingo-ark</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="teacher-print" id="glose-teacher-sheet"></div>
+</div>
+
+<!-- ===== MATTE PANEL ===== -->
+<div class="panel" id="panel-matte">
+  <div class="layout">
+    <div class="sidebar no-print">
+      <h2>Lærermeny</h2>
+      <div class="sidebar-section">
+      <div class="sidebar-section-title">Spilloppsett</div>
+      <div class="field-group">
+        <label>Modus</label>
+        <div class="mode-row">
+          <button class="mode-btn active" id="matte-mode-ans" onclick="setMatteMode('ans')">Svar → Stykke<br><small>Kortet viser svaret</small></button>
+          <button class="mode-btn" id="matte-mode-eq" onclick="setMatteMode('eq')">Stykke → Svar<br><small>Kortet viser stykket</small></button>
+        </div>
+      </div>
+      <div class="field-group collapsible collapsed">
+        <label>Velg tabeller</label>
+        <div class="table-grid" id="table-toggles">
+          <button class="table-toggle" id="t1" onclick="this.classList.toggle('active')">1</button>
+          <button class="table-toggle" id="t2" onclick="this.classList.toggle('active')">2</button>
+          <button class="table-toggle" id="t3" onclick="this.classList.toggle('active')">3</button>
+          <button class="table-toggle" id="t4" onclick="this.classList.toggle('active')">4</button>
+          <button class="table-toggle" id="t5" onclick="this.classList.toggle('active')">5</button>
+          <button class="table-toggle active" id="t6" onclick="this.classList.toggle('active')">6</button>
+          <button class="table-toggle active" id="t7" onclick="this.classList.toggle('active')">7</button>
+          <button class="table-toggle active" id="t8" onclick="this.classList.toggle('active')">8</button>
+          <button class="table-toggle" id="t9" onclick="this.classList.toggle('active')">9</button>
+          <button class="table-toggle" id="t10" onclick="this.classList.toggle('active')">10</button>
+          <button class="table-toggle" id="t11" onclick="this.classList.toggle('active')">11</button>
+          <button class="table-toggle" id="t12" onclick="this.classList.toggle('active')">12</button>
+        </div>
+        <input class="text-input" id="custom-tables" type="text" placeholder="Ekstra tabeller, f.eks. 13, 16">
+      </div>
+      <div class="field-group">
+        <label>Antall elevkort</label>
+        <div class="count-input">
+          <input type="number" id="matte-count" value="6" min="1" max="36">
+          <span style="color:var(--muted);font-size:0.82rem">kort</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Runder (lærerlister)</label>
+        <div class="rounds-row">
+          <input type="number" id="matte-rounds" value="3" min="1" max="10">
+          <span style="color:var(--muted);font-size:0.82rem">runder</span>
+        </div>
+      </div>
+      </div>
+      <div class="sidebar-section">
+      <div class="sidebar-section-title">Kort og utskrift</div>
+      <button class="generate-btn" onclick="generateMatte()">🎲 Generer kort</button>
+      <div class="action-stack">
+        <button class="print-btn" onclick="printStudents()">🖨️ Skriv ut elevkort</button>
+        <button class="print-btn teacher" onclick="printTeacher()">📋 Skriv ut lærerark</button>
+      </div>
+      </div>
+    </div>
+
+    <div class="print-cards">
+      <div class="info-box no-print" id="matte-info-box">
+        <strong>Slik spiller du:</strong> <span id="matte-info-text">Læreren roper opp et gangestykke. Elevene finner svaret og setter brikke på kortet.</span> Fem på rad gir BINGO!
+      </div>
+      <div class="cards-header no-print"><h2 id="matte-cards-label">0 kort generert</h2></div>
+      <div class="cards-grid" id="matte-cards">
+        <div class="empty-state"><div class="icon">🔢</div><p>Velg tabeller og trykk "Generer kort"</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="teacher-print" id="matte-teacher-sheet"></div>
+</div>
+
+<script>
+const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
+const defaultWords=[['Answer','Svar'],['Because','Fordi'],['School','Skole'],['Where','Hvor'],['Could','Kunne'],['Should','Burde'],['Important','Viktig'],['Opposite','Motsatt'],['Knowledge','Kunnskap'],['Possible','Mulig'],['Probably','Sannsynligvis'],['Strength','Styrke'],['Beautiful','Vakker / Fin'],['Ordinary','Vanlig'],['Again','Igjen'],['Early','Tidlig'],['Freedom','Frihet'],['History','Historie'],['Language','Språk'],['Society','Samfunn'],['Change','Endring'],['Power','Makt'],['Between','Mellom'],['Almost','Nesten'],['Together','Sammen']];
+let gloseMode='no';
+let matteMode='ans';
+window._words=defaultWords.map(w=>[...w]);
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['glose','matte'][i]===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function fillPool(items,count){
+  let pool=[...items];
+  while(pool.length<count) pool=[...pool,...items];
+  return shuffle(pool).slice(0,count);
+}
+function parseTableValues(raw){
+  return [...new Set((raw||'')
+    .split(/[^0-9]+/)
+    .map(Number)
+    .filter(n=>Number.isInteger(n)&&n>0))];
+}
+
+function setGloseMode(mode){
+  gloseMode=mode;
+  document.getElementById('mode-no').classList.toggle('active',mode==='no');
+  document.getElementById('mode-en').classList.toggle('active',mode==='en');
+}
+
+function renderWordList(){
+  const list=document.getElementById('word-list');
+  list.innerHTML='';
+  window._words.forEach((pair,i)=>{
+    const row=document.createElement('div');
+    row.className='word-row';
+    row.innerHTML=`<input type="text" value="${pair[0]}" placeholder="Engelsk" onchange="window._words[${i}][0]=this.value"><input type="text" value="${pair[1]}" placeholder="Norsk" onchange="window._words[${i}][1]=this.value"><button class="del-btn" onclick="removeWord(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+function addWord(){window._words.push(['','']);renderWordList()}
+function removeWord(i){window._words.splice(i,1);renderWordList()}
+
+async function generateGlose(){
+  const pairs=window._words.filter(p=>p[0].trim()&&p[1].trim());
+  if(pairs.length<5){alert(`Du trenger minst 5 ord (du har ${pairs.length}).`);return}
+  const count=parseInt(document.getElementById('glose-count').value)||6;
+  const rounds=parseInt(document.getElementById('glose-rounds').value)||3;
+  document.getElementById('info-rounds').textContent=rounds;
+  const SIZE=5; const CELLS=SIZE*SIZE;
+  let pool=[...pairs]; while(pool.length<CELLS) pool=[...pool,...pairs];
+
+  const akGrid=document.getElementById('answer-key-grid');
+  akGrid.innerHTML=pairs.map(p=>`<div class="answer-pair"><span class="eng">${p[0]}</span><span class="arr">→</span><span class="nor">${p[1]}</span></div>`).join('');
+  document.getElementById('answer-key').style.display='';
+
+  const container=document.getElementById('glose-cards');
+  container.innerHTML='';
+  const darkPat=[]; for(let r=0;r<SIZE;r++) for(let col=0;col<SIZE;col++) darkPat.push((r+col)%2===1);
+  const subtitle=gloseMode==='no'?'Marker det NORSKE ordet':'Marker ØVEORDET';
+
+  for(let c=0;c<count;c++){
+    const sel=shuffle(pool).slice(0,CELLS);
+    const card=document.createElement('div');
+    card.className='bingo-card';
+    card.innerHTML=`<div class="card-header"><span class="card-title">BINGO</span><span class="card-num">Kort #${c+1}</span></div><div class="card-subtitle">${subtitle}</div><div class="bingo-grid g5"></div>`;
+    container.appendChild(card);
+    const grid=card.querySelector('.bingo-grid');
+    sel.forEach((pair,i)=>{
+      const cell=document.createElement('div');
+      cell.className='bingo-cell'+(darkPat[i]?' dark':'');
+      cell.textContent=gloseMode==='no'?pair[1]:pair[0];
+      grid.appendChild(cell);
+    });
+  }
+  document.getElementById('glose-cards-label').textContent=`${count} elevkort generert`;
+
+  let html=`<div class="print-section-title">LÆRERARK — GLOSEBINGO</div>`;
+  for(let r=0;r<rounds;r++){
+    const list=shuffle([...pairs]);
+    html+=`<div class="call-round"><h3>RUNDE ${r+1}</h3><div class="call-grid">`;
+    list.forEach((pair,idx)=>{
+      html+=`<div class="call-item"><div class="num">${idx+1}.</div><div class="word">${gloseMode==='no'?pair[0]:pair[1]}</div><div class="trans">✓ ${gloseMode==='no'?pair[1]:pair[0]}</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+  document.getElementById('glose-teacher-sheet').innerHTML=html;
+}
+
+function getEffectiveMatteTables(){
+  const sel=[...document.querySelectorAll('.table-toggle.active')].map(b=>parseInt(b.textContent));
+  const cus=parseTableValues(document.getElementById('custom-tables')?.value||'');
+  const res=[...new Set([...sel,...cus])];
+  return res.length?res:[...DEFAULT_MATTE_TABLES];
+}
+
+function setMatteMode(mode){
+  matteMode=mode;
+  document.getElementById('matte-mode-ans').classList.toggle('active',mode==='ans');
+  document.getElementById('matte-mode-eq').classList.toggle('active',mode==='eq');
+}
+
+async function generateMatte(){
+  const tables=getEffectiveMatteTables();
+  const count=parseInt(document.getElementById('matte-count').value)||6;
+  const rounds=parseInt(document.getElementById('matte-rounds').value)||3;
+  const allFacts=[];
+  tables.forEach(t=>{for(let n=1;n<=Math.max(...tables);n++)allFacts.push({eq:`${t} × ${n}`,ans:t*n})});
+
+  const container=document.getElementById('matte-cards');
+  container.innerHTML='';
+  const darkPat=[]; for(let r=0;r<5;r++)for(let col=0;col<5;col++)darkPat.push((r+col)%2===1);
+
+  for(let c=0;c<count;c++){
+    const items=matteMode==='ans' ? [...new Set(allFacts.map(f=>f.ans))] : allFacts.map(f=>f.eq);
+    const sel=fillPool(items,24);
+    sel.splice(Math.floor(Math.random()*25),0,'GRATIS');
+    const card=document.createElement('div');
+    card.className='bingo-card';
+    card.innerHTML=`<div class="card-header"><span class="card-title">GANGEBINGO</span><span class="card-num">Kort #${c+1}</span></div><div class="card-subtitle">Mattebingo</div><div class="bingo-grid g5"></div>`;
+    container.appendChild(card);
+    const grid=card.querySelector('.bingo-grid');
+    sel.forEach((val,i)=>{
+      const cell=document.createElement('div');
+      if(val==='GRATIS'){cell.className='bingo-cell free';cell.textContent='GRATIS'}
+      else{cell.className='bingo-cell'+(darkPat[i]?' dark':'');cell.textContent=val}
+      grid.appendChild(cell);
+    });
+  }
+  document.getElementById('matte-cards-label').textContent=`${count} elevkort generert`;
+
+  let html=`<div class="print-section-title">LÆRERARK — GANGEBINGO</div>`;
+  for(let r=0;r<rounds;r++){
+    const list=shuffle([...allFacts]);
+    html+=`<div class="call-round"><h3>RUNDE ${r+1}</h3><div class="call-grid">`;
+    list.forEach((f,idx)=>{
+      html+=`<div class="call-item"><div class="num">${idx+1}.</div><div class="word">${matteMode==='ans'?f.eq:f.ans}</div><div class="trans">${matteMode==='ans'?'= '+f.ans:'← '+f.eq}</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+  document.getElementById('matte-teacher-sheet').innerHTML=html;
+}
+
+function printStudents(){
+  window.print();
+}
+
+function printTeacher(){
+  const activePanel=document.querySelector('.panel.active');
+  const teacherSheet=activePanel.querySelector('.teacher-print');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    body{font-family:sans-serif;padding:20px;color:#000}
+    .print-section-title{font-size:1.2rem;font-weight:bold;margin-bottom:8px;border-bottom:2px solid #000;padding-bottom:6px}
+    .call-round{page-break-inside:avoid;margin-bottom:22px}
+    .call-round h3{font-size:0.9rem;background:#222;color:#f5a623;padding:5px 10px;margin-bottom:0}
+    .call-grid{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid #ccc;border-top:1px solid #ccc}
+    .call-item{border-right:1px solid #ccc;border-bottom:1px solid #ccc;padding:5px 8px}
+    .call-item .num{color:#888;font-size:0.68rem}
+    .call-item .word{font-weight:bold;font-size:0.88rem}
+    .call-item .trans{color:#444;font-size:0.74rem}
+  </style></head><body>${teacherSheet.innerHTML}</body></html>`);
+  w.document.close(); w.focus();
+  setTimeout(()=>{ w.print(); },500);
+}
+
+const LS_KEY='bingo_wordlists';
+function getSavedLists(){ try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch(e){return {}} }
+function saveList(){
+  const name=document.getElementById('list-name-input').value.trim();
+  if(!name)return;
+  const lists=getSavedLists();
+  lists[name]={words:window._words.filter(p=>p[0].trim()&&p[1].trim()),saved:new Date().toLocaleDateString('no-NO')};
+  localStorage.setItem(LS_KEY,JSON.stringify(lists));
+  renderSavedLists();
+}
+function loadList(name){
+  const lists=getSavedLists();
+  if(!lists[name])return;
+  window._words=lists[name].words.map(w=>[...w]);
+  renderWordList();
+}
+function deleteList(name){
+  const lists=getSavedLists(); delete lists[name];
+  localStorage.setItem(LS_KEY,JSON.stringify(lists)); renderSavedLists();
+}
+function renderSavedLists(){
+  const container=document.getElementById('saved-lists');
+  const lists=getSavedLists();
+  container.innerHTML=Object.keys(lists).map(name=>`
+    <div class="saved-list-item">
+      <span class="list-name" onclick="loadList('${name}')">📋 ${name}</span>
+      <button class="list-del" onclick="deleteList('${name}')">✕</button>
+    </div>`).join('');
+}
+function toggleSavedLists(){
+  const c=document.getElementById('saved-lists');
+  c.style.display=c.style.display==='none'?'flex':'none';
+  if(c.style.display==='flex') renderSavedLists();
+}
+function exportList(){
+  const data={words:window._words.filter(p=>p[0].trim()&&p[1].trim())};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bingo_liste.json'; a.click();
+}
+function importList(e){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const data=JSON.parse(ev.target.result);
+    window._words=data.words; renderWordList();
+  };
+  reader.readAsText(e.target.files[0]);
+}
+
+document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
+  label.addEventListener('click',()=>label.closest('.field-group').classList.toggle('collapsed'));
+});
+
+renderWordList();
+</script>
+</body>
+</html>

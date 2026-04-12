@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lerke</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --lerio-paper:#f1e7d8;
+  --lerio-paper-deep:#e9dcc8;
+  --lerio-plum:#43205c;
+  --lerio-plum-2:#6f2f86;
+  --lerio-green:#7db63a;
+  --lerio-green-deep:#1f9347;
+  --lerio-gold:#d6aa36;
+  --lerio-ink:#2d2d2d;
+  --lerio-panel:#fffaf2;
+  --lerio-panel-line:rgba(67,32,92,.16);
+  --lerio-panel-shadow:0 16px 42px rgba(67,32,92,.12);
+  --lerio-text-soft:#6d5f72;
+}
+body{
+  min-height:100vh;
+  font-family:'Source Sans 3',sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(214,170,54,.18), transparent 22%),
+    radial-gradient(circle at 12% 28%, rgba(125,182,58,.14), transparent 18%),
+    linear-gradient(180deg, #f8f2e8 0%, var(--lerio-paper) 100%);
+  color:var(--lerio-ink)
+}
+html{scroll-behavior:smooth}
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  width:100%;
+  backdrop-filter:blur(18px);
+  background:rgba(248,242,232,.82);
+  border-bottom:1px solid rgba(67,32,92,.1);
+  box-shadow:0 6px 20px rgba(67,32,92,.05);
+  transition:background .22s, box-shadow .22s, border-color .22s
+}
+.site-header.scrolled{background:rgba(67,32,92,.92);border-bottom-color:rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(34,18,46,.24)}
+.site-header-inner{
+  max-width:1120px;
+  margin:0 auto;
+  padding:12px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px
+}
+.site-brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  color:var(--lerio-plum);
+  transition:opacity .18s
+}
+.site-brand-logo{height:38px;width:auto;display:block}
+.site-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.site-nav button{
+  text-decoration:none;
+  color:#6d5f72;
+  font-family:'Raleway',sans-serif;
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  padding:9px 12px;
+  border-radius:999px;
+  transition:background .16s,color .16s,border-color .16s;
+  border:1px solid transparent;
+  background:transparent;
+  cursor:pointer
+}
+.site-nav button:hover{
+  color:var(--lerio-plum);
+  background:rgba(255,250,242,.72);
+  border-color:rgba(67,32,92,.12)
+}
+.site-nav button.active{color:#fff;background:linear-gradient(135deg,var(--lerio-plum),var(--lerio-plum-2));border-color:var(--lerio-plum);box-shadow:0 8px 18px rgba(67,32,92,.18)}
+.site-header.scrolled .site-nav button{color:rgba(255,255,255,.8)}
+.site-header.scrolled .site-nav button:hover{color:#fff;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.08)}
+.site-header.scrolled .site-nav button.active{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.14);box-shadow:none}
+.site-header.scrolled .site-brand{opacity:.96}
+.portal{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 24px;position:relative;overflow:hidden}
+.portal::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(255,250,242,.72), rgba(255,250,242,.72)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  opacity:.78;
+  pointer-events:none
+}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.14;pointer-events:none}
+.portal .blob-1{width:280px;height:280px;background:rgba(214,170,54,.65);top:-90px;right:-70px}
+.portal .blob-2{width:220px;height:220px;background:rgba(111,47,134,.38);bottom:-50px;left:-50px}
+.portal .blob-3{width:180px;height:180px;background:rgba(125,182,58,.35);top:28%;left:12%;opacity:.12}
+.portal-inner{width:100%;max-width:1040px;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+.hero-shell{
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);
+  gap:20px;
+  align-items:stretch;
+  margin-bottom:22px
+}
+.hero-copy,.hero-aside{
+  border:1px solid rgba(67,32,92,.12);
+  border-radius:28px;
+  box-shadow:var(--lerio-panel-shadow);
+  background:
+    linear-gradient(rgba(255,250,242,.9), rgba(255,250,242,.94)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px
+}
+.hero-copy{padding:24px 24px 22px}
+.hero-aside{padding:18px;display:flex;flex-direction:column;gap:14px}
+.brand-logo-wrap{width:100%;display:flex;justify-content:center;margin-bottom:14px}
+.brand-logo-wrap.hero{justify-content:flex-start;margin-bottom:18px}
+.brand-logo{width:min(760px,92vw);height:auto;display:block;filter:drop-shadow(0 10px 24px rgba(67,32,92,.08))}
+.brand-logo.hero-logo{width:min(520px,100%)}
+.role-label{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;color:var(--lerio-text-soft)}
+.hero-copy .role-label{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(125,182,58,.12);border:1px solid rgba(125,182,58,.16);margin-bottom:16px}
+.half-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(1.9rem,5vw,3.2rem);letter-spacing:-1.5px;margin-bottom:10px;text-align:left;position:relative;z-index:1;color:var(--lerio-plum);max-width:13ch;line-height:1.02}
+.half-desc{font-size:1rem;text-align:left;max-width:620px;line-height:1.75;margin-bottom:18px;position:relative;z-index:1;color:#5f5263}
+.hero-pills{display:flex;gap:10px;flex-wrap:wrap}
+.hero-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 13px;
+  border-radius:999px;
+  border:1px solid rgba(67,32,92,.1);
+  background:rgba(255,255,255,.46);
+  color:#5f5263;
+  font-size:.82rem;
+  font-weight:700
+}
+.hero-pill-dot{width:8px;height:8px;border-radius:999px;background:var(--lerio-green)}
+.portal-session{
+  width:100%;
+  max-width:none;
+  margin-bottom:0;
+  padding:14px 16px;
+  border-radius:18px;
+  background:
+    linear-gradient(rgba(255,250,242,.92), rgba(255,250,242,.92)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  border:1px solid rgba(67,32,92,.12);
+  color:#6a5a6f;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  box-shadow:var(--lerio-panel-shadow)
+}
+.portal-session strong{color:var(--lerio-plum)}
+.portal-session-actions{display:flex;gap:8px;flex-wrap:wrap}
+.hero-launches{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px
+}
+.launch-card{
+  padding:14px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.52);
+  border:1px solid rgba(67,32,92,.1);
+  transition:transform .16s, box-shadow .16s, border-color .16s
+}
+.launch-card.primary{grid-column:1 / -1}
+.launch-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 24px rgba(67,32,92,.08);
+  border-color:rgba(67,32,92,.2)
+}
+.launch-kicker{
+  font-family:'Raleway',sans-serif;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--lerio-plum-2);
+  margin-bottom:6px
+}
+.launch-title{font-family:'Raleway',sans-serif;font-size:1rem;font-weight:900;color:var(--lerio-plum);margin-bottom:4px}
+.launch-copy{font-size:.88rem;line-height:1.6;color:#63586b;margin-bottom:12px}
+.launch-actions{display:flex;gap:8px;flex-wrap:wrap}
+.launch-card.primary{
+  background:linear-gradient(135deg,rgba(67,32,92,.96),rgba(111,47,134,.92));
+  border-color:rgba(67,32,92,.26)
+}
+.launch-card.primary .launch-kicker{color:#f2d78b}
+.launch-card.primary .launch-title,
+.launch-card.primary .launch-copy{color:#fff}
+.launch-card.primary .auth-btn{background:#fff;border-color:#fff;color:var(--lerio-plum)}
+.launch-media{
+  width:100%;
+  aspect-ratio:16/9;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:14px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.08)
+}
+.launch-media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+.launch-icon{
+  width:48px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  margin-bottom:12px;
+  font-size:1.35rem;
+  background:rgba(67,32,92,.08);
+  color:var(--lerio-plum)
+}
+.session-chip{font-family:'Raleway',sans-serif;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:6px 10px;border-radius:999px;border:1px solid rgba(67,32,92,.16);background:rgba(255,250,242,.82);color:var(--lerio-plum)}
+.session-chip.teacher{border-color:rgba(67,32,92,.26);color:var(--lerio-plum)}
+.session-chip.student{border-color:rgba(31,147,71,.28);color:var(--lerio-green-deep)}
+.portal-panels{width:100%;margin-bottom:28px}
+.workspace-shell{
+  width:100%;
+  padding:18px;
+  border-radius:28px;
+  background:rgba(255,250,242,.52);
+  border:1px solid rgba(67,32,92,.1);
+  box-shadow:0 14px 34px rgba(67,32,92,.06)
+}
+.workspace-head{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  margin-bottom:16px;
+  flex-wrap:wrap
+}
+.workspace-title{font-family:'Raleway',sans-serif;font-size:1.25rem;font-weight:900;color:var(--lerio-plum)}
+.workspace-copy{font-size:.9rem;color:#63586b;line-height:1.65;max-width:640px}
+.workspace-breadcrumb{font-family:'Raleway',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--lerio-plum-2)}
+.portal-panel{display:none;width:100%}
+.portal-panel.active{display:block}
+.portal-panel-shell{display:flex;flex-direction:column;gap:14px;width:100%}
+.overview-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.overview-card{
+  background:
+    linear-gradient(rgba(255,250,242,.96), rgba(255,250,242,.96)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  border:1px solid rgba(67,32,92,.12);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--lerio-panel-shadow)
+}
+.overview-card h3{font-family:'Raleway',sans-serif;font-size:1.05rem;font-weight:900;color:var(--lerio-plum);margin-bottom:8px}
+.overview-card p{font-size:.9rem;line-height:1.65;color:#63586b;margin-bottom:14px}
+.overview-actions{display:flex;gap:10px;flex-wrap:wrap}
+.auth-card{
+  background:
+    linear-gradient(rgba(255,250,242,.96), rgba(255,250,242,.96)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  border:1px solid var(--lerio-panel-line);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--lerio-panel-shadow)
+}
+.auth-kicker{font-family:'Raleway',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.auth-kicker.teacher{color:var(--lerio-plum-2)}
+.auth-kicker.student{color:var(--lerio-green-deep)}
+.auth-card h3{font-family:'Raleway',sans-serif;font-size:1.1rem;font-weight:900;margin-bottom:8px}
+.auth-card p{font-size:.88rem;line-height:1.65;color:#63586b;margin-bottom:14px}
+.auth-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.auth-row input{flex:1;min-width:120px;background:rgba(255,255,255,.6);border:1px solid rgba(67,32,92,.14);border-radius:12px;color:var(--lerio-ink);font-family:'Source Sans 3',sans-serif;font-size:.92rem;padding:11px 12px}
+.auth-row input:focus{outline:none;border-color:var(--lerio-plum-2);box-shadow:0 0 0 3px rgba(111,47,134,.08)}
+.auth-btn{padding:11px 14px;border-radius:12px;border:1px solid rgba(67,32,92,.16);background:rgba(255,250,242,.88);color:var(--lerio-plum);font-family:'Raleway',sans-serif;font-weight:900;font-size:.76rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
+.auth-btn:hover{border-color:rgba(67,32,92,.34);color:var(--lerio-plum)}
+.auth-btn.primary{background:linear-gradient(135deg,var(--lerio-gold),#f2b53f);border:none;color:#2f2311}
+.auth-btn.green{border-color:rgba(31,147,71,.22);color:var(--lerio-green-deep)}
+.auth-btn.green:hover{border-color:rgba(31,147,71,.42);color:var(--lerio-green-deep)}
+.auth-status{margin-top:10px;font-size:.8rem;color:#675973;line-height:1.5;min-height:2.4em}
+.auth-status.error{color:#ef8f8f}
+.auth-note{margin-top:10px;font-size:.76rem;color:var(--lerio-text-soft);line-height:1.55}
+.class-admin{
+  display:none;
+  width:100%;
+  padding:16px;
+  background:
+    linear-gradient(rgba(255,250,242,.96), rgba(255,250,242,.96)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  border:1px solid var(--lerio-panel-line);
+  border-radius:22px;
+  box-shadow:var(--lerio-panel-shadow)
+}
+.class-admin.show{display:block}
+.class-admin-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.class-admin-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.05rem;color:var(--lerio-plum)}
+.class-admin-sub{font-size:.82rem;color:#63586b;line-height:1.55}
+.class-admin-grid{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr);gap:14px}
+.class-admin-card{background:rgba(255,251,245,.7);border:1px solid rgba(67,32,92,.12);border-radius:16px;padding:14px}
+.class-admin-card h3{font-family:'Raleway',sans-serif;font-size:.78rem;color:var(--lerio-plum-2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+.class-form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.class-form-row input,.class-form-row select{flex:1;min-width:120px;background:rgba(255,255,255,.62);border:1px solid rgba(67,32,92,.14);border-radius:12px;color:var(--lerio-ink);font-family:'Source Sans 3',sans-serif;font-size:.9rem;padding:11px 12px}
+.class-form-row input:focus,.class-form-row select:focus{outline:none;border-color:var(--lerio-plum-2);box-shadow:0 0 0 3px rgba(111,47,134,.08)}
+.class-admin-btn{padding:11px 14px;border-radius:12px;border:1px solid rgba(67,32,92,.16);background:rgba(255,250,242,.88);color:var(--lerio-plum);font-family:'Raleway',sans-serif;font-weight:900;font-size:.76rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
+.class-admin-btn:hover{border-color:rgba(67,32,92,.34);color:var(--lerio-plum)}
+.class-admin-btn.primary{background:linear-gradient(135deg,var(--lerio-gold),#f2b53f);border:none;color:#2f2311}
+.class-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
+.class-item{background:rgba(255,255,255,.58);border:1px solid rgba(67,32,92,.12);border-radius:12px;padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+.class-item:hover{border-color:rgba(67,32,92,.34)}
+.class-item.active{border-color:var(--lerio-gold);background:rgba(255,246,224,.92)}
+.class-item-name{font-weight:700;color:var(--lerio-plum)}
+.class-item-meta{font-size:.76rem;color:#6d5f72;margin-top:4px;line-height:1.4}
+.student-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto}
+.student-item{background:rgba(255,255,255,.58);border:1px solid rgba(67,32,92,.12);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.student-item-main{min-width:0}
+.student-item-name{font-weight:700;color:var(--lerio-plum)}
+.student-item-meta{font-size:.76rem;color:#6d5f72;margin-top:4px;line-height:1.4}
+.student-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.credential-box{margin-top:10px;background:linear-gradient(135deg,rgba(67,32,92,.96),rgba(111,47,134,.92));border:1px solid rgba(67,32,92,.3);border-radius:14px;padding:12px}
+.credential-title{font-size:.72rem;color:#f2d78b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.credential-value{font-family:'Raleway',sans-serif;font-weight:800;font-size:.95rem;color:#fff;line-height:1.45}
+.class-admin-empty{font-size:.82rem;color:#7d7083;line-height:1.45;padding:8px 2px}
+.class-admin-note{font-size:.76rem;color:#6d5f72;margin-top:8px;line-height:1.45}
+.class-admin-status{margin-top:10px;font-size:.78rem;color:var(--lerio-plum-2);line-height:1.5}
+.section-head{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  margin:4px 0 14px;
+  flex-wrap:wrap
+}
+.section-title{font-family:'Raleway',sans-serif;font-size:1.2rem;font-weight:900;color:var(--lerio-plum)}
+.section-copy{font-size:.9rem;color:#63586b;line-height:1.65;max-width:620px}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%;position:relative;z-index:1;margin-bottom:8px}
+.game-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 18px;
+  border-radius:16px;
+  text-decoration:none;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  cursor:pointer;
+  background:
+    linear-gradient(rgba(255,250,242,.94), rgba(255,250,242,.94)),
+    url('media/wallpaper.png') repeat;
+  background-size:auto, 476px 476px;
+  border:1px solid rgba(67,32,92,.12);
+  box-shadow:0 8px 24px rgba(67,32,92,.08)
+}
+.game-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(67,32,92,.12);border-color:rgba(67,32,92,.28)}
+.game-icon{font-size:1.8rem;flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(67,32,92,.08)}
+.game-info{flex:1}
+.game-name{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:2px;color:var(--lerio-plum)}
+.game-desc{font-size:0.75rem;color:var(--lerio-text-soft)}
+.game-arrow{font-size:1rem;opacity:.4;color:var(--lerio-plum)}
+.soon{font-size:0.62rem;font-family:'Raleway',sans-serif;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;background:rgba(67,32,92,.08);color:var(--lerio-text-soft)}
+.info-toggle{margin-top:18px;background:none;border:none;font-size:0.78rem;cursor:pointer;text-decoration:underline;position:relative;z-index:1;color:var(--lerio-text-soft)}
+.info-box{display:none;margin-top:12px;padding:14px 16px;border-radius:14px;font-size:0.78rem;line-height:1.7;max-width:620px;text-align:left;position:relative;z-index:1;background:rgba(255,250,242,.94);border:1px solid rgba(67,32,92,.12);color:var(--lerio-text-soft);box-shadow:0 10px 24px rgba(67,32,92,.08)}
+.info-box strong{color:var(--lerio-plum)}
+.info-box.open{display:block}
+@media(max-width:720px){
+  .site-header-inner{padding:10px 16px}
+  .site-brand-logo{height:32px}
+  .site-nav{gap:6px}
+  .site-nav button{font-size:.68rem;padding:8px 10px}
+  .hero-shell{grid-template-columns:1fr}
+  .hero-copy,.hero-aside{padding:18px}
+  .hero-launches{grid-template-columns:1fr}
+  .portal{justify-content:flex-start;padding-top:28px}
+  .portal-session{align-items:flex-start}
+  .class-admin-grid{grid-template-columns:1fr}
+  .half-title{text-align:left;max-width:none;font-size:clamp(1.8rem,10vw,2.5rem)}
+  .half-desc{text-align:left}
+  .brand-logo{width:min(620px,94vw)}
+  .brand-logo.hero-logo{width:min(420px,100%)}
+  .workspace-shell{padding:14px}
+  .overview-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="#top">
+      <img class="site-brand-logo" src="media/lerke_logo.svg" alt="Lerke">
+    </a>
+    <nav class="site-nav">
+      <button id="nav-overview" type="button" onclick="setWorkspaceView('overview')">Portal</button>
+      <button id="nav-teacher" type="button" onclick="setWorkspaceView('teacher')">Lærer</button>
+      <button id="nav-student" type="button" onclick="setWorkspaceView('student')">Elev</button>
+      <button id="nav-tools" type="button" onclick="setWorkspaceView('tools')">Verktøy</button>
+    </nav>
+  </div>
+</header>
+
+<div class="portal" id="top">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="portal-inner">
+    <section class="hero-shell">
+      <div class="hero-copy">
+        <p class="role-label">Læringsverktøy</p>
+        <div class="brand-logo-wrap hero">
+          <img class="brand-logo hero-logo" src="media/lerke_logo.svg" alt="Lerke">
+        </div>
+        <h2 class="half-title">En portal for klassespill og øvingsverktøy</h2>
+        <p class="half-desc">Logg inn én gang her, og la aktivitetssidene gjenbruke samme Supabase-økt i stedet for at du må starte på nytt inne i hvert verktøy.</p>
+        <div class="hero-pills">
+          <span class="hero-pill"><span class="hero-pill-dot"></span>Én felles portalinnlogging</span>
+          <span class="hero-pill"><span class="hero-pill-dot"></span>Lærer- og elevflyt side om side</span>
+          <span class="hero-pill"><span class="hero-pill-dot"></span>Bingo live i dag, flere verktøy senere</span>
+        </div>
+      </div>
+
+      <aside class="hero-aside">
+        <section class="portal-session">
+          <div id="portal-session-text"><strong>Portalstatus:</strong> Laster Supabase-status...</div>
+          <div class="portal-session-actions" id="portal-session-actions"></div>
+        </section>
+
+        <div class="hero-launches">
+          <article class="launch-card primary">
+            <div class="launch-media">
+              <img src="media/leriobingo.jpg" alt="Lerke Bingo">
+            </div>
+            <div class="launch-kicker">App</div>
+            <div class="launch-title">Lerke Bingo</div>
+            <div class="launch-copy">Første live verktøy i portalen. Portalen sender deg rett til lærerflaten eller elevjoin basert på økten din.</div>
+            <div class="launch-actions">
+              <button class="auth-btn" type="button" onclick="launchBingo()">Åpne Bingo</button>
+              <button class="auth-btn" type="button" onclick="setWorkspaceView('tools')">Se alle verktøy</button>
+            </div>
+          </article>
+          <article class="launch-card">
+            <div class="launch-icon">❓</div>
+            <div class="launch-kicker">Kommer</div>
+            <div class="launch-title">Lerke Quiz</div>
+            <div class="launch-copy">Flervalgsquiz og klasseaktiviteter i samme portalstruktur som Bingo.</div>
+            <div class="launch-actions">
+              <button class="auth-btn" type="button" onclick="setWorkspaceView('tools')">Se verktøy</button>
+            </div>
+          </article>
+          <article class="launch-card">
+            <div class="launch-icon">🖨️</div>
+            <div class="launch-kicker">Klassisk</div>
+            <div class="launch-title">Bingo Generator</div>
+            <div class="launch-copy">Kortgenerering og utskrift som eget verktøy, adskilt fra Lerke sin digitale live-retning.</div>
+            <div class="launch-actions">
+              <button class="auth-btn" type="button" onclick="setWorkspaceView('tools')">Se verktøy</button>
+            </div>
+          </article>
+          <article class="launch-card">
+            <div class="launch-icon">🔤</div>
+            <div class="launch-kicker">Kommer</div>
+            <div class="launch-title">Ordkjede</div>
+            <div class="launch-copy">Språk- og setningsbygging som egen flis, klar til å få plass når verktøyet er klart.</div>
+            <div class="launch-actions">
+              <button class="auth-btn" type="button" onclick="setWorkspaceView('tools')">Se verktøy</button>
+            </div>
+          </article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="portal-panels">
+      <div class="workspace-shell" id="workspace-anchor">
+        <div class="workspace-head">
+          <div>
+            <div class="workspace-breadcrumb" id="workspace-breadcrumb">Portal</div>
+            <div class="workspace-title" id="workspace-title">Portalområder</div>
+            <div class="workspace-copy" id="workspace-copy">Her ligger den faktiske arbeidsflaten. Lærerportalen håndterer innlogging og klasseadministrasjon, mens elevportalen er for elevkontoer med klassekode, elevkode og PIN.</div>
+          </div>
+        </div>
+      <div class="portal-panel active" id="portal-panel-overview">
+        <div class="portal-panel-shell">
+          <div class="overview-grid">
+            <article class="overview-card">
+              <h3>Lærerområde</h3>
+              <p>Administrer klasser, elevkontoer og innlogging fra ett sted. Dette er hjemmebasen for godkjente lærere.</p>
+              <div class="overview-actions">
+                <button class="auth-btn primary" type="button" onclick="setWorkspaceView('teacher')">Åpne lærerportal</button>
+              </div>
+            </article>
+            <article class="overview-card">
+              <h3>Elevområde</h3>
+              <p>Logg inn med klassekode, elevkode og PIN, eller bruk anonym Bingo-join når undervisningsopplegget krever det.</p>
+              <div class="overview-actions">
+                <button class="auth-btn green" type="button" onclick="setWorkspaceView('student')">Åpne elevportal</button>
+              </div>
+            </article>
+            <article class="overview-card">
+              <h3>Verktøy</h3>
+              <p>Bingo er første live verktøy. Portalen er laget slik at quiz, ordkjede og andre opplegg kan kobles på senere.</p>
+              <div class="overview-actions">
+                <button class="auth-btn" type="button" onclick="setWorkspaceView('tools')">Se verktøy</button>
+              </div>
+            </article>
+            <article class="overview-card">
+              <h3>Portalstatus</h3>
+              <p>Øktstatusen over gjelder for hele Lerke. Når du bytter mellom områder, holder vi deg i samme Supabase-økt i stedet for å starte på nytt.</p>
+              <div class="overview-actions">
+                <button class="auth-btn" type="button" onclick="toggleInfo('portal-info',this,'Mer om portalen')">Mer om portalen</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="portal-panel" id="portal-panel-teacher">
+        <div class="portal-panel-shell">
+          <article class="auth-card" id="teacher-anchor">
+            <div class="auth-kicker teacher">Lærerinnlogging</div>
+            <h3>Lærerportal</h3>
+            <p>Dette er lærerens faste hjem i Lerke. Her logger du inn, administrerer klasser og elever, og bruker samme konto videre inn i aktivitetene.</p>
+            <div class="auth-row">
+              <input id="teacher-email" type="email" placeholder="Lærer e-post">
+              <input id="teacher-password" type="password" placeholder="Passord">
+            </div>
+            <div class="auth-row">
+              <button class="auth-btn primary" onclick="portalSignInTeacher()">Logg inn</button>
+              <button class="auth-btn" onclick="portalSignUpTeacher()">Lag konto</button>
+              <button class="auth-btn" onclick="portalRequestTeacherAccess()">Be om tilgang</button>
+              <button class="auth-btn" onclick="portalSignOut()">Logg ut</button>
+            </div>
+            <div class="auth-status" id="teacher-auth-status">Supabase ikke konfigurert.</div>
+            <div class="auth-note">Godkjente lærere får tilgang til liveøkter, klasseadministrasjon og senere flere lærerfunksjoner fra samme portalinnlogging.</div>
+          </article>
+
+          <section class="class-admin" id="class-admin">
+            <div class="class-admin-head">
+              <div>
+                <div class="class-admin-title">Klasser og elever</div>
+                <div class="class-admin-sub">Opprett klasser, legg til elever og få ut elevkode + PIN for elevkontoene direkte fra portalen.</div>
+              </div>
+            </div>
+            <div class="class-admin-grid">
+              <div class="class-admin-card">
+                <h3>Klasser</h3>
+                <div class="class-form-row">
+                  <input id="class-name-input" type="text" placeholder="Klassenavn, f.eks. 7A">
+                  <input id="class-grade-input" type="text" placeholder="Trinn, f.eks. 7. trinn">
+                </div>
+                <div class="class-form-row">
+                  <input id="class-year-input" type="text" placeholder="Skoleår, f.eks. 2026/2027">
+                  <button class="class-admin-btn primary" onclick="createClassFromPortal()">Opprett klasse</button>
+                </div>
+                <div class="class-admin-note">Klassekoden genereres automatisk og brukes i elevinnloggingen.</div>
+                <div class="class-list" id="class-list">
+                  <div class="class-admin-empty">Ingen klasser ennå.</div>
+                </div>
+              </div>
+              <div class="class-admin-card">
+                <h3>Elever i valgt klasse</h3>
+                <div class="class-form-row">
+                  <select id="student-class-select" onchange="selectClass(this.value)">
+                    <option value="">Velg klasse</option>
+                  </select>
+                </div>
+                <div class="class-form-row">
+                  <input id="student-display-name-input" type="text" placeholder="Visningsnavn, f.eks. Ola Nordmann">
+                </div>
+                <div class="class-form-row">
+                  <input id="student-first-name-input" type="text" placeholder="Fornavn (valgfritt)">
+                  <input id="student-last-name-input" type="text" placeholder="Etternavn (valgfritt)">
+                </div>
+                <div class="class-form-row">
+                  <button class="class-admin-btn primary" onclick="createStudentFromPortal()">Legg til elev</button>
+                </div>
+                <div class="credential-box" id="student-credential-box" style="display:none">
+                  <div class="credential-title">Siste elevinnlogging</div>
+                  <div class="credential-value" id="student-credential-value">-</div>
+                </div>
+                <div class="student-list" id="student-list">
+                  <div class="class-admin-empty">Velg en klasse for å se elevene.</div>
+                </div>
+                <div class="class-admin-status" id="class-admin-status" style="display:none"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="portal-panel" id="portal-panel-student">
+        <div class="portal-panel-shell">
+          <article class="auth-card" id="student-anchor">
+            <div class="auth-kicker student">Elevinnlogging</div>
+            <h3>Elevportal</h3>
+            <p>Elevportalen er for elevkontoer med klassekode, elevkode og PIN. Den er separat fra anonym Bingo-join og er laget for varig identitet og senere progresjon.</p>
+            <div class="auth-row">
+              <input id="student-class-code" type="text" placeholder="Klassekode" maxlength="10">
+              <input id="student-code" type="text" placeholder="Elevkode" maxlength="10">
+              <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
+            </div>
+            <div class="auth-row">
+              <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn elev</button>
+              <button class="auth-btn" onclick="portalSignOut()">Logg ut</button>
+            </div>
+            <div class="auth-status" id="student-auth-status">Ingen elevkonto aktiv.</div>
+            <div class="auth-note">Anonym elevjoin i Bingo lever fortsatt videre. Denne portalen er for elevkonto-sporet og senere progresjonsdata.</div>
+          </article>
+        </div>
+      </div>
+      <div class="portal-panel" id="portal-panel-tools">
+        <div class="portal-panel-shell">
+          <div class="section-head">
+            <div>
+              <div class="section-title">Verktøy</div>
+              <div class="section-copy">Portalen skal fungere som inngang til flere undervisningsopplegg. Bingo er første live verktøy, mens resten er tydelige plassholdere for videre utbygging.</div>
+            </div>
+          </div>
+          <div class="hero-launches" id="games-anchor">
+            <article class="launch-card primary">
+              <div class="launch-media">
+                <img src="media/leriobingo.jpg" alt="Lerke Bingo">
+              </div>
+              <div class="launch-kicker">Live nå</div>
+              <div class="launch-title">Lerke Bingo</div>
+              <div class="launch-copy">Digital Bingo for Lerke-portalen. Lærer går rett til liveflaten, mens elev og anonym join går rett til elevsiden.</div>
+              <div class="launch-actions">
+                <button class="auth-btn" type="button" onclick="launchBingo()">Åpne Bingo</button>
+              </div>
+            </article>
+            <article class="launch-card">
+              <div class="launch-icon">❓</div>
+              <div class="launch-kicker">Kommer</div>
+              <div class="launch-title">Lerke Quiz</div>
+              <div class="launch-copy">Flervalgsquiz for klassen med samme portalstruktur og konto-modell som resten av Lerke.</div>
+              <div class="launch-actions">
+                <button class="auth-btn" type="button">Kommer snart</button>
+              </div>
+            </article>
+            <article class="launch-card">
+              <div class="launch-icon">🖨️</div>
+              <div class="launch-kicker">Klassisk</div>
+              <div class="launch-title">Bingo Generator</div>
+              <div class="launch-copy">Kortgenerering og utskrift som eget spor, adskilt fra Lerke sin digitale live Bingo-retning.</div>
+              <div class="launch-actions">
+                <button class="auth-btn" type="button" onclick="launchGenerator()">Åpne Generator</button>
+              </div>
+            </article>
+            <article class="launch-card">
+              <div class="launch-icon">🔤</div>
+              <div class="launch-kicker">Kommer</div>
+              <div class="launch-title">Ordkjede</div>
+              <div class="launch-copy">Setningsbygging og språklek som egen modul når verktøyet er klart for portalen.</div>
+              <div class="launch-actions">
+                <button class="auth-btn" type="button">Kommer snart</button>
+              </div>
+            </article>
+          </div>
+          <button class="info-toggle" onclick="toggleInfo('portal-info',this,'ℹ️ Om portalen')">ℹ️ Om portalen</button>
+          <div class="info-box" id="portal-info">
+            <strong>Lerke Bingo:</strong> Portalflisene sender nå brukeren rett til riktig Bingo-side basert på portalstatus, og lærerflaten er digital/live-only.<br><br>
+            <strong>Portalinnlogging:</strong> Lærerlogin og elevkonto-login ligger nå på forsiden, slik at samme Supabase-økt kan brukes videre i aktivitetene.<br><br>
+            <strong>Videre:</strong> Nye aktiviteter som quiz og ordkjede kan kobles på samme portal-login senere uten å kopiere auth-UI inn i hver side.
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="config/supabase-public-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_CONFIG=window.LERIO_SUPABASE||{};
+let supabaseClient=null;
+let teacherProfile=null;
+let currentStudentProfile=null;
+let teacherClasses=[];
+let selectedClassId='';
+let currentClassStudents=[];
+let currentWorkspaceView='overview';
+
+function toggleInfo(id,btn,originalText){
+  const box=document.getElementById(id);
+  const open=box.classList.toggle('open');
+  btn.textContent=open?'✕ Lukk':originalText;
+}
+
+function syncHeaderState(){
+  const header=document.querySelector('.site-header');
+  if(!header) return;
+  header.classList.toggle('scrolled',window.scrollY>18);
+}
+
+function setWorkspaceView(view,options={}){
+  const nextView=['overview','teacher','student','tools'].includes(view)?view:'overview';
+  currentWorkspaceView=nextView;
+
+  document.getElementById('portal-panel-overview')?.classList.toggle('active',nextView==='overview');
+  document.getElementById('portal-panel-teacher')?.classList.toggle('active',nextView==='teacher');
+  document.getElementById('portal-panel-student')?.classList.toggle('active',nextView==='student');
+  document.getElementById('portal-panel-tools')?.classList.toggle('active',nextView==='tools');
+
+  document.getElementById('nav-overview')?.classList.toggle('active',nextView==='overview');
+  document.getElementById('nav-teacher')?.classList.toggle('active',nextView==='teacher');
+  document.getElementById('nav-student')?.classList.toggle('active',nextView==='student');
+  document.getElementById('nav-tools')?.classList.toggle('active',nextView==='tools');
+
+  const labels={
+    overview:{
+      breadcrumb:'Portal',
+      title:'Portalområder',
+      copy:'Velg et område uten å bli sendt nedover i lange seksjoner. Portalen er nå bygget mer som en arbeidsflate der innholdet byttes på stedet.'
+    },
+    teacher:{
+      breadcrumb:'Lærer',
+      title:'Lærerportal',
+      copy:'Logg inn som lærer, opprett klasser og elevkontoer, og bruk samme økt videre inn i aktivitetene.'
+    },
+    student:{
+      breadcrumb:'Elev',
+      title:'Elevportal',
+      copy:'Logg inn med klassekode, elevkode og PIN, eller bruk elevkontoen som utgangspunkt før live Bingo-join.'
+    },
+    tools:{
+      breadcrumb:'Verktøy',
+      title:'Verktøykatalog',
+      copy:'Bingo er første live verktøy. Flere aktiviteter kan legges inn her senere uten at portalopplevelsen må bygges om.'
+    }
+  };
+  const currentLabel=labels[nextView];
+  const breadcrumbEl=document.getElementById('workspace-breadcrumb');
+  const titleEl=document.getElementById('workspace-title');
+  const copyEl=document.getElementById('workspace-copy');
+  if(breadcrumbEl) breadcrumbEl.textContent=currentLabel.breadcrumb;
+  if(titleEl) titleEl.textContent=currentLabel.title;
+  if(copyEl) copyEl.textContent=currentLabel.copy;
+
+  if(options.scroll!==false){
+    window.requestAnimationFrame(()=>{
+      document.getElementById('workspace-anchor')?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }
+}
+
+function switchPortalPanel(panel){
+  setWorkspaceView(panel==='student'?'student':'teacher');
+}
+
+function hasSupabaseConfig(){
+  return !!(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase?.createClient);
+}
+
+function setStatus(id,msg,isError){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.toggle('error',!!isError);
+}
+
+function goTo(url){
+  window.location.href=url;
+}
+
+async function getPortalSession(){
+  if(!supabaseClient) return null;
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  return session||null;
+}
+
+async function launchBingo(){
+  if(teacherProfile?.is_approved){
+    goTo('apps/bingo/teacher.html');
+    return;
+  }
+  const session=await getPortalSession();
+  if(session&&teacherProfile?.is_teacher&&!teacherProfile?.is_approved){
+    setWorkspaceView('teacher');
+    setStatus('teacher-auth-status','Lærerkontoen er innlogget, men venter fortsatt på godkjenning før live lærerflate kan brukes.',true);
+    return;
+  }
+  goTo('apps/bingo/student.html');
+}
+
+function launchGenerator(){
+  goTo('apps/bingo-generator/index.html');
+}
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+}
+
+function formatTeacherStatus(){
+  if(!hasSupabaseConfig()) return 'Supabase ikke konfigurert.';
+  if(!teacherProfile) return 'Ingen lærerbruker aktiv.';
+  if(teacherProfile.is_approved) return 'Lærer innlogget og godkjent. Denne økten kan brukes videre inne i lærerflatene.';
+  if(teacherProfile.is_teacher) return 'Lærer innlogget, men konto venter fortsatt på godkjenning.';
+  return 'Innlogget bruker finnes, men lærerprofil er ikke aktivert ennå.';
+}
+
+function formatStudentStatus(){
+  if(!hasSupabaseConfig()) return 'Supabase ikke konfigurert.';
+  if(!currentStudentProfile) return 'Ingen elevkonto aktiv.';
+  return `Elev innlogget: ${currentStudentProfile.display_name} · ${currentStudentProfile.class_name} (${currentStudentProfile.class_code})`;
+}
+
+function renderPortalSession(session){
+  const textEl=document.getElementById('portal-session-text');
+  const actionsEl=document.getElementById('portal-session-actions');
+  if(!textEl||!actionsEl) return;
+  const chips=[];
+  if(teacherProfile?.is_teacher){
+    chips.push(`<span class="session-chip teacher">${teacherProfile.is_approved?'Lærer godkjent':'Lærer venter'}</span>`);
+  }
+  if(currentStudentProfile){
+    chips.push('<span class="session-chip student">Elevkonto aktiv</span>');
+  }
+  if(!session){
+    textEl.innerHTML='<strong>Portalstatus:</strong> Ingen aktiv økt.';
+  } else {
+    const email=session.user?.email||'anonym økt';
+    textEl.innerHTML=`<strong>Portalstatus:</strong> Aktiv økt som <strong>${email}</strong>.`;
+  }
+  actionsEl.innerHTML=chips.join('');
+}
+
+function setClassAdminStatus(msg,isError){
+  const el=document.getElementById('class-admin-status');
+  if(!el) return;
+  el.style.display=msg?'block':'none';
+  el.textContent=msg||'';
+  el.style.color=isError?'#ef8f8f':'#5b8dee';
+}
+
+function showLatestCredentials(details){
+  const box=document.getElementById('student-credential-box');
+  const value=document.getElementById('student-credential-value');
+  if(!box||!value||!details) return;
+  box.style.display='block';
+  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Kode: ${escapeHtml(details.student_code||'-')}<br>PIN: ${escapeHtml(details.pin||'-')}`;
+}
+
+function renderClassPicker(){
+  const select=document.getElementById('student-class-select');
+  if(!select) return;
+  select.innerHTML=`<option value="">Velg klasse</option>`+teacherClasses.map(cls=>`<option value="${cls.id}" ${cls.id===selectedClassId?'selected':''}>${escapeHtml(cls.name)} (${escapeHtml(cls.class_code)})</option>`).join('');
+}
+
+function renderClasses(){
+  const list=document.getElementById('class-list');
+  if(!list) return;
+  renderClassPicker();
+  if(!teacherClasses.length){
+    list.innerHTML='<div class="class-admin-empty">Ingen klasser ennå.</div>';
+    return;
+  }
+  list.innerHTML=teacherClasses.map(cls=>`<div class="class-item ${cls.id===selectedClassId?'active':''}" onclick="selectClass('${cls.id}')"><div class="class-item-name">${escapeHtml(cls.name)}</div><div class="class-item-meta">Kode: ${escapeHtml(cls.class_code)}${cls.grade_label?` · ${escapeHtml(cls.grade_label)}`:''}${cls.school_year?` · ${escapeHtml(cls.school_year)}`:''}</div></div>`).join('');
+}
+
+function renderStudents(students){
+  currentClassStudents=students||[];
+  const list=document.getElementById('student-list');
+  if(!list) return;
+  if(!selectedClassId){
+    list.innerHTML='<div class="class-admin-empty">Velg en klasse for å se elevene.</div>';
+    return;
+  }
+  if(!students.length){
+    list.innerHTML='<div class="class-admin-empty">Ingen elever i denne klassen ennå.</div>';
+    return;
+  }
+  list.innerHTML=students.map(student=>`<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div><div class="student-item-meta">Elevkode: ${escapeHtml(student.student_code)}${student.first_name||student.last_name?` · ${escapeHtml([student.first_name,student.last_name].filter(Boolean).join(' '))}`:''}</div></div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromPortal('${student.id}')">Ny PIN</button></div></div>`).join('');
+}
+
+function updateClassAdminVisibility(){
+  const panel=document.getElementById('class-admin');
+  if(!panel) return;
+  panel.classList.toggle('show',!!teacherProfile?.is_approved);
+}
+
+async function loadTeacherClasses(){
+  if(!supabaseClient||!teacherProfile?.is_approved){
+    teacherClasses=[];
+    selectedClassId='';
+    renderClasses();
+    renderStudents([]);
+    updateClassAdminVisibility();
+    return;
+  }
+  const {data,error}=await supabaseClient
+    .from('classes')
+    .select('id,name,grade_label,school_year,class_code,status,created_at')
+    .order('created_at',{ascending:true});
+  if(error){
+    setClassAdminStatus(`Kunne ikke hente klasser: ${error.message}`,true);
+    return;
+  }
+  teacherClasses=data||[];
+  if(selectedClassId&&!teacherClasses.some(cls=>cls.id===selectedClassId)){
+    selectedClassId='';
+  }
+  if(!selectedClassId&&teacherClasses.length){
+    selectedClassId=teacherClasses[0].id;
+  }
+  renderClasses();
+  updateClassAdminVisibility();
+  await loadStudentsForSelectedClass();
+}
+
+async function loadStudentsForSelectedClass(){
+  if(!supabaseClient||!selectedClassId){
+    renderStudents([]);
+    return;
+  }
+  const {data,error}=await supabaseClient.rpc('list_class_students',{p_class_id:selectedClassId});
+  if(error){
+    setClassAdminStatus(`Kunne ikke hente elever: ${error.message}`,true);
+    return;
+  }
+  renderStudents(Array.isArray(data)?data:[]);
+}
+
+function selectClass(classId){
+  selectedClassId=classId;
+  renderClasses();
+  loadStudentsForSelectedClass();
+}
+
+async function createClassFromPortal(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const name=document.getElementById('class-name-input').value.trim();
+  const grade=document.getElementById('class-grade-input').value.trim();
+  const year=document.getElementById('class-year-input').value.trim();
+  if(!name){alert('Skriv inn klassenavn først.');return}
+  const {data,error}=await supabaseClient.rpc('create_class',{
+    p_name:name,
+    p_grade_label:grade||null,
+    p_school_year:year||null
+  });
+  if(error){setClassAdminStatus(`Kunne ikke opprette klasse: ${error.message}`,true);return}
+  const row=Array.isArray(data)?data[0]:data;
+  document.getElementById('class-name-input').value='';
+  document.getElementById('class-grade-input').value='';
+  document.getElementById('class-year-input').value='';
+  setClassAdminStatus(`Klasse opprettet: ${row?.name||name} (${row?.class_code||''})`,false);
+  await loadTeacherClasses();
+  if(row?.id) selectClass(row.id);
+}
+
+async function createStudentFromPortal(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const classId=document.getElementById('student-class-select').value||selectedClassId;
+  const displayName=document.getElementById('student-display-name-input').value.trim();
+  const firstName=document.getElementById('student-first-name-input').value.trim();
+  const lastName=document.getElementById('student-last-name-input').value.trim();
+  if(!classId){alert('Velg klasse først.');return}
+  if(!displayName){alert('Skriv inn elevnavn først.');return}
+  const {data,error}=await supabaseClient.rpc('create_student_profile',{
+    p_class_id:classId,
+    p_display_name:displayName,
+    p_first_name:firstName||null,
+    p_last_name:lastName||null
+  });
+  if(error){setClassAdminStatus(`Kunne ikke opprette elev: ${error.message}`,true);return}
+  const details=Array.isArray(data)?data[0]:data;
+  document.getElementById('student-display-name-input').value='';
+  document.getElementById('student-first-name-input').value='';
+  document.getElementById('student-last-name-input').value='';
+  selectedClassId=classId;
+  showLatestCredentials(details);
+  setClassAdminStatus(`Elev opprettet: ${details?.display_name||displayName}`,false);
+  await loadTeacherClasses();
+  await loadStudentsForSelectedClass();
+}
+
+async function resetStudentPinFromPortal(studentId){
+  if(!supabaseClient||!studentId) return;
+  const {data,error}=await supabaseClient.rpc('reset_student_pin',{p_student_id:studentId});
+  if(error){setClassAdminStatus(`Kunne ikke lage ny PIN: ${error.message}`,true);return}
+  const details=Array.isArray(data)?data[0]:data;
+  const student=currentClassStudents.find(item=>item.id===studentId);
+  showLatestCredentials({
+    display_name:student?.display_name||'Elev',
+    student_code:details?.student_code,
+    pin:details?.pin
+  });
+  setClassAdminStatus(`Ny PIN generert for ${student?.display_name||'elev'}.`,false);
+}
+
+async function initSupabase(){
+  if(!hasSupabaseConfig()){
+    setStatus('teacher-auth-status','Supabase ikke konfigurert.',true);
+    setStatus('student-auth-status','Supabase ikke konfigurert.',true);
+    renderPortalSession(null);
+    return;
+  }
+  supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{
+    auth:{persistSession:true,autoRefreshToken:true}
+  });
+  supabaseClient.auth.onAuthStateChange(()=>{
+    refreshPortalAuthState();
+  });
+  await refreshPortalAuthState();
+}
+
+async function refreshPortalAuthState(){
+  if(!supabaseClient){
+    renderPortalSession(null);
+    return;
+  }
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  teacherProfile=null;
+  currentStudentProfile=null;
+
+  if(session){
+    const teacherRes=await supabaseClient
+      .from('teacher_profiles')
+      .select('user_id,is_teacher,is_approved,approved_at')
+      .eq('user_id',session.user.id)
+      .maybeSingle();
+    if(!teacherRes.error) teacherProfile=teacherRes.data||null;
+
+    const studentRes=await supabaseClient.rpc('get_current_student_profile');
+    if(!studentRes.error){
+      currentStudentProfile=Array.isArray(studentRes.data)?studentRes.data[0]:studentRes.data;
+    }
+  }
+
+  setStatus('teacher-auth-status',formatTeacherStatus(),false);
+  setStatus('student-auth-status',formatStudentStatus(),false);
+  renderPortalSession(session);
+  if(currentStudentProfile&&!teacherProfile?.is_approved){
+    setWorkspaceView('student',{scroll:false});
+  } else {
+    setWorkspaceView('teacher',{scroll:false});
+  }
+  updateClassAdminVisibility();
+  if(teacherProfile?.is_approved){
+    await loadTeacherClasses();
+  } else {
+    teacherClasses=[];
+    selectedClassId='';
+    renderClasses();
+    renderStudents([]);
+  }
+}
+
+async function portalSignUpTeacher(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const email=document.getElementById('teacher-email').value.trim();
+  const password=document.getElementById('teacher-password').value;
+  if(!email||!password){alert('Fyll inn e-post og passord.');return}
+  const {error}=await supabaseClient.auth.signUp({email,password});
+  if(error){alert(error.message);return}
+  await refreshPortalAuthState();
+  alert('Lærerkonto opprettet. Bekreft e-post hvis prosjektet krever det, og be deretter om lærertilgang.');
+}
+
+async function portalSignInTeacher(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const email=document.getElementById('teacher-email').value.trim();
+  const password=document.getElementById('teacher-password').value;
+  if(!email||!password){alert('Fyll inn e-post og passord.');return}
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){alert(error.message);return}
+  await refreshPortalAuthState();
+}
+
+async function portalRequestTeacherAccess(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(!session){alert('Logg inn som lærer først.');return}
+  const {data,error}=await supabaseClient.rpc('request_teacher_access');
+  if(error){alert(error.message);return}
+  teacherProfile=Array.isArray(data)?data[0]:data;
+  await refreshPortalAuthState();
+}
+
+async function ensurePortalStudentSession(){
+  if(!supabaseClient) throw new Error('Supabase ikke konfigurert.');
+  let {data:{session}}=await supabaseClient.auth.getSession();
+  const isAnonymous=!!(session?.user?.is_anonymous||session?.user?.app_metadata?.provider==='anonymous');
+  if(session&&!isAnonymous){
+    await supabaseClient.auth.signOut();
+    session=null;
+  }
+  if(!session){
+    const anonRes=await supabaseClient.auth.signInAnonymously();
+    if(anonRes.error) throw anonRes.error;
+  }
+}
+
+async function portalStudentLogin(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const classCode=document.getElementById('student-class-code').value.trim().toUpperCase();
+  const studentCode=document.getElementById('student-code').value.trim().toUpperCase();
+  const pin=document.getElementById('student-pin').value.trim();
+  if(!classCode||!studentCode||!pin){alert('Fyll inn klassekode, elevkode og PIN.');return}
+  try{
+    await ensurePortalStudentSession();
+    const {data,error}=await supabaseClient.rpc('student_login_with_pin',{
+      p_class_code:classCode,
+      p_student_code:studentCode,
+      p_pin:pin
+    });
+    if(error) throw error;
+    currentStudentProfile=Array.isArray(data)?data[0]:data;
+    await refreshPortalAuthState();
+  } catch(error){
+    alert(error.message||'Kunne ikke logge inn elev.');
+  }
+}
+
+async function portalSignOut(){
+  if(!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  teacherProfile=null;
+  currentStudentProfile=null;
+  await refreshPortalAuthState();
+}
+
+window.addEventListener('scroll',syncHeaderState,{passive:true});
+syncHeaderState();
+setWorkspaceView('overview',{scroll:false});
+initSupabase();
+</script>
+</body>
+</html>

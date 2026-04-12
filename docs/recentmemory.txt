@@ -1,0 +1,111 @@
+Lerke recent memory
+===================
+
+Purpose
+-------
+- Short handoff note only.
+- Read this first, then `README.md`, then `supabase/sql/README.md`.
+- Treat `docs/archive/` as reference-only and not part of normal working memory.
+- Only open archived files when backtracking or when a current file explicitly depends on them.
+
+Active frontend
+---------------
+- `index.html`
+  - portal shell
+  - teacher portal
+  - student portal
+  - tools/app tiles
+  - direct routing into the active Bingo and Generator tools
+- `apps/`
+  - app pages grouped by tool
+- `config/`
+  - shared frontend config files
+- `media/`
+  - active art and audio used by the live frontend
+- `apps/bingo/teacher.html`
+  - dedicated live teacher-side Bingo tool
+  - used for digital live setup, lobby, and draw flow
+- `apps/bingo/student.html`
+  - student join page for live Bingo
+- `apps/bingo-generator/index.html`
+  - classic generator / print tool
+
+Current backend state
+---------------------
+- Teacher auth works:
+  - sign up
+  - sign in
+  - request teacher access
+  - manual approval in Supabase
+- Student account flow works:
+  - create classes
+  - create students
+  - generate code + PIN
+  - reset PIN
+  - student portal login
+- Live Bingo works with:
+  - session creation
+  - QR and join code
+  - lobby
+  - participant list
+  - countdown/reveal
+- Portal state is now important:
+  - teacher and student portal login live in `index.html`
+  - Bingo pages reuse the same Supabase session when available
+
+Canonical SQL
+-------------
+- `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`
+- `supabase/sql/supabase_student_accounts_v1_core_patch.sql`
+- Historical SQL is in `supabase/sql/archive/`
+
+Archive layout
+--------------
+- `docs/archive/reference/`
+  - old planning notes and history
+- `docs/archive/prototypes/`
+  - old UI prototype files and retired launcher pages
+- `docs/archive/assets/`
+  - old non-active visual assets
+- `docs/archive/mess/`
+  - leftover non-active media not needed for normal work
+
+Current product direction
+-------------------------
+- `Lerke Bingo` = live/online tool
+- `Bingo Generator` = classic generation/print tool
+- Teacher and student portal login live in `index.html`
+
+Main open issue
+---------------
+- The big live/generator split is done.
+- The next decisions are more product-direction decisions than structural cleanup:
+  - how much live teacher dashboard / progress visibility to add next
+  - how far to push student accounts vs anonymous guest join
+  - whether Quiz or Ordkjede should be the next real Lerke tool after Bingo
+
+Best current paths forward
+--------------------------
+1. `apps/bingo/teacher.html`
+   - teacher live dashboard ideas
+   - progress / near-BINGO visibility
+   - better teacher session controls
+2. `index.html`
+   - polish teacher/student portal UX
+   - make tool rollout clearer
+3. `apps/bingo/student.html`
+   - refine student card / live feedback / account-aware join flow
+4. new tools
+   - decide whether `Lerke Quiz` or `Ordkjede` becomes the next real tool
+
+If resuming later
+-----------------
+- Read:
+  - `docs/recentmemory.txt`
+  - `README.md`
+  - `supabase/sql/README.md`
+- Then inspect:
+  - `index.html`
+  - `apps/bingo/teacher.html`
+  - `apps/bingo/student.html`
+  - `apps/bingo-generator/index.html`

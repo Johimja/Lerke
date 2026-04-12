@@ -1,0 +1,29 @@
+<svg width="680" height="280" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stem -->
+  <path d="M193 230 Q197 195 195 165 Q194 140 200 115" stroke="#2D1A4A" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Large left leaf (dark purple) -->
+  <path d="M195 185 Q163 158 159 122 Q159 118 163 116 Q183 128 193 158 Q197 170 195 185Z" fill="#2D1A4A"/>
+
+  <!-- Right petal – mørk grønn -->
+  <path d="M199 198 Q227 180 243 158 Q247 152 245 148 Q223 158 205 178 Q199 186 199 198Z" fill="#2E7D32"/>
+
+  <!-- Center tall leaf – limegrønn -->
+  <path d="M200 165 Q197 130 207 92 Q209 86 213 86 Q219 100 213 138 Q209 154 200 165Z" fill="#A8D800"/>
+
+  <!-- LERIO tekst -->
+  <text x="252" y="195"
+    font-family="'Century Gothic', 'Futura', 'Trebuchet MS', sans-serif"
+    font-size="96"
+    font-weight="700"
+    fill="#2D1A4A"
+    letter-spacing="2">Lerio</text>
+
+  <!-- Tagline -->
+  <text x="254" y="226"
+    font-family="'Century Gothic', 'Futura', 'Trebuchet MS', sans-serif"
+    font-size="20"
+    font-weight="400"
+    fill="#2D1A4A"
+    letter-spacing="3">Læringsportalen for deg</text>
+</svg>
