@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Incremental patch: make student rejoin robust across renewed anonymous auth sessions
 --
 -- Fixes duplicate key errors on session_participants.client_token when a browser/device

@@ -269,7 +269,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 <header>
   <div class="title-row">
     <div>
-      <h1>LERIO BINGO</h1>
+      <h1>LERKE BINGO</h1>
       <p class="subtitle">Glose- og mattebingo for klasserommet</p>
     </div>
     <div class="version-badge" id="app-version-badge">v--</div>
@@ -592,7 +592,7 @@ let liveLabel='Live trekning';
 let liveCountdownTimer=null;
 let liveCountdownValue=0;
 let liveCountdownActive=false;
-const SUPABASE_CONFIG=window.LERIO_SUPABASE||{};
+const SUPABASE_CONFIG=window.LERKE_SUPABASE||window.LERIO_SUPABASE||{};
 let supabaseClient=null;
 let activeLiveSession=null;
 let teacherProfile=null;
@@ -829,7 +829,7 @@ function getSessionTitle(){
 }
 async function initSupabase(){
   if(!hasSupabaseConfig()){
-    setLiveSyncStatus('Livesynk krever window.LERIO_SUPABASE med url og anonKey.',true);
+    setLiveSyncStatus('Livesynk krever window.LERKE_SUPABASE med url og anonKey.',true);
     return;
   }
   supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{
@@ -1356,7 +1356,7 @@ function buildElevURL(){
   // Detect active panel
   const activePanel=document.querySelector('.panel.active');
   const isGlose=activePanel.id==='panel-glose';
-  const base='https://johimja.com/lerio/apps/bingo/student.html';
+  const base=new URL('student.html',window.location.href).toString();
   const sessionName=(document.getElementById('qr-session-name')?.value||'').trim();
   const rounds=isGlose
     ? Math.max(1,parseInt(document.getElementById('glose-rounds')?.value,10)||1)
@@ -1927,7 +1927,7 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
           <div class="lobby-code-label">Bli med med kode</div>
           <div class="lobby-code-value" id="lobby-code-value">------</div>
           <div class="lobby-help">Elevene kan enten skanne QR-koden eller skrive inn koden manuelt på elevsiden.</div>
-          <div class="lobby-link" id="lobby-url-label">johimja.com/lerio/apps/bingo/student.html</div>
+          <div class="lobby-link" id="lobby-url-label">apps/bingo/student.html</div>
         </div>
       </div>
       <div class="lobby-actions">
@@ -2022,7 +2022,7 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
         oninput="refreshQR()">
     </div>
     <div id="qr-canvas-wrap" style="background:#fff;border-radius:10px;padding:16px;display:inline-block;margin-bottom:14px;"></div>
-    <p id="qr-url-label" style="color:#5b8dee;font-size:0.72rem;word-break:break-all;margin-bottom:4px;padding:0 8px">johimja.com/lerio/apps/bingo/student.html</p>
+    <p id="qr-url-label" style="color:#5b8dee;font-size:0.72rem;word-break:break-all;margin-bottom:4px;padding:0 8px">apps/bingo/student.html</p>
     <p style="color:#7c8099;font-size:0.7rem;">Eleven scanner og får sitt eget tilfeldige kort</p>
   </div>
 </div>

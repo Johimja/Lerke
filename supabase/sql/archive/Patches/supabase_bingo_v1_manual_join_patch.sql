@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Incremental patch: manual student join support
 --
 -- Adds a safe RPC for fetching joinable bingo session metadata

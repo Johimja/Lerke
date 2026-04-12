@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Incremental patch: teacher approval request RPC
 
 begin;

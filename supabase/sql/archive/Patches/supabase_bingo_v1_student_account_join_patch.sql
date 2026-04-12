@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Incremental patch: link live bingo participants to student accounts when available
 --
 -- Extends join_bingo_session() so a logged-in student account can:

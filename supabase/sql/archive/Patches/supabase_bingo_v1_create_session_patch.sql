@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Incremental patch: create_bingo_session RPC
 --
 -- Use this if you have already run the main schema setup once

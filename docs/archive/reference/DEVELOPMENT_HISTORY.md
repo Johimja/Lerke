@@ -1,10 +1,10 @@
-# Lerio Development History
+# Lerke Development History
 
 This file keeps the longer phase-by-phase history that used to live in `README.md`.
 
 ## Legacy note
 
-Scope in Lerio has changed a lot from the original Bingo repository. The notes below are mainly useful as project history and implementation context, not as the primary source of truth for current usage.
+Scope in Lerke has changed a lot from the original Bingo repository. The notes below are mainly useful as project history and implementation context, not as the primary source of truth for current usage.
 
 ### Phase 1 — Reading the original file
 
@@ -82,11 +82,11 @@ Scope in Lerio has changed a lot from the original Bingo repository. The notes b
   - **Nytt kort** for a new random card
   - GRATIS cell auto-marked
 
-### Phase 10 — Lerio portal (`index.html`)
+### Phase 10 — Lerke portal (`index.html`)
 
-- New landing page at `johimja.com/lerio`
+- New landing page at `johimja.com/lerke`
 - Portal-style landing page for launching classroom tools
-- "Lerio" branding as the main portal identity
+- "Lerke" branding as the main portal identity
 - Placeholder cards for future games
 
 ### Phase 11 — Student card improvements

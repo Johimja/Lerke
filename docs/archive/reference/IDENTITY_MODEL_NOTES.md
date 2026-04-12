@@ -1,8 +1,8 @@
-# Lerio Identity Model Notes
+# Lerke Identity Model Notes
 
 ## Goal
 
-Describe how Lerio should think about identity over time without breaking privacy boundaries or coupling session behavior too tightly to permanent user identity.
+Describe how Lerke should think about identity over time without breaking privacy boundaries or coupling session behavior too tightly to permanent user identity.
 
 This note is forward-looking.
 
@@ -18,7 +18,7 @@ That means:
 
 - a student can have one temporary nickname in one session
 - a different nickname in another session
-- and still later have persistent progress in Lerio if that feature is introduced
+- and still later have persistent progress in Lerke if that feature is introduced
 
 This separation is important for:
 
@@ -75,7 +75,7 @@ Reason:
 
 ## Recommended Identity Layers
 
-Lerio should eventually think in three layers.
+Lerke should eventually think in three layers.
 
 ### 1. Auth Identity
 
@@ -97,9 +97,9 @@ This layer should stay minimal.
 
 ---
 
-### 2. Lerio Identity
+### 2. Lerke Identity
 
-This is the long-term internal identity used for progress or participation across sessions if Lerio later grows into that.
+This is the long-term internal identity used for progress or participation across sessions if Lerke later grows into that.
 
 Purpose:
 
@@ -150,7 +150,7 @@ This is good and should be preserved.
 
 ## Why This Matters For Future Progress
 
-Later, if Lerio adds progress tracking, the system can evolve like this:
+Later, if Lerke adds progress tracking, the system can evolve like this:
 
 - session nickname remains temporary
 - progress links to a more stable internal learner identity
@@ -207,7 +207,7 @@ This keeps progress separate from session nicknames.
 
 ## Practical Rule Going Forward
 
-Whenever Lerio adds a new feature, ask:
+Whenever Lerke adds a new feature, ask:
 
 "Is this value temporary for one room, or stable across time?"
 
@@ -232,5 +232,5 @@ For Bingo V1 and beyond:
 - allow nickname to change per room/session
 - reserve long-term identity for a later, more deliberate learner model
 
-This keeps Lerio flexible, safer, and easier to expand later.
+This keeps Lerke flexible, safer, and easier to expand later.
 

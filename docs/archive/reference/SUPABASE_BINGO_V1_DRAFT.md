@@ -2,7 +2,7 @@
 
 ## Goal
 
-Translate the Lerio network plan into a concrete Supabase-oriented V1 design for Bingo.
+Translate the Lerke network plan into a concrete Supabase-oriented V1 design for Bingo.
 
 This draft is intentionally narrow:
 
@@ -12,7 +12,7 @@ This draft is intentionally narrow:
 - round switching
 - draw history
 
-This draft does not try to solve all future Lerio activities yet.
+This draft does not try to solve all future Lerke activities yet.
 
 ---
 
@@ -108,7 +108,7 @@ V1 rows:
 
 - `bingo`
 
-This table is optional in a very narrow prototype, but useful if Lerio is meant to grow.
+This table is optional in a very narrow prototype, but useful if Lerke is meant to grow.
 
 ---
 
@@ -665,4 +665,4 @@ Best practical V1 direction:
 - teacher-only control updates
 - student board remains local at first
 
-This is the smallest useful backend version of Lerio Bingo.
+This is the smallest useful backend version of Lerke Bingo.

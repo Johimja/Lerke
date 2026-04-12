@@ -235,7 +235,7 @@ let joinCode=params.get('join')||'';
 let currentType=initialType;
 let currentMode=initialMode;
 const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
-const SUPABASE_CONFIG=window.LERIO_SUPABASE||{};
+const SUPABASE_CONFIG=window.LERKE_SUPABASE||window.LERIO_SUPABASE||{};
 
 let cardData=null; // {type, pairs/tables, mode}
 let markedCells=new Set();
@@ -402,7 +402,7 @@ function startStrictLivePolling(){
   strictLivePollTimer=window.setInterval(()=>refreshStrictLiveState().catch(()=>{}),2000);
 }
 async function ensureStudentSupabase(){
-  if(!hasSupabaseConfig()) throw new Error('Live join krever window.LERIO_SUPABASE med url og anonKey.');
+  if(!hasSupabaseConfig()) throw new Error('Live join krever window.LERKE_SUPABASE med url og anonKey.');
   if(!supabaseClient){
     supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{
       auth:{persistSession:true,autoRefreshToken:true}

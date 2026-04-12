@@ -1,7 +1,7 @@
 # Lerke 🎲
 
 **A classroom game portal built for Steinerskolen i Kristiansand**  
-Live at: [johimja.com/lerio](https://johimja.com/lerio)
+Current deploy path depends on the active host/domain setup.
 
 License: source-available. Commercial use, redistribution, and hosted use require prior written permission from the copyright holder. See [LICENSE](LICENSE).
 
@@ -22,7 +22,7 @@ SQL execution guidance now lives in [supabase/sql/README.md](supabase/sql/README
 ## File Structure
 
 ```text
-lerio/
+lerke/
 ├── index.html                           # Portal landing page
 ├── apps/                                # Active app entry pages grouped by tool
 ├── config/                              # Shared frontend config files
@@ -75,7 +75,7 @@ Older planning notes and project history now live under [docs/archive/reference]
 
 ### Teacher
 
-1. Go to `johimja.com/lerio` and tap **Lerke Bingo** for the live version, or **Bingo Generator** for classic card generation
+1. Open the Lerke portal root on the current host and tap **Lerke Bingo** for the live version, or **Bingo Generator** for classic card generation
 2. If needed, create a teacher account with **Lag konto**
 3. Log in and use **Be om tilgang** to create a pending teacher profile
 4. Approve the teacher in Supabase for now, then log in again
@@ -108,7 +108,8 @@ Older planning notes and project history now live under [docs/archive/reference]
 - archived launcher pages live under `docs/archive/prototypes/` and should be treated as backtracking-only
 - Live Bingo uses Supabase for auth, session state, join flow, and participant presence
 - Student accounts use the teacher-managed class + student + PIN backend track
-- `config/supabase-public-config.js` provides `window.LERIO_SUPABASE = { url, anonKey }`
+- `config/supabase-public-config.js` provides `window.LERKE_SUPABASE = { url, anonKey }`
+- `window.LERIO_SUPABASE` is still mirrored for backward compatibility with older deploys
 - `config/supabase-public-config.js` is safe to deploy because it only contains the public project URL and publishable anon key
 - Never put the Supabase `service_role` key in this repo or in frontend code
 - **localStorage** is used for saved word lists in the classic generator (browser-specific, not synced)

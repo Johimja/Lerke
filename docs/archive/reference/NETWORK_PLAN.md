@@ -1,4 +1,4 @@
-# Lerio Bingo Network Plan
+# Lerke Bingo Network Plan
 
 ## Goal
 
@@ -10,7 +10,7 @@ This document is for planning, not implementation.
 
 ## Current State
 
-Lerio Bingo currently runs fully client-side:
+Lerke Bingo currently runs fully client-side:
 
 - teacher sets up a bingo session in `bingo-laerer.html`
 - students open `bingo-elev.html` through QR

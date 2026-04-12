@@ -1,4 +1,4 @@
-# Lerio Class And Student Schema Draft
+# Lerke Class And Student Schema Draft
 
 ## Purpose
 
@@ -104,7 +104,7 @@ Suggested fields:
 
 Notes:
 
-- useful if Lerio uses Supabase Auth also for students
+- useful if Lerke uses Supabase Auth also for students
 - keeps technical auth separate from learner identity
 
 ---
@@ -176,7 +176,7 @@ Expected teacher workflow:
 
 1. Teacher creates a class
 2. Teacher adds students manually or from a bulk list
-3. Lerio generates student codes / PINs
+3. Lerke generates student codes / PINs
 4. Teacher views or prints credentials
 5. Students log in with lightweight credentials
 6. Activities can optionally store progress against `student_profiles`
@@ -187,7 +187,7 @@ Expected teacher workflow:
 
 Expected student workflow:
 
-1. Student opens Lerio
+1. Student opens Lerke
 2. Student chooses student login
 3. Student enters:
    - class code

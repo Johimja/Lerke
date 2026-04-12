@@ -1,4 +1,4 @@
--- Lerio Bingo V1
+-- Lerke Bingo V1
 -- Draft Supabase migration
 -- This is a planning-grade SQL draft, not yet production-hardened.
 
@@ -424,7 +424,7 @@ for each row execute function public.set_updated_at();
 -- =========================================================
 
 insert into public.activities (slug, name)
-values ('bingo', 'Lerio Bingo')
+values ('bingo', 'Lerke Bingo')
 on conflict (slug) do nothing;
 
 -- =========================================================

@@ -1,4 +1,4 @@
--- Lerio
+-- Lerke
 -- Student accounts / classes V1 incremental fix
 --
 -- Fixes pgcrypto function lookup inside security-definer RPCs that use:

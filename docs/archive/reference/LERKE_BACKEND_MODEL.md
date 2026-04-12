@@ -1,18 +1,18 @@
-# Lerio Backend Model
+# Lerke Backend Model
 
 ## Goal
 
-Define a shared backend model for Lerio so multiple learning activities can use the same core platform.
+Define a shared backend model for Lerke so multiple learning activities can use the same core platform.
 
 This is a product and architecture draft, not a final database schema.
 
-The purpose is to avoid building Bingo as a one-off backend and then having to rebuild everything when Lerio grows.
+The purpose is to avoid building Bingo as a one-off backend and then having to rebuild everything when Lerke grows.
 
 ---
 
 ## Core Idea
 
-Lerio should have:
+Lerke should have:
 
 - a shared backend foundation
 - shared session and participant logic
@@ -44,7 +44,7 @@ Why:
 
 ## Shared Building Blocks
 
-These are the core concepts Lerio should reuse across activities.
+These are the core concepts Lerke should reuse across activities.
 
 ### `activities`
 
@@ -407,7 +407,7 @@ Student can:
 
 ## Design Principle: Generic Core, Specific Payloads
 
-The best model for Lerio is:
+The best model for Lerke is:
 
 - generic shared tables
 - activity-specific payload content
@@ -446,7 +446,7 @@ The right approach is:
 
 ## Practical Recommendation
 
-For Lerio as a platform:
+For Lerke as a platform:
 
 - use Supabase as the shared backend
 - design core tables around sessions, participants, state, events, and artifacts

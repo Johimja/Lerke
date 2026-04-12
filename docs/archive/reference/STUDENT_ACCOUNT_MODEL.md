@@ -1,8 +1,8 @@
-# Lerio Student Account Model
+# Lerke Student Account Model
 
 ## Purpose
 
-This note describes the chosen next-step identity model for Lerio if the project moves beyond session-only live play and starts needing stable learner identity, progression data, and teacher-managed class structure.
+This note describes the chosen next-step identity model for Lerke if the project moves beyond session-only live play and starts needing stable learner identity, progression data, and teacher-managed class structure.
 
 The current anonymous Bingo join model is acceptable for fast classroom live sessions, but it is not strong enough as the long-term identity layer for persistent learner progress.
 
@@ -51,7 +51,7 @@ This avoids requiring personal email accounts for younger students while still g
 
 ## Identity Ladder
 
-Lerio should likely support three identity levels over time:
+Lerke should likely support three identity levels over time:
 
 ### 1. Anonymous Session Identity
 
@@ -98,7 +98,7 @@ This should not be the default assumption for the next step.
 
 ---
 
-## Proposed Lerio Structure
+## Proposed Lerke Structure
 
 Likely future model:
 
@@ -112,14 +112,14 @@ Conceptually:
 
 - one teacher can manage one or more classes
 - one class contains many students
-- one student has a stable Lerio identity
+- one student has a stable Lerke identity
 - sessions and results can reference the student identity when needed
 
 ---
 
 ## Suggested Student Login Models
 
-There are several viable simple login patterns in general, but Lerio should choose one concrete first model.
+There are several viable simple login patterns in general, but Lerke should choose one concrete first model.
 
 ### Chosen First Model: Class Code + Student Code + PIN
 
@@ -144,7 +144,7 @@ Cons:
 
 ## Recommended Next Practical Model
 
-For Lerio, the chosen next-step model is:
+For Lerke, the chosen next-step model is:
 
 - teacher creates class
 - teacher creates student accounts
@@ -196,7 +196,7 @@ Important separation:
 
 Those should not be collapsed into one thing.
 
-That means Lerio should keep separate concepts for:
+That means Lerke should keep separate concepts for:
 
 - who is logged in
 - which learner this is

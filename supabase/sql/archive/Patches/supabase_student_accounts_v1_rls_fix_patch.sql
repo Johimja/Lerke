@@ -1,4 +1,4 @@
--- Lerio
+-- Lerke
 -- Student accounts / classes V1 incremental fix
 --
 -- Fixes recursive RLS evaluation on public.classes that caused:

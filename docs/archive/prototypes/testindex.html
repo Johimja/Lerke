@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lerio - Din Læringsportal</title>
+    <title>Lerke - Din Læringsportal</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons via CDN -->
@@ -69,7 +69,7 @@
                     </div>
                 </div>
                 <div id="logo-text" class="ml-1 flex flex-col text-[#2D1B4E]">
-                    <span class="font-black text-2xl tracking-tight leading-none">Lerio</span>
+                    <span class="font-black text-2xl tracking-tight leading-none">Lerke</span>
                     <span id="portal-subtext" class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Portal</span>
                 </div>
             </div>
@@ -170,7 +170,7 @@
                         <div class="w-16 h-16 bg-[#2D1B4E] rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
                             <i data-lucide="dices" class="text-white w-8 h-8"></i>
                         </div>
-                        <h3 class="font-black text-[#2D1B4E] text-2xl mb-3">Lerio Bingo</h3>
+                        <h3 class="font-black text-[#2D1B4E] text-2xl mb-3">Lerke Bingo</h3>
                         <p class="text-gray-500 mb-6 leading-relaxed">Glosebingo og mattebingo med live sessions og QR-koder for hele klassen.</p>
                         <div class="flex items-center text-[#8BC34A] font-bold">
                             Åpne Bingo <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
@@ -181,7 +181,7 @@
                         <div class="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center mb-8">
                             <i data-lucide="help-circle" class="text-gray-400 w-8 h-8"></i>
                         </div>
-                        <h3 class="font-black text-gray-400 text-2xl mb-3">Lerio Quiz</h3>
+                        <h3 class="font-black text-gray-400 text-2xl mb-3">Lerke Quiz</h3>
                         <p class="text-gray-400">Kommer snart: Lag dine egne quizer og test elevene live.</p>
                     </div>
 
@@ -340,7 +340,7 @@
                     </div>
                     <div class="pt-6 border-t border-gray-100 flex justify-between">
                         <button onclick="portalSignOut()" class="flex items-center gap-2 text-red-500 font-bold">
-                            <i data-lucide="log-out" class="w-5 h-5"></i> Logg ut av Lerio
+                            <i data-lucide="log-out" class="w-5 h-5"></i> Logg ut av Lerke
                         </button>
                         <button onclick="showView('home')" class="px-6 py-2 bg-gray-100 text-[#2D1B4E] rounded-xl font-bold">Tilbake</button>
                     </div>
@@ -353,9 +353,9 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="flex items-center gap-2 opacity-50">
                 <div class="w-8 h-8 bg-[#2D1B4E] rounded-lg"></div>
-                <span class="font-black text-[#2D1B4E] text-2xl">Lerio</span>
+                <span class="font-black text-[#2D1B4E] text-2xl">Lerke</span>
             </div>
-            <p class="text-sm text-gray-400 text-center">© 2026 Lerio – Læringsportalen for deg. Utviklet for moderne klasserom.</p>
+            <p class="text-sm text-gray-400 text-center">© 2026 Lerke – Læringsportalen for deg. Utviklet for moderne klasserom.</p>
             <div class="flex gap-8">
                 <a href="#" class="text-xs font-bold text-gray-400 hover:text-[#2D1B4E]">Vilkår</a>
                 <a href="#" class="text-xs font-bold text-gray-400 hover:text-[#2D1B4E]">Personvern</a>
@@ -422,7 +422,7 @@
         }
 
         // --- SUPABASE LOGIKK ---
-        const SUPABASE_CONFIG = window.LERIO_SUPABASE || {};
+        const SUPABASE_CONFIG = window.LERKE_SUPABASE || {};
         let supabaseClient = null;
         let teacherProfile = null;
         let currentStudentProfile = null;
