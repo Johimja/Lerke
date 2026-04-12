@@ -55,11 +55,13 @@ html{scroll-behavior:smooth}
 .site-brand{
   display:flex;
   align-items:center;
+  gap:10px;
   text-decoration:none;
   color:var(--lerke-plum);
   transition:opacity .18s
 }
 .site-brand-logo{height:38px;width:auto;display:block}
+.site-version-badge{padding:6px 9px;border-radius:999px;border:1px solid rgba(67,32,92,.14);background:rgba(255,250,242,.82);color:var(--lerke-plum-2);font-family:'Raleway',sans-serif;font-weight:900;font-size:.64rem;letter-spacing:.9px;text-transform:uppercase}
 .site-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .site-nav button{
   text-decoration:none;
@@ -298,6 +300,21 @@ html{scroll-behavior:smooth}
 .auth-status{margin-top:10px;font-size:.8rem;color:#675973;line-height:1.5;min-height:2.4em}
 .auth-status.error{color:#ef8f8f}
 .auth-note{margin-top:10px;font-size:.76rem;color:var(--lerke-text-soft);line-height:1.55}
+.student-login-form{display:flex;flex-direction:column;gap:0}
+.student-login-form.hidden{display:none}
+.student-session-card{
+  display:none;
+  margin-top:10px;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(31,147,71,.18);
+  background:linear-gradient(135deg,rgba(125,182,58,.12),rgba(31,147,71,.08));
+}
+.student-session-card.show{display:block}
+.student-session-kicker{font-family:'Raleway',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:var(--lerke-green-deep);margin-bottom:6px}
+.student-session-name{font-family:'Raleway',sans-serif;font-size:1.1rem;font-weight:900;color:var(--lerke-plum);margin-bottom:4px}
+.student-session-meta{font-size:.84rem;color:#5f5263;line-height:1.5}
+.student-session-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .class-admin{
   display:none;
   width:100%;
@@ -406,6 +423,7 @@ html{scroll-behavior:smooth}
   <div class="site-header-inner">
     <a class="site-brand" href="#top">
       <img class="site-brand-logo" src="media/lerke_logo.svg" alt="Lerke">
+      <span class="site-version-badge" id="portal-version-badge">v--</span>
     </a>
     <nav class="site-nav">
       <button id="nav-overview" type="button" onclick="setWorkspaceView('overview')">Portal</button>
@@ -609,13 +627,25 @@ html{scroll-behavior:smooth}
             <div class="auth-kicker student">Elevinnlogging</div>
             <h3>Elevportal</h3>
             <p>Elevportalen er for elevkontoer med klassekode, elevkode og PIN. Den er separat fra anonym Bingo-join og er laget for varig identitet og senere progresjon.</p>
-            <div class="auth-row">
-              <input id="student-class-code" type="text" placeholder="Klassekode" maxlength="10">
-              <input id="student-code" type="text" placeholder="Elevkode" maxlength="10">
-              <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
+            <div class="student-login-form" id="student-login-form">
+              <div class="auth-row">
+                <input id="student-class-code" type="text" placeholder="Klassekode" maxlength="10">
+                <input id="student-code" type="text" placeholder="Elevkode" maxlength="10">
+                <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
+              </div>
+              <div class="auth-row">
+                <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn elev</button>
+              </div>
+            </div>
+            <div class="student-session-card" id="student-session-card">
+              <div class="student-session-kicker">Elev innlogget</div>
+              <div class="student-session-name" id="student-session-name">-</div>
+              <div class="student-session-meta" id="student-session-meta">-</div>
+              <div class="student-session-actions">
+                <button class="auth-btn green" type="button" onclick="launchBingo()">Åpne Bingo</button>
+              </div>
             </div>
             <div class="auth-row">
-              <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn elev</button>
               <button class="auth-btn" onclick="portalSignOut()">Logg ut</button>
             </div>
             <div class="auth-status" id="student-auth-status">Ingen elevkonto aktiv.</div>
@@ -687,6 +717,7 @@ html{scroll-behavior:smooth}
 <script src="config/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+const PORTAL_VERSION='2026.04.12.4';
 const SUPABASE_CONFIG=window.LERKE_SUPABASE||window.LERIO_SUPABASE||{};
 let supabaseClient=null;
 let teacherProfile=null;
@@ -825,6 +856,29 @@ function formatStudentStatus(){
   if(!currentStudentProfile) return 'Ingen elevkonto aktiv.';
   return `Elev innlogget: ${currentStudentProfile.display_name} · ${currentStudentProfile.class_name} (${currentStudentProfile.class_code})`;
 }
+function renderStudentPortalState(){
+  const formEl=document.getElementById('student-login-form');
+  const sessionEl=document.getElementById('student-session-card');
+  const nameEl=document.getElementById('student-session-name');
+  const metaEl=document.getElementById('student-session-meta');
+  const classInput=document.getElementById('student-class-code');
+  const codeInput=document.getElementById('student-code');
+  const pinInput=document.getElementById('student-pin');
+  const loggedIn=!!currentStudentProfile;
+  if(formEl) formEl.classList.toggle('hidden',loggedIn);
+  if(sessionEl) sessionEl.classList.toggle('show',loggedIn);
+  if(nameEl) nameEl.textContent=loggedIn?(currentStudentProfile.display_name||'Elev'):'-';
+  if(metaEl){
+    metaEl.textContent=loggedIn
+      ? `${currentStudentProfile.class_name||'Klasse'} (${currentStudentProfile.class_code||'-'})${currentStudentProfile.student_code?` · Elevkode ${currentStudentProfile.student_code}`:''}`
+      : '-';
+  }
+  if(loggedIn){
+    if(classInput) classInput.value=currentStudentProfile.class_code||'';
+    if(codeInput) codeInput.value=currentStudentProfile.student_code||'';
+    if(pinInput) pinInput.value='';
+  }
+}
 
 function renderPortalSession(session){
   const textEl=document.getElementById('portal-session-text');
@@ -835,13 +889,19 @@ function renderPortalSession(session){
     chips.push(`<span class="session-chip teacher">${teacherProfile.is_approved?'Lærer godkjent':'Lærer venter'}</span>`);
   }
   if(currentStudentProfile){
-    chips.push('<span class="session-chip student">Elevkonto aktiv</span>');
+    chips.push(`<span class="session-chip student">Elev: ${escapeHtml(currentStudentProfile.display_name||'Aktiv')}</span>`);
   }
   if(!session){
     textEl.innerHTML='<strong>Portalstatus:</strong> Ingen aktiv økt.';
   } else {
     const email=session.user?.email||'anonym økt';
-    textEl.innerHTML=`<strong>Portalstatus:</strong> Aktiv økt som <strong>${email}</strong>.`;
+    if(currentStudentProfile){
+      textEl.innerHTML=`<strong>Portalstatus:</strong> Elev innlogget som <strong>${escapeHtml(currentStudentProfile.display_name||'Elev')}</strong> i <strong>${escapeHtml(currentStudentProfile.class_name||'klasse')}</strong>.`;
+    } else if(teacherProfile?.is_teacher){
+      textEl.innerHTML=`<strong>Portalstatus:</strong> Lærerøkt aktiv som <strong>${escapeHtml(email)}</strong>.`;
+    } else {
+      textEl.innerHTML=`<strong>Portalstatus:</strong> Aktiv økt som <strong>${escapeHtml(email)}</strong>.`;
+    }
   }
   actionsEl.innerHTML=chips.join('');
 }
@@ -1050,6 +1110,7 @@ async function refreshPortalAuthState(){
 
   setStatus('teacher-auth-status',formatTeacherStatus(),false);
   setStatus('student-auth-status',formatStudentStatus(),false);
+  renderStudentPortalState();
   renderPortalSession(session);
   if(currentStudentProfile&&!teacherProfile?.is_approved){
     setWorkspaceView('student',{scroll:false});
@@ -1143,6 +1204,8 @@ async function portalSignOut(){
 
 window.addEventListener('scroll',syncHeaderState,{passive:true});
 syncHeaderState();
+const portalVersionBadge=document.getElementById('portal-version-badge');
+if(portalVersionBadge) portalVersionBadge.textContent=`v${PORTAL_VERSION}`;
 setWorkspaceView('overview',{scroll:false});
 initSupabase();
 </script>
