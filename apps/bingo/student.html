@@ -726,14 +726,22 @@ function updateStrictSessionPanel(payload){
 
 async function submitStrictAnswer(idx){
   if(!supabaseClient||!isStrictLiveSession()||!currentCells[idx]) return;
+  const grid=document.getElementById('bingo-grid');
+  const cellEl=grid?.children[idx];
+  if(cellEl) cellEl.classList.add('marked');
   try{
-    await supabaseClient.rpc('submit_bingo_answer',{
+    const {data,error}=await supabaseClient.rpc('submit_bingo_answer',{
       p_session_id:liveSessionId,
       p_selected_cell_index:idx,
       p_selected_value:currentCells[idx].label
-    }).then(({error})=>{ if(error) throw error; });
+    });
+    if(error) throw error;
+    if(data?.marked_cells) applyMarkedCellsToGrid(data.marked_cells);
+    if(data?.response_outcome==='correct') setJoinNote('Riktig!',false);
+    else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
     await refreshStrictLiveState();
   } catch(error){
+    if(cellEl) cellEl.classList.remove('marked');
     setJoinNote(error.message||String(error),true);
   }
 }
