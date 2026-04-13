@@ -4,9 +4,15 @@ Lerke recent memory
 Purpose
 -------
 - Short handoff note only.
-- Read this first, then `README.md`, then `supabase/sql/README.md`.
+- Read this first, then `docs/shared_notes.md` (decisions, session log, roadmap), then `README.md`.
 - Treat `docs/archive/` as reference-only and not part of normal working memory.
 - Only open archived files when backtracking or when a current file explicitly depends on them.
+
+Shared session log
+------------------
+- `docs/shared_notes.md` — living collaborative log for Atle + Claude
+  - session history, decisions made, open questions, full roadmap with checkboxes
+  - update this at the start/end of every work session
 
 Active frontend
 ---------------
@@ -57,6 +63,8 @@ Canonical SQL
 -------------
 - `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`
 - `supabase/sql/supabase_student_accounts_v1_core_patch.sql`
+- `supabase/sql/supabase_bingo_v2_strict_live_patch.sql`
+- `supabase/sql/supabase_bingo_v3_join_stability_patch.sql` ← NOT YET APPLIED to live DB
 - Historical SQL is in `supabase/sql/archive/`
 
 Archive layout
