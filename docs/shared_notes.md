@@ -75,6 +75,21 @@ Both `get_joinable_bingo_session` and `join_bingo_session` used `LIMIT 1` withou
 
 ---
 
+### 2026-04-13 — Session 5: Student card click feedback + countdown/history UI fixes
+
+**What was fixed this session:**
+
+- `apps/bingo/student.html`: `submitStrictAnswer` now uses `{data,error}` from `submit_bingo_answer` RPC return value. Cell is highlighted immediately on click (optimistic), then `applyMarkedCellsToGrid(data.marked_cells)` sets authoritative state from DB, and outcome ("Riktig!" / "Feil.") is shown instantly without waiting for next poll. On RPC error the optimistic highlight is reverted.
+- `apps/bingo/teacher.html`: Removed `hidePromptDuringCountdown` logic — the current draw word is now always visible during the countdown window (previously the large countdown overlay blanked the word; the timer label `${remainingSeconds}s` already shows the seconds so the overlay was redundant). Fixed both strict and non-strict render paths.
+- `apps/bingo/teacher.html`: Trekkhistorikk now shows newest draw at top — reversed the history array rendering in both `renderStrictTeacherLiveMode` and `renderLiveMode`, keeping correct draw numbers (`Trekk N`).
+
+**Next session should start with:**
+- Teacher opens draw → student sees the English word immediately while countdown runs → can find and click the Norwegian word on their card
+- Card highlights immediately on click, "Riktig!" / "Feil." shows without delay
+- Trekkhistorikk shows most recent draw at top, not bottom
+
+---
+
 ### 2026-04-13 — Session 4: Infinite recursion in RLS helper functions + draw timer too short
 
 **Root cause confirmed (DB test showed "stack depth limit exceeded"):**

@@ -1642,20 +1642,15 @@ function renderLiveMode(){
   document.getElementById('live-left-label').textContent=String(Math.max(total-drawn,0));
   document.getElementById('live-timer-label').textContent=`${getLiveCountdownSeconds()} sek`;
   const currentEl=document.getElementById('live-current');
-  const hidePromptDuringCountdown=liveCountdownActive&&liveCountdownValue>0;
   const answerKey=liveCurrent?`local:${liveRoundIndex}:${liveHistory.length}:${liveCurrent.prompt}`:'';
   setTeacherAnswerContext(answerKey);
-  currentEl.textContent=hidePromptDuringCountdown
-    ? ''
-    : (liveCurrent?liveCurrent.prompt:'Klar til første trekning');
-  currentEl.classList.toggle('live-empty',!hidePromptDuringCountdown&&!liveCurrent);
+  currentEl.textContent=liveCurrent?liveCurrent.prompt:'Klar til første trekning';
+  currentEl.classList.toggle('live-empty',!liveCurrent);
   const answerEl=document.getElementById('live-answer');
-  answerEl.classList.toggle('revealable',!hidePromptDuringCountdown&&!!liveCurrent);
-  answerEl.textContent=hidePromptDuringCountdown
-    ? ''
-    : (liveCurrent
-      ? (teacherAnswerVisible?liveCurrent.answer:'Klikk for å vise fasit')
-      : 'Trykk på "Neste" for å vise første trekk.');
+  answerEl.classList.toggle('revealable',!!liveCurrent);
+  answerEl.textContent=liveCurrent
+    ? (teacherAnswerVisible?liveCurrent.answer:'Klikk for å vise fasit')
+    : 'Trykk på "Neste" for å vise første trekk.';
   document.getElementById('live-prev-round').disabled=liveRoundIndex===0;
   document.getElementById('live-next-round').disabled=liveRoundIndex>=liveRounds.length-1;
   document.getElementById('live-next-draw').disabled=drawn>=total||liveCountdownActive;
@@ -1663,11 +1658,11 @@ function renderLiveMode(){
   const resetBtn=document.querySelector('#live-modal .live-action.secondary');
   if(resetBtn) resetBtn.textContent='Start runden på nytt';
   const countdownEl=document.getElementById('live-countdown');
-  countdownEl.textContent=String(liveCountdownValue||'');
-  countdownEl.classList.toggle('show',liveCountdownActive);
+  countdownEl.textContent='';
+  countdownEl.classList.remove('show');
   const historyEl=document.getElementById('live-history');
   historyEl.innerHTML=liveHistory.length
-    ? liveHistory.map((item,idx)=>`<div class="live-history-item"><div class="num">Trekk ${idx+1}</div><div class="main">${escapeHtml(item.prompt)}</div><div class="sub">Fasit skjult</div></div>`).join('')
+    ? [...liveHistory].reverse().map((item,i)=>`<div class="live-history-item"><div class="num">Trekk ${liveHistory.length-i}</div><div class="main">${escapeHtml(item.prompt)}</div><div class="sub">Fasit skjult</div></div>`).join('')
     : '<div class="live-history-item"><div class="main">Ingen trekk ennå</div><div class="sub">Historikken fylles opp etter hvert som du trekker.</div></div>';
 }
 function phaseLabel(phase){
@@ -1694,7 +1689,6 @@ function renderStrictTeacherLiveMode(){
   const history=buildTeacherHistory(roundNumber,drawIndex);
   const currentEl=document.getElementById('live-current');
   const currentPrompt=currentDraw?.prompt||'Venter på at læreren åpner neste trekk';
-  const hidePromptDuringCountdown=state.phase==='draw_open'&&remainingSeconds>0;
   const answerKey=currentDraw?`strict:${roundNumber}:${drawIndex}:${currentDraw.prompt}`:'';
   setTeacherAnswerContext(answerKey);
   const responseText=state.phase==='draw_open'
@@ -1721,17 +1715,15 @@ function renderStrictTeacherLiveMode(){
   document.getElementById('live-progress-label').textContent=`${drawIndex} / ${totalDraws||0}`;
   document.getElementById('live-left-label').textContent=`${summary.total_answers||0} / ${summary.participant_count||0}`;
   document.getElementById('live-timer-label').textContent=state.phase==='draw_open'?`${remainingSeconds}s`:phaseLabel(state.phase);
-  currentEl.textContent=hidePromptDuringCountdown?'':currentPrompt;
-  currentEl.classList.toggle('live-empty',!hidePromptDuringCountdown&&!currentDraw?.prompt);
+  currentEl.textContent=currentPrompt;
+  currentEl.classList.toggle('live-empty',!currentDraw?.prompt);
   const answerEl=document.getElementById('live-answer');
-  answerEl.classList.toggle('revealable',!hidePromptDuringCountdown&&!!currentDraw);
-  answerEl.textContent=hidePromptDuringCountdown
-    ? ''
-    : (currentDraw
-      ? (teacherAnswerVisible
-        ? `${currentDraw.teacher_answer||currentDraw.answer||''}${currentDraw.detail?` · ${currentDraw.detail}`:''}`
-        : 'Klikk for å vise fasit')
-      : responseText);
+  answerEl.classList.toggle('revealable',!!currentDraw);
+  answerEl.textContent=currentDraw
+    ? (teacherAnswerVisible
+      ? `${currentDraw.teacher_answer||currentDraw.answer||''}${currentDraw.detail?` · ${currentDraw.detail}`:''}`
+      : 'Klikk for å vise fasit')
+    : responseText;
   document.getElementById('live-prev-round').disabled=roundNumber<=1||state.phase==='draw_open';
   document.getElementById('live-next-round').disabled=roundNumber>=roundCount||state.phase==='draw_open';
   document.getElementById('live-next-draw').disabled=primaryDisabled;
@@ -1739,11 +1731,11 @@ function renderStrictTeacherLiveMode(){
   const resetBtn=document.querySelector('#live-modal .live-action.secondary');
   if(resetBtn) resetBtn.textContent=state.phase==='round_complete'?'Start denne runden på nytt':'Nullstill runden';
   const countdownEl=document.getElementById('live-countdown');
-  countdownEl.textContent=state.phase==='draw_open'&&remainingSeconds>0?String(remainingSeconds):'';
-  countdownEl.classList.toggle('show',state.phase==='draw_open'&&remainingSeconds>0);
+  countdownEl.textContent='';
+  countdownEl.classList.remove('show');
   const historyEl=document.getElementById('live-history');
   historyEl.innerHTML=history.length
-    ? history.map((item,idx)=>`<div class="live-history-item"><div class="num">Trekk ${idx+1}</div><div class="main">${escapeHtml(item.prompt)}</div><div class="sub">Fasit skjult</div></div>`).join('')
+    ? [...history].reverse().map((item,i)=>`<div class="live-history-item"><div class="num">Trekk ${history.length-i}</div><div class="main">${escapeHtml(item.prompt)}</div><div class="sub">Fasit skjult</div></div>`).join('')
     : '<div class="live-history-item"><div class="main">Ingen trekk ennå</div><div class="sub">Åpne første trekk når klassen er klar.</div></div>';
 }
 function revealNextLiveDraw(){
