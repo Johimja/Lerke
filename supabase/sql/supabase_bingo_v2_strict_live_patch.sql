@@ -17,6 +17,8 @@ create or replace function public.is_participant_owner(target_participant_id uui
 returns boolean
 language sql
 stable
+security definer
+set search_path = public
 as $$
   select exists (
     select 1

@@ -75,6 +75,42 @@ Both `get_joinable_bingo_session` and `join_bingo_session` used `LIMIT 1` withou
 
 ---
 
+### 2026-04-13 — Session 4: Infinite recursion in RLS helper functions + draw timer too short
+
+**Root cause confirmed (DB test showed "stack depth limit exceeded"):**
+
+All four RLS helper functions (`is_session_teacher`, `is_session_participant`, `is_participant_owner`, `is_teacher`) were `SECURITY INVOKER`. When the teacher's client runs a direct query on `session_participants`:
+1. PostgreSQL evaluates the `session_participants_teacher_select` RLS policy
+2. The policy calls `is_session_teacher(session_id)`
+3. `is_session_teacher` queries `sessions` (which has RLS)
+4. The `sessions` RLS policy calls `is_session_teacher(id)` → **infinite recursion**
+5. PostgreSQL hits stack depth limit, silently treats the policy as FALSE → 0 rows returned
+
+This is why `refreshTeacherParticipantProgress()` always showed "Ingen elever er inne ennå" even when the DB confirmed participants existed (visible via security-definer RPCs which run as `postgres` and bypass this recursion).
+
+**What was fixed:**
+
+- **DB migration applied — `fix_rls_helper_functions_security_definer` ✅**
+  - All 4 helper functions now have `SECURITY DEFINER` + `SET search_path = public`
+  - SECURITY DEFINER means they run as `postgres` → bypass RLS on inner queries → no recursion
+  - Verified: `is_session_teacher` now returns `true` and `participants_visible = 1` for teacher in auth context
+- `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`: Updated `is_session_teacher`, `is_teacher`, `is_session_participant` to add SECURITY DEFINER
+- `supabase/sql/supabase_bingo_v2_strict_live_patch.sql`: Updated `is_participant_owner` to add SECURITY DEFINER
+
+**Draw timer default was 3 seconds — way too short:**
+- Session settings showed `draw_duration_seconds: 3`. The draw window opened and closed before students could respond.
+- `teacher.html` input changed: default `3` → `15`, min `0` → `5`, max `20` → `60`
+- `getLiveCountdownSeconds()` updated to enforce `Math.max(5, Math.min(60, ...))`
+
+**Next session should start with:**
+- **Hard-refresh both teacher and student browsers**
+- Teacher creates a FRESH session (new settings with 15s timer) → opens lobby
+- Student joins → should appear in Elevoversikt immediately (RLS recursion fixed)
+- Teacher opens a draw → student should have 15 seconds to click a cell
+- Student clicking should register as an answer and highlight the cell
+
+---
+
 ### 2026-04-13 — Session 2: Live draw diagnosis + frontend fixes
 
 **What we found (full diagnosis via direct Supabase access):**

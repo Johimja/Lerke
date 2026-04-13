@@ -569,10 +569,10 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="field-group">
           <label>Svartid per trekk</label>
           <div class="rounds-row">
-            <input type="number" id="live-seconds-input" value="3" min="0" max="20">
-            <span style="color:var(--muted);font-size:0.82rem">sekunder</span>
+            <input type="number" id="live-seconds-input" value="15" min="5" max="60">
+            <span style="color:var(--muted);font-size:0.82rem">sekunder (5–60)</span>
           </div>
-          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Brukes som svarvindu mens trekket er åpent for elevene.</div>
+          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Svarvindu per trekk. Minimum 5 sek — 15 sek er anbefalt for glosespill.</div>
         </div>
       </div>
     </div>
@@ -1163,7 +1163,7 @@ function escapeHtml(str){
 }
 function getLiveCountdownSeconds(){
   const input=document.getElementById('live-seconds-input');
-  return Math.max(0,Math.min(20,parseInt(input?.value,10)||0));
+  return Math.max(5,Math.min(60,parseInt(input?.value,10)||15));
 }
 function playTone(freq,duration=120,volume=.025){
   const AudioCtx=window.AudioContext||window.webkitAudioContext;
@@ -1346,7 +1346,7 @@ async function prepareLiveSession() {
 
 function updateAllLiveSeconds(val) {
   const input = document.getElementById('live-seconds-input');
-  if (input) input.value = Math.max(0, Math.min(20, parseInt(val, 10) || 0));
+  if (input) input.value = Math.max(5, Math.min(60, parseInt(val, 10) || 15));
 }
 
 // ===== MATTE SETUP =====
