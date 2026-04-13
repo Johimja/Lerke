@@ -630,6 +630,13 @@ let teacherParticipantProgress=[];
 let teacherAnswerRevealKey='';
 let teacherAnswerVisible=false;
 let teacherBingoCelebrationKey='';
+const BINGO_JINGLES=[
+  '../../media/bingow1.mp3',
+  '../../media/bingow2.mp3',
+  '../../media/bingow3.mp3',
+  '../../media/bingow4.mp3'
+];
+let currentBingoJingle=null;
 let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
@@ -1113,6 +1120,22 @@ function renderTeacherParticipantProgress(){
     showTeacherBingoCelebration(winners);
   }
 }
+function playBingoJingle(){
+  if(currentBingoJingle){
+    currentBingoJingle.pause();
+    currentBingoJingle.currentTime=0;
+  }
+  const src=BINGO_JINGLES[Math.floor(Math.random()*BINGO_JINGLES.length)];
+  currentBingoJingle=new Audio(src);
+  currentBingoJingle.play().catch(()=>{});
+}
+function stopBingoJingle(){
+  if(currentBingoJingle){
+    currentBingoJingle.pause();
+    currentBingoJingle.currentTime=0;
+    currentBingoJingle=null;
+  }
+}
 function launchConfetti(){
   const wrap=document.getElementById('confetti-wrap');
   if(!wrap) return;
@@ -1144,9 +1167,11 @@ function showTeacherBingoCelebration(winners){
   const roundCount=getTeacherLiveRoundCount();
   if(nextBtn) nextBtn.disabled=roundNumber>=roundCount;
   launchConfetti();
+  playBingoJingle();
   overlay.classList.add('show');
 }
 function dismissTeacherBingo(goNextRound){
+  stopBingoJingle();
   document.getElementById('teacher-bingo-overlay')?.classList.remove('show');
   if(goNextRound) nextLiveDraw();
 }
