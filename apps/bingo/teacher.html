@@ -607,6 +607,7 @@ let lobbyAudioMuted=false;
 let teacherLiveState=null;
 let teacherLivePollTimer=null;
 let teacherLiveRenderTimer=null;
+let teacherPollErrorCount=0;
 let teacherAutoLockInFlight=false;
 let teacherParticipantProgress=[];
 let teacherAnswerRevealKey='';
@@ -1001,7 +1002,9 @@ async function refreshTeacherLiveState(options={}){
     const {data,error}=await supabaseClient.rpc('get_bingo_live_state',{p_session_id:activeLiveSession.id});
     if(error) throw error;
     teacherLiveState=Array.isArray(data)?data[0]:data;
-    await refreshTeacherParticipantProgress({silent:true}).catch(()=>{});
+    await refreshTeacherParticipantProgress({silent:true}).catch(e=>{
+      setLiveSyncStatus(`Elevoversikt feilet: ${e?.message||e}`,true);
+    });
     renderLiveMode();
     await maybeAutoLockTeacherDraw();
     return teacherLiveState;
@@ -1108,8 +1111,19 @@ function stopTeacherLivePolling(){
 }
 function startTeacherLivePolling(){
   stopTeacherLivePolling();
+  teacherPollErrorCount=0;
   teacherLivePollTimer=setInterval(()=>{
-    refreshTeacherLiveState({silent:true}).catch(()=>{});
+    refreshTeacherLiveState({silent:true}).then(()=>{
+      if(teacherPollErrorCount>0){
+        teacherPollErrorCount=0;
+        setLiveSyncStatus('Livesynk gjenopprettet.',false);
+      }
+    }).catch(e=>{
+      teacherPollErrorCount++;
+      if(teacherPollErrorCount>=3){
+        setLiveSyncStatus(`Livesynk feilet (${teacherPollErrorCount}): ${e?.message||e}`,true);
+      }
+    });
   },1500);
   teacherLiveRenderTimer=setInterval(()=>{
     if(document.getElementById('live-modal')?.classList.contains('show')){

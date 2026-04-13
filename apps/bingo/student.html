@@ -250,6 +250,7 @@ let currentStudentProfile=null;
 let strictLiveMode=false;
 let strictLiveState=null;
 let strictLivePollTimer=null;
+let strictLivePollErrorCount=0;
 let currentBoardRoundNumber=0;
 let currentBoardSignature='';
 let currentResponseKey='';
@@ -399,7 +400,21 @@ function stopStrictLivePolling(){
 function startStrictLivePolling(){
   stopStrictLivePolling();
   if(!isStrictLiveSession()) return;
-  strictLivePollTimer=window.setInterval(()=>refreshStrictLiveState().catch(()=>{}),2000);
+  strictLivePollErrorCount=0;
+  strictLivePollTimer=window.setInterval(async()=>{
+    try{
+      await refreshStrictLiveState();
+      if(strictLivePollErrorCount>0){
+        strictLivePollErrorCount=0;
+        setJoinNote('Kontakten er gjenopprettet.',false);
+      }
+    }catch(e){
+      strictLivePollErrorCount++;
+      if(strictLivePollErrorCount>=3){
+        setJoinNote(`Mistet kontakten med liveøkten. Prøver igjen… (${e?.message||e})`,true);
+      }
+    }
+  },2000);
 }
 async function ensureStudentSupabase(){
   if(!hasSupabaseConfig()) throw new Error('Live join krever window.LERKE_SUPABASE med url og anonKey.');
@@ -503,7 +518,9 @@ async function initSupabaseJoin(){
     setJoinNote(`Koblet til liveøkten som ${participantRecord.display_name}.`,false);
     updateIdentityPanel();
     if(touchTimer) window.clearInterval(touchTimer);
-    touchTimer=window.setInterval(()=>touchParticipant().catch(()=>{}),60000);
+    touchTimer=window.setInterval(()=>touchParticipant().catch(e=>{
+      setJoinNote(`Tilkoblingsfeil: ${e?.message||e}`,true);
+    }),60000);
     if(isStrictLiveSession()){
       setStrictControlsDisabled(true);
       await ensureStrictBoardForCurrentRound();

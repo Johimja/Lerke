@@ -43,6 +43,52 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ## Session Log
 
+### 2026-04-13 — Session 2: Live draw diagnosis + frontend fixes
+
+**What we found (full diagnosis):**
+
+#### Root Cause 1: V3 patch NOT applied — CRITICAL, breaks returning students
+- The live DB still has the global constraint `session_participants_client_token_key` (unique client_token across ALL sessions)
+- V1's `join_bingo_session` does a plain `INSERT` — no `ON CONFLICT`
+- A student who joined session A with `client_token = "abc"` → tries to join session B (new day, new code) → `INSERT` fails with unique constraint violation
+- `isRetryableJoinError` in `student.html` doesn't catch constraint violations (only timeouts/network), so it breaks early
+- Recovery via `touchParticipant()` also fails (no participant for the new session yet)
+- First-time students are fine; returning students fail to join
+- **Fix: Apply `supabase/sql/supabase_bingo_v3_join_stability_patch.sql` in Supabase dashboard — Atle must do this**
+
+#### Root Cause 2: No `lock_timeout` in V1 `join_bingo_session` — causes class-wide timeouts
+- When 20–30 students all scan QR simultaneously, their INSERT transactions lock each other
+- Without the `lock_timeout = '1500ms'` added in V3, Postgres uses its default (no limit)
+- Students get "statement timeout" errors → 3 retries all fail → error shown
+- **Fix: Same V3 patch fixes this**
+
+#### Root Cause 3: Poll errors silently swallowed — issues invisible to users
+- Student: `refreshStrictLiveState().catch(()=>{})` — ALL polling errors drop silently. If `get_bingo_live_state` RPC times out, the student sees no indicator at all.
+- Teacher: `refreshTeacherParticipantProgress({silent:true}).catch(()=>{})` — if the participant list query fails, `teacherParticipantProgress` stays stale with no warning shown.
+- Teacher polling loop: `refreshTeacherLiveState({silent:true}).catch(()=>{})` — a complete poll failure shows nothing.
+- **Fix: Applied frontend changes (see below)**
+
+#### Root Cause 4: `get_bingo_live_state` RPC complexity
+- This function joins `sessions + session_state + session_participants + participant_round_boards + participant_draw_responses` in one call
+- Polled every 2000ms (student) and 1500ms (teacher) — on free Supabase tier, occasional statement timeouts are expected
+- With errors now visible (fix 3), we can at least see when this happens
+
+**What was done this session:**
+- `apps/bingo/student.html`: Added `strictLivePollErrorCount` tracker. After 3 consecutive poll failures, shows "Mistet kontakten med liveøkten. Prøver igjen… (error detail)" in the join note. Shows "Kontakten er gjenopprettet." when polling recovers. `touchParticipant` failures now shown immediately.
+- `apps/bingo/teacher.html`: Added `teacherPollErrorCount` tracker. After 3 consecutive poll failures, sets sync status with error detail. Participant list query failures now surface in sync status instead of silently dropping.
+- `docs/shared_notes.md` + `docs/recentmemory.txt`: Shared notes and roadmap live documents created.
+
+**What Atle must do next (cannot be done in frontend):**
+1. **Apply V3 join stability patch in Supabase dashboard** — paste the full content of `supabase/sql/supabase_bingo_v3_join_stability_patch.sql` into the SQL editor and run it
+2. **Verify anonymous sign-in is enabled** in Supabase: Auth > Providers > Enable anonymous sign-ins (students use `signInAnonymously()`)
+
+**Next session should start with:**
+- Verify V3 patch has been applied
+- Test a student join from scratch AND a second join (same browser/device) to confirm the constraint is gone
+- Then check if the timeout errors during live draw are reduced
+
+---
+
 ### 2026-04-13 — Session 1: Repo migration + planning
 
 **What we discussed:**
@@ -84,14 +130,16 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ### Tier 0 — Fix Live Bingo (Current Blocker)
 
-- [ ] **Diagnose and fix live draw communication issues**
-  - Students show as "connected" but don't appear during the live draw
-  - Timeout errors during active sessions
-  - Investigate: Supabase RLS policies, realtime subscription setup, polling in `student.html` / `teacher.html`, `get_bingo_live_state` RPC timeouts
-- [ ] **Apply V3 join stability patch** to the live Supabase DB
+- [x] **Diagnose live draw communication issues** — done (see Session 2 log above)
+  - Root causes found: V3 patch not applied, lock_timeout missing, silent poll errors
+- [ ] **Apply V3 join stability patch** to the live Supabase DB — **ATLE ACTION REQUIRED**
   - File: `supabase/sql/supabase_bingo_v3_join_stability_patch.sql`
-  - Hardens `join_bingo_session()` against duplicate/concurrent joins (upsert-based)
-  - Replaces old `session_participants_client_token_key` constraint
+  - Paste full content into Supabase SQL editor and run
+  - Fixes: global `client_token` constraint → session-scoped, adds 1500ms `lock_timeout`
+  - Also verify: Supabase → Auth → Providers → anonymous sign-in is enabled
+- [x] **Frontend: surface poll errors** — done (`student.html` + `teacher.html`)
+  - Students now see "Mistet kontakten" after 3 consecutive poll failures
+  - Teacher sync status now shows participant list failures instead of silent drop
 - [ ] **Verify Lerke branding in all HTML files**
   - `lerke_logo.svg` and `lerke_bingo_banner.svg` confirmed in `index.html`
   - Check: `apps/bingo/teacher.html`, `apps/bingo/student.html`, `apps/bingo-generator/index.html`
