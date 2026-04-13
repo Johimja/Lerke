@@ -263,6 +263,22 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   .lobby-code-value{font-size:clamp(3rem,16vw,5rem);letter-spacing:.12em}
 }
 
+/* Bingo celebration overlay */
+.bingo-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.88);z-index:1200;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.bingo-overlay.show{display:flex}
+.confetti-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti-piece{position:absolute;top:-14px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.celebrate-box{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 32px}
+.celebrate-bingo{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3.5rem,10vw,7rem);letter-spacing:6px;color:#fff;animation:celebrate-pop .45s cubic-bezier(.175,.885,.32,1.275);text-shadow:0 0 60px rgba(42,207,141,.55),0 0 120px rgba(42,207,141,.25)}
+@keyframes celebrate-pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+.celebrate-winners{font-family:'Raleway',sans-serif;font-weight:700;font-size:clamp(1.1rem,3vw,1.6rem);color:#b6f5d9;line-height:1.4;margin-bottom:4px}
+.celebrate-actions{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.celebrate-btn{padding:14px 28px;border:none;border-radius:12px;font-family:'Raleway',sans-serif;font-weight:900;font-size:.95rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:opacity .15s}
+.celebrate-btn:hover{opacity:.88}
+.celebrate-btn.primary{background:linear-gradient(135deg,var(--accent),#2acf8d);color:#000}
+.celebrate-btn.secondary{background:#20283d;border:1px solid #33405f;color:#dbe4ff}
+
 @keyframes liveJoinPulse{
   0%,100%{opacity:.45;transform:scale(1)}
   50%{opacity:1;transform:scale(1.015)}
@@ -613,6 +629,7 @@ let teacherAutoLockInFlight=false;
 let teacherParticipantProgress=[];
 let teacherAnswerRevealKey='';
 let teacherAnswerVisible=false;
+let teacherBingoCelebrationKey='';
 let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
@@ -1087,6 +1104,51 @@ function renderTeacherParticipantProgress(){
     }).join('');
     return `<div class="live-roster-item"><div class="live-roster-name">${escapeHtml(item.name)}</div><div class="live-roster-meta">${item.hasBingo?'Bingo':`${item.progress}/5`}</div><div class="live-roster-dots">${dots}</div></div>`;
   }).join('');
+  // Bingo celebration
+  const winners=teacherParticipantProgress.filter(p=>p.hasBingo).map(p=>p.name);
+  const state=teacherLiveState?.state||{};
+  const celebKey=`${state.round_number||1}:${winners.length}`;
+  if(winners.length>0&&celebKey!==teacherBingoCelebrationKey){
+    teacherBingoCelebrationKey=celebKey;
+    showTeacherBingoCelebration(winners);
+  }
+}
+function launchConfetti(){
+  const wrap=document.getElementById('confetti-wrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const colors=['#0f7960','#2acf8d','#ef3ac2','#f5a623','#5b8dee','#fff','#ff6b6b','#ffe066'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    const size=5+Math.random()*9;
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};`
+      +`animation-delay:${Math.random()*2.5}s;animation-duration:${2+Math.random()*2.5}s;`
+      +`width:${size}px;height:${size*(Math.random()>.5?.4:1)}px;`
+      +`border-radius:${Math.random()>.4?'50%':'2px'};transform:rotate(${Math.random()*360}deg)`;
+    wrap.appendChild(p);
+  }
+}
+function showTeacherBingoCelebration(winners){
+  const overlay=document.getElementById('teacher-bingo-overlay');
+  const winnersEl=document.getElementById('celebrate-winners');
+  const nextBtn=document.getElementById('celebrate-next-round-btn');
+  if(!overlay||!winnersEl) return;
+  winnersEl.textContent=winners.length===1
+    ? `${winners[0]} fikk bingo!`
+    : winners.length>1
+      ? `${winners.join(', ')} fikk bingo!`
+      : 'Noen fikk bingo!';
+  const state=teacherLiveState?.state||{};
+  const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+  const roundCount=getTeacherLiveRoundCount();
+  if(nextBtn) nextBtn.disabled=roundNumber>=roundCount;
+  launchConfetti();
+  overlay.classList.add('show');
+}
+function dismissTeacherBingo(goNextRound){
+  document.getElementById('teacher-bingo-overlay')?.classList.remove('show');
+  if(goNextRound) nextLiveDraw();
 }
 function setTeacherAnswerContext(nextKey){
   const safeKey=nextKey||'';
@@ -1678,6 +1740,11 @@ function drawIndexReachedRoundEnd(state,totalDraws){
 }
 function renderStrictTeacherLiveMode(){
   const state=teacherLiveState?.state||{};
+  // Reset celebration key when a new round starts so the next bingo can fire
+  const currentRoundKey=`${state.round_number||1}:`;
+  if(!teacherBingoCelebrationKey.startsWith(currentRoundKey)){
+    teacherBingoCelebrationKey='';
+  }
   const summary=teacherLiveState?.teacher_summary||{};
   const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
   const roundCount=getTeacherLiveRoundCount();
@@ -2070,6 +2137,19 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
       </div>
       <div class="live-history-title">Trekkhistorikk</div>
       <div class="live-history" id="live-history"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BINGO CELEBRATION OVERLAY -->
+<div class="bingo-overlay" id="teacher-bingo-overlay">
+  <div class="confetti-wrap" id="confetti-wrap"></div>
+  <div class="celebrate-box">
+    <div class="celebrate-bingo">BINGO!</div>
+    <div class="celebrate-winners" id="celebrate-winners"></div>
+    <div class="celebrate-actions">
+      <button class="celebrate-btn primary" id="celebrate-next-round-btn" onclick="dismissTeacherBingo(true)">Neste runde →</button>
+      <button class="celebrate-btn secondary" onclick="dismissTeacherBingo(false)">Fortsett runden</button>
     </div>
   </div>
 </div>
