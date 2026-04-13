@@ -108,7 +108,7 @@ create table if not exists public.sessions (
   join_code text not null unique,
   title text,
   status text not null default 'draft',
-  expires_at timestamptz not null default (now() + interval '12 hours'),
+  expires_at timestamptz not null default (now() + interval '24 hours'),
   settings jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
