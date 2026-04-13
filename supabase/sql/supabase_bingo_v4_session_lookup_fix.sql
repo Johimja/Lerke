@@ -1,34 +1,53 @@
--- Lerke Bingo V3
--- Join stability patch
+-- Lerke Bingo V4
+-- Session lookup ORDER BY fix
 --
 -- Run this after:
 -- 1. supabase_bingo_v1_sql_editor_ready.sql
 -- 2. supabase_student_accounts_v1_core_patch.sql
 -- 3. supabase_bingo_v2_strict_live_patch.sql
+-- 4. supabase_bingo_v3_join_stability_patch.sql
 --
--- This patch hardens student join against duplicate/concurrent join attempts
--- by using conflict-safe upserts and a shorter lock timeout.
+-- Adds ORDER BY created_at DESC to session lookup in both get_joinable_bingo_session
+-- and join_bingo_session so that if multiple non-expired sessions share the same
+-- join code, the newest one is always used. Without this, LIMIT 1 with no ordering
+-- picks a session arbitrarily, which can strand students in a stale old session
+-- while the teacher's current session has a different UUID.
 
 begin;
 
-alter table public.session_participants
-  drop constraint if exists session_participants_client_token_key;
-
-do $$
+-- Fix get_joinable_bingo_session (used for manual code entry)
+create or replace function public.get_joinable_bingo_session(p_join_code text)
+returns public.sessions
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_session public.sessions;
 begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'session_participants_session_id_client_token_key'
-      and conrelid = 'public.session_participants'::regclass
-  ) then
-    alter table public.session_participants
-      add constraint session_participants_session_id_client_token_key
-      unique (session_id, client_token);
+  if auth.uid() is null then
+    raise exception 'Authentication required';
   end if;
-end
+
+  select *
+  into v_session
+  from public.sessions s
+  where s.join_code = upper(trim(p_join_code))
+    and s.activity_slug = 'bingo'
+    and s.status in ('draft', 'live')
+    and s.expires_at > now()
+  order by s.created_at desc
+  limit 1;
+
+  if not found then
+    raise exception 'Session not found or not joinable';
+  end if;
+
+  return v_session;
+end;
 $$;
 
+-- Fix join_bingo_session (used for actual join)
 create or replace function public.join_bingo_session(
   p_join_code text,
   p_client_token text

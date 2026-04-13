@@ -43,6 +43,38 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ## Session Log
 
+### 2026-04-13 — Session 3: Session ID staleness bug — root cause found and fixed
+
+**Root cause confirmed (from screenshot):**
+- Teacher showed STATUS: Lobby, TRUKKET 0/25 (fresh session)
+- Students showed "Runde 1 av 3, Trekket er låst" (old session state)
+- Proved teacher and students were on DIFFERENT sessions despite same join code
+
+**Why it happened — `liveSessionId` staleness in `student.html`:**
+
+When a student visits a URL with `?type=glose&join=YH9LV&session=<OLD_UUID>` (e.g. from a bookmark or the QR code from a previous session), the initialization code goes directly to `initSupabaseJoin()` (skips the lookup that would refresh `liveSessionId`) because `currentType` is set. `join_bingo_session` uses the join code to find the CURRENT active session, but `liveSessionId` remained as the OLD UUID from the URL. So all subsequent state polls and heartbeats used the stale old UUID.
+
+**Secondary issue — no ORDER BY in session lookup RPCs:**
+
+Both `get_joinable_bingo_session` and `join_bingo_session` used `LIMIT 1` without `ORDER BY created_at DESC`. If two non-expired sessions have the same join code (possible due to the 24h window), they'd pick one randomly. Fixed to always use newest.
+
+**What was fixed this session:**
+
+- `apps/bingo/student.html`: After `join_bingo_session` succeeds, sync `liveSessionId` from `participantRecord.session_id` and update URL. Students now always poll the session they actually joined.
+- `apps/bingo/teacher.html`: Lobby status now shows session UUID prefix `[xxxxxxxx]` and DB participant count from `teacher_summary.participant_count` — lets you spot session ID mismatch instantly.
+- `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`: Added `ORDER BY s.created_at DESC` to `get_joinable_bingo_session`
+- `supabase/sql/supabase_bingo_v3_join_stability_patch.sql`: Added `ORDER BY s.created_at DESC` to `join_bingo_session`
+- `supabase/sql/supabase_bingo_v4_session_lookup_fix.sql`: **New standalone patch** — apply to live DB if needed
+- **DB migration applied directly via Supabase MCP:** `fix_session_lookup_order_newest_first` ✅
+
+**Next session should start with:**
+- **Hard-refresh** both teacher and student browsers (clear stale URL caches)
+- Teacher creates a fresh session → opens lobby → confirm `[xxxxxxxx]` UUID in lobby status
+- Student joins via QR (fresh tab, no cached session param) → should appear in lobby list immediately
+- Then test with a bookmarked/old URL — student should still join correctly and lobby should update
+
+---
+
 ### 2026-04-13 — Session 2: Live draw diagnosis + frontend fixes
 
 **What we found (full diagnosis via direct Supabase access):**
@@ -127,6 +159,11 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - [x] **Frontend: surface poll errors** — done (`student.html` + `teacher.html`)
   - Students now see "Mistet kontakten" after 3 consecutive poll failures
   - Teacher sync status now shows participant list failures instead of silent drop
+- [ ] **Session ID staleness** — fixed ✅
+  - `student.html`: `liveSessionId` synced from `participantRecord.session_id` after join
+  - `join_bingo_session` + `get_joinable_bingo_session`: `ORDER BY created_at DESC` added and applied to live DB
+  - Teacher lobby now shows `[sessionId prefix]` + DB participant count for diagnostics
+- [ ] **End-to-end test** — needs verification with fresh browser tabs
 - [ ] **Verify Lerke branding in all HTML files**
   - `lerke_logo.svg` and `lerke_bingo_banner.svg` confirmed in `index.html`
   - Check: `apps/bingo/teacher.html`, `apps/bingo/student.html`, `apps/bingo-generator/index.html`
@@ -184,4 +221,5 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 1. `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`
 2. `supabase/sql/supabase_student_accounts_v1_core_patch.sql`
 3. `supabase/sql/supabase_bingo_v2_strict_live_patch.sql`
-4. `supabase/sql/supabase_bingo_v3_join_stability_patch.sql` ← not yet applied to live DB
+4. `supabase/sql/supabase_bingo_v3_join_stability_patch.sql` ← applied ✅
+5. `supabase/sql/supabase_bingo_v4_session_lookup_fix.sql` ← applied ✅ (ORDER BY fix)

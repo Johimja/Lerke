@@ -1516,9 +1516,12 @@ async function refreshLobbyParticipants(){
     renderLobbyParticipants(participants);
     if(statusEl){
       const phase=teacherLiveState?.state?.phase;
+      const dbCount=teacherLiveState?.teacher_summary?.participant_count;
+      const sessionHint=activeLiveSession?.id?` [${activeLiveSession.id.substring(0,8)}]`:'';
+      const countHint=(typeof dbCount==='number'&&dbCount!==participants.length)?` (DB: ${dbCount})` : '';
       statusEl.textContent=participants.length
-        ? `Elever kobler seg til fortløpende.${phase?` Fase: ${phaseLabel(phase)}.`:''}`
-        : 'Venter på at elever skal bli med.';
+        ?`Elever kobler seg til fortløpende.${phase?` Fase: ${phaseLabel(phase)}.`:''}${sessionHint}`
+        :`Venter på at elever skal bli med.${countHint}${sessionHint}`;
     }
   } catch(error){
     if(statusEl) statusEl.textContent=`Kunne ikke hente deltakere: ${error.message||error}`;

@@ -295,6 +295,7 @@ begin
     and s.activity_slug = 'bingo'
     and s.status in ('draft', 'live')
     and s.expires_at > now()
+  order by s.created_at desc
   limit 1;
 
   if not found then

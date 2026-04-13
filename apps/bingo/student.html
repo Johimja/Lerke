@@ -515,6 +515,14 @@ async function initSupabaseJoin(){
     await ensureStudentSupabase();
     await loadCurrentStudentProfile();
     participantRecord=await joinBingoSessionWithRecovery();
+    // Sync liveSessionId to the actual session the participant was placed in.
+    // Corrects stale session UUIDs cached in the URL from a previous session.
+    if(participantRecord?.session_id&&participantRecord.session_id!==liveSessionId){
+      liveSessionId=participantRecord.session_id;
+      const nextUrl=new URL(window.location.href);
+      nextUrl.searchParams.set('session',liveSessionId);
+      window.history.replaceState({},'',nextUrl.toString());
+    }
     setJoinNote(`Koblet til liveøkten som ${participantRecord.display_name}.`,false);
     updateIdentityPanel();
     if(touchTimer) window.clearInterval(touchTimer);
