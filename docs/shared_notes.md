@@ -75,6 +75,26 @@ Both `get_joinable_bingo_session` and `join_bingo_session` used `LIMIT 1` withou
 
 ---
 
+### 2026-04-13 — Session 6: Student mobile layout — all game info fits on screen
+
+**What was fixed:**
+- `apps/bingo/student.html`: In strict live mode, the page now adds `body.strict-live` which hides the title row, account panel, identity panel, session panel, and bingo count wrap via CSS. Padding reduced to 6px so the bingo card fills the screen.
+- Card header redesigned: added compact live-right area (`card-name-tag`, `card-round-tag`, `card-score-tag`) that shows inside the dark card header — display name, round (R2/3), and bingo count.
+- New `.live-strip` element between card header and grid: shows the current draw word prominently (green background when draw is open, grey when locked, plain when waiting). Replaces the separate subtitle/session panel for state feedback.
+- `updateStrictPrompt` now writes to the live-strip instead of the page subtitle.
+- `updateStrictSessionPanel` now updates the compact card-header badges in addition to the (hidden) session panel.
+- `setStrictControlsDisabled(true)` adds the body class and shows/hides the card-header live elements.
+
+**Resulting layout on phone:**
+```
+[BINGO]  [Blid Stjerne · R2/3 · 0]   ← compact card header
+[Svar nå]  [STRENGTH]                ← live-strip (green = draw open)
+[grid cells]
+```
+Everything fits on one phone screen. No scrolling needed during live play.
+
+---
+
 ### 2026-04-13 — Session 5: Student card click feedback + countdown/history UI fixes
 
 **What was fixed this session:**

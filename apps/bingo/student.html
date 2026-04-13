@@ -144,6 +144,33 @@ h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spac
 .error-box h2{font-family:'Raleway',sans-serif;color:var(--accent2);margin-bottom:10px}
 .error-box p{color:var(--muted);font-size:0.85rem;line-height:1.6}
 .error-box a{color:var(--blue);text-decoration:none}
+
+/* Strict live mode: hide all non-card panels, compact padding */
+body.strict-live{padding:6px;padding-bottom:72px}
+body.strict-live .title-row,
+body.strict-live .account-panel,
+body.strict-live .identity-panel,
+body.strict-live .session-panel,
+body.strict-live .bingo-count-wrap{display:none!important}
+body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
+
+/* Compact card-header extras for live mode */
+.card-live-right{display:none;align-items:center;gap:8px}
+.card-name-tag{font-size:0.62rem;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-round-tag{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;color:var(--muted)}
+.card-score-tag{font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:var(--accent);min-width:14px;text-align:right}
+
+/* Live draw strip between card header and grid */
+.live-strip{display:none;padding:9px 14px;align-items:center;gap:10px;border-bottom:1px solid #dce0ee;background:#eef1fa;min-height:44px}
+.live-strip.show{display:flex}
+.live-strip.phase-open{background:#e5f4ec;border-bottom-color:#acd9bf}
+.live-strip.phase-locked{background:#f4f4f6;border-bottom-color:#ddd}
+.live-strip-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:.9px;color:#888;white-space:nowrap;min-width:42px}
+.live-strip.phase-open .live-strip-label{color:#1f7a4a;font-weight:700}
+.live-strip.phase-locked .live-strip-label{color:#999}
+.live-strip-word{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;color:#111;flex:1;line-height:1.2}
+.live-strip.phase-locked .live-strip-word{color:#888}
+.live-strip.phase-wait .live-strip-word{font-size:0.8rem;font-weight:400;color:#666;font-family:'Source Sans 3',sans-serif}
 </style>
 </head>
 <body>
@@ -349,6 +376,15 @@ function setStrictControlsDisabled(disabled){
     newBtn.disabled=!!disabled;
     newBtn.style.opacity=disabled?'.45':'';
   }
+  document.body.classList.toggle('strict-live',!!disabled);
+  const liveRight=document.getElementById('card-live-right');
+  const roundStatic=document.getElementById('card-round-static');
+  const liveStrip=document.getElementById('live-strip');
+  const cardSubInner=document.getElementById('card-subtitle-inner');
+  if(liveRight) liveRight.style.display=disabled?'flex':'none';
+  if(roundStatic) roundStatic.style.display=disabled?'none':'';
+  if(liveStrip) liveStrip.classList.toggle('show',!!disabled);
+  if(cardSubInner) cardSubInner.style.display=disabled?'none':'';
 }
 function isRetryableJoinError(error){
   const msg=String(error?.message||error||'').toLowerCase();
@@ -675,53 +711,70 @@ function applyStrictLiveState(payload){
 function updateStrictPrompt(payload){
   const state=payload.state||{};
   const draw=state.current_draw||null;
+  const stripEl=document.getElementById('live-strip');
+  const labelEl=document.getElementById('live-strip-label');
+  const wordEl=document.getElementById('live-strip-word');
+  if(!stripEl||!labelEl||!wordEl){
+    // Card not rendered yet — fall back to subtitle
+    if(state.phase==='draw_open'&&draw?.prompt) setSubtitle(`Nå: ${draw.prompt}`);
+    else if(state.phase==='draw_locked'&&draw?.prompt) setSubtitle(`Låst: ${draw.prompt}`);
+    else if(state.phase==='round_complete') setSubtitle('Runden er ferdig. Venter på læreren.');
+    else if(state.phase==='round_active') setSubtitle('Venter på neste trekk fra læreren.');
+    else setSubtitle('Venter på at læreren starter.');
+    return;
+  }
   if(state.phase==='draw_open'&&draw?.prompt){
-    setSubtitle(`Nå: ${draw.prompt}`);
-    return;
+    stripEl.className='live-strip show phase-open';
+    labelEl.textContent='Svar nå';
+    wordEl.textContent=draw.prompt;
+  } else if(state.phase==='draw_locked'&&draw?.prompt){
+    stripEl.className='live-strip show phase-locked';
+    labelEl.textContent='Låst';
+    wordEl.textContent=draw.prompt;
+  } else if(state.phase==='round_complete'){
+    stripEl.className='live-strip show phase-wait';
+    labelEl.textContent='';
+    wordEl.textContent='Runden er ferdig. Vent på læreren.';
+  } else {
+    stripEl.className='live-strip show phase-wait';
+    labelEl.textContent='';
+    wordEl.textContent='Vent på neste trekk fra læreren.';
   }
-  if(state.phase==='draw_locked'&&draw?.prompt){
-    setSubtitle(`Låst: ${draw.prompt}`);
-    return;
-  }
-  if(state.phase==='round_complete'){
-    setSubtitle('Runden er ferdig. Venter på læreren.');
-    return;
-  }
-  if(state.phase==='round_active'){
-    setSubtitle('Venter på neste trekk fra læreren.');
-    return;
-  }
-  setSubtitle('Venter på at læreren starter.');
 }
 
 function updateStrictSessionPanel(payload){
-  const panel=document.getElementById('session-panel');
-  if(!panel) return;
-  panel.style.display='block';
   const state=payload.state||{};
   const board=payload.board||{};
   const session=payload.session||{};
-  const roundLabel=document.getElementById('session-round-label');
-  const scoreLabel=document.getElementById('session-score-label');
-  const barFill=document.getElementById('session-bar-fill');
-  const help=document.getElementById('session-help');
   const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
   const drawIndex=Math.max(0,parseInt(state.draw_index,10)||0);
   const totalDraws=Array.isArray(session.settings?.word_pairs)
     ? session.settings.word_pairs.length
     : 25;
-  roundLabel.textContent=`${roundNumber} av ${Math.max(totalRounds,roundNumber)}`;
-  scoreLabel.textContent=String(board.bingo_count||0);
-  barFill.style.width=`${Math.max(0,Math.min(100,(drawIndex/Math.max(totalDraws,1))*100))}%`;
-  if(state.phase==='draw_open'){
-    help.textContent='Svar nå. Du har ett forsøk på dette trekket.';
-  } else if(state.phase==='draw_locked'){
-    help.textContent='Trekket er låst. Vent på neste fra læreren.';
-  } else if(state.phase==='round_complete'){
-    help.textContent='Runden er ferdig. Vent på neste runde eller avslutning.';
-  } else {
-    help.textContent='Læreren styrer når neste trekk åpnes.';
+  // Keep the hidden session-panel updated (in case it's ever visible)
+  const panel=document.getElementById('session-panel');
+  if(panel){
+    const roundLabel=document.getElementById('session-round-label');
+    const scoreLabel=document.getElementById('session-score-label');
+    const barFill=document.getElementById('session-bar-fill');
+    const help=document.getElementById('session-help');
+    if(roundLabel) roundLabel.textContent=`${roundNumber} av ${Math.max(totalRounds,roundNumber)}`;
+    if(scoreLabel) scoreLabel.textContent=String(board.bingo_count||0);
+    if(barFill) barFill.style.width=`${Math.max(0,Math.min(100,(drawIndex/Math.max(totalDraws,1))*100))}%`;
+    if(help){
+      if(state.phase==='draw_open') help.textContent='Svar nå. Du har ett forsøk på dette trekket.';
+      else if(state.phase==='draw_locked') help.textContent='Trekket er låst. Vent på neste fra læreren.';
+      else if(state.phase==='round_complete') help.textContent='Runden er ferdig. Vent på neste runde eller avslutning.';
+      else help.textContent='Læreren styrer når neste trekk åpnes.';
+    }
   }
+  // Update compact card-header
+  const nameTag=document.getElementById('card-name-tag');
+  const roundTag=document.getElementById('card-round-tag');
+  const scoreTag=document.getElementById('card-score-tag');
+  if(nameTag) nameTag.textContent=participantRecord?.display_name||'';
+  if(roundTag) roundTag.textContent=`R${roundNumber}/${Math.max(totalRounds,roundNumber)}`;
+  if(scoreTag) scoreTag.textContent=String(board.bingo_count||0);
 }
 
 async function submitStrictAnswer(idx){
@@ -864,9 +917,18 @@ function renderCard(skipGeneration=false){
   cardEl.innerHTML=`
     <div class="card-header">
       <span class="card-title">${title}</span>
-      <span class="card-round">${roundLabel}</span>
+      <div class="card-live-right" id="card-live-right">
+        <span class="card-name-tag" id="card-name-tag"></span>
+        <span class="card-round-tag" id="card-round-tag">—</span>
+        <span class="card-score-tag" id="card-score-tag">0</span>
+      </div>
+      <span class="card-round" id="card-round-static">${roundLabel}</span>
     </div>
-    <div class="card-subtitle">${sub}</div>
+    <div class="live-strip phase-wait" id="live-strip">
+      <span class="live-strip-label" id="live-strip-label"></span>
+      <span class="live-strip-word" id="live-strip-word">Vent på neste trekk.</span>
+    </div>
+    <div class="card-subtitle" id="card-subtitle-inner">${sub}</div>
     <div class="bingo-grid g5 ${cardData.type==='glose'?'glose-grid':''}" id="bingo-grid"></div>
   `;
   wrap.appendChild(cardEl);
