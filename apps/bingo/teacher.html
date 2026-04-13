@@ -1165,7 +1165,14 @@ function showTeacherBingoCelebration(winners){
   const state=teacherLiveState?.state||{};
   const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
   const roundCount=getTeacherLiveRoundCount();
-  if(nextBtn) nextBtn.disabled=roundNumber>=roundCount;
+  if(nextBtn){
+    const isLastRound=roundNumber>=roundCount;
+    nextBtn.disabled=false;
+    nextBtn.textContent=isLastRound?'Ny økt':'Neste runde →';
+    nextBtn.onclick=isLastRound
+      ?()=>{stopBingoJingle();document.getElementById('teacher-bingo-overlay')?.classList.remove('show');closeLiveMode();}
+      :()=>dismissTeacherBingo(true);
+  }
   launchConfetti();
   playBingoJingle();
   overlay.classList.add('show');
