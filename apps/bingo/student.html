@@ -107,11 +107,23 @@ h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spac
 .student-confetti-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .student-confetti-piece{position:absolute;top:-14px;animation:confetti-fall linear forwards}
 @keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
-.bingo-banner.show{display:flex}
-.bingo-text{font-family:'Raleway',sans-serif;font-weight:900;font-size:4rem;color:var(--accent);letter-spacing:4px;animation:pop .3s ease}
-@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.bingo-banner.show{display:flex;animation:bingo-shake .55s ease .1s}
+@keyframes bingo-shake{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  10%{transform:translate(-12px,5px) rotate(-.6deg)}
+  20%{transform:translate(12px,-5px) rotate(.6deg)}
+  30%{transform:translate(-9px,4px) rotate(-.4deg)}
+  40%{transform:translate(9px,-4px) rotate(.4deg)}
+  50%{transform:translate(-6px,2px)}
+  60%{transform:translate(6px,-2px)}
+  70%{transform:translate(-3px,1px)}
+  80%{transform:translate(3px,-1px)}
+  90%{transform:translate(-1px,0)}
+}
+.bingo-text{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3.5rem,18vw,5.5rem);color:#fff;letter-spacing:4px;text-shadow:0 0 60px rgba(42,207,141,.6),0 0 120px rgba(42,207,141,.3);animation:bingo-celebrate-pop .45s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes bingo-celebrate-pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.12) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 @keyframes count-pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
-.bingo-sub{color:#fff;font-size:1rem;margin-top:8px;margin-bottom:24px}
+.bingo-sub{color:#b6f5d9;font-size:1rem;margin-top:8px;margin-bottom:24px}
 .bingo-close{padding:12px 32px;background:var(--accent);border:none;border-radius:10px;font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:#000;cursor:pointer;letter-spacing:1px}
 
 .bottom-bar{
