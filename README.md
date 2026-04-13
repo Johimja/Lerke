@@ -1,6 +1,6 @@
 # Lerke 🎲
 
-**A classroom game portal built for Steinerskolen i Kristiansand**  
+**A classroom game portal built for Educational Purposes**  
 Current deploy path depends on the active host/domain setup.
 
 License: source-available. Commercial use, redistribution, and hosted use require prior written permission from the copyright holder. See [LICENSE](LICENSE).
