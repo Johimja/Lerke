@@ -102,8 +102,11 @@ h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spac
   display:none;position:fixed;top:0;left:0;right:0;bottom:0;
   background:rgba(0,0,0,.85);z-index:100;
   flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:20px
+  padding:20px;overflow:hidden
 }
+.student-confetti-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.student-confetti-piece{position:absolute;top:-14px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 .bingo-banner.show{display:flex}
 .bingo-text{font-family:'Raleway',sans-serif;font-weight:900;font-size:4rem;color:var(--accent);letter-spacing:4px;animation:pop .3s ease}
 @keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -235,6 +238,7 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 </div>
 
 <div class="bingo-banner" id="bingo-banner">
+  <div class="student-confetti-wrap" id="student-confetti-wrap"></div>
   <div class="bingo-text">BINGO!</div>
   <div class="bingo-sub" id="bingo-sub">Fem på rad!</div>
   <button class="bingo-close" onclick="dismissBingo()">Fortsett</button>
@@ -282,6 +286,7 @@ let currentBoardRoundNumber=0;
 let currentBoardSignature='';
 let currentResponseKey='';
 let lastStrictBingoShownRound=0;
+let lastOtherBingoShownKey='';
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function parseTableValues(raw){
@@ -710,9 +715,19 @@ function applyStrictLiveState(payload){
   // Show bingo banner the first time this round
   if(board?.has_bingo && roundNumber > lastStrictBingoShownRound){
     lastStrictBingoShownRound=roundNumber;
-    const sub=document.getElementById('bingo-sub');
-    if(sub) sub.textContent=`${participantRecord?.display_name||'Du'} fikk bingo! Vent på læreren.`;
-    document.getElementById('bingo-banner')?.classList.add('show');
+    showBingoBanner('Du fikk bingo! Vent på læreren.');
+  } else if(!board?.has_bingo){
+    // Show other students' bingo from teacher_summary.bingo_winners
+    const winners=payload.teacher_summary?.bingo_winners||[];
+    const myName=participantRecord?.display_name;
+    const otherWinners=winners.filter(n=>n!==myName);
+    if(otherWinners.length>0){
+      const otherKey=`${roundNumber}:${otherWinners.join(',')}`;
+      if(otherKey!==lastOtherBingoShownKey){
+        lastOtherBingoShownKey=otherKey;
+        showBingoBanner(otherWinners.join(' og ')+' fikk bingo!');
+      }
+    }
   }
 }
 
@@ -785,6 +800,29 @@ function updateStrictSessionPanel(payload){
   if(scoreTag) scoreTag.textContent=String(board.bingo_count||0);
 }
 
+function launchStudentConfetti(){
+  const wrap=document.getElementById('student-confetti-wrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const colors=['#0f7960','#2acf8d','#ef3ac2','#f5a623','#5b8dee','#fff','#ff6b6b','#ffe066'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    p.className='student-confetti-piece';
+    const size=5+Math.random()*9;
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};`
+      +`animation-delay:${Math.random()*2.5}s;animation-duration:${2+Math.random()*2.5}s;`
+      +`width:${size}px;height:${size*(Math.random()>.5?.4:1)}px;`
+      +`border-radius:${Math.random()>.4?'50%':'2px'};transform:rotate(${Math.random()*360}deg)`;
+    wrap.appendChild(p);
+  }
+}
+function showBingoBanner(text){
+  const sub=document.getElementById('bingo-sub');
+  if(sub) sub.textContent=text;
+  launchStudentConfetti();
+  document.getElementById('bingo-banner')?.classList.add('show');
+}
+
 async function submitStrictAnswer(idx){
   if(!supabaseClient||!isStrictLiveSession()||!currentCells[idx]) return;
   const grid=document.getElementById('bingo-grid');
@@ -804,9 +842,7 @@ async function submitStrictAnswer(idx){
       const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
       if(rn>lastStrictBingoShownRound){
         lastStrictBingoShownRound=rn;
-        const sub=document.getElementById('bingo-sub');
-        if(sub) sub.textContent=`${participantRecord?.display_name||'Du'} fikk bingo!`;
-        document.getElementById('bingo-banner')?.classList.add('show');
+        showBingoBanner('Du fikk bingo!');
       }
     }
     await refreshStrictLiveState();
