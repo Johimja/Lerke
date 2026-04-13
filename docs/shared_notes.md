@@ -75,6 +75,26 @@ Both `get_joinable_bingo_session` and `join_bingo_session` used `LIMIT 1` withou
 
 ---
 
+### 2026-04-13 — Session 7: Bingo celebration polish + vision planning
+
+**What was shipped this session:**
+
+- `supabase/sql/supabase_bingo_v5_bingo_winner_state.sql` + live DB migration:
+  `get_bingo_live_state` now returns `teacher_summary.bingo_winners` (array of display names with `has_bingo=true`)
+- `apps/bingo/student.html`: Winner sees "Du fikk bingo!"; other students see "[Navn] fikk bingo!" within 2s; confetti on all student screens matching teacher style
+- `apps/bingo/teacher.html`: Bingo winner jingle — random rotation from `media/bingow1-4.mp3`; stops on dismiss
+- `apps/bingo/student.html`: "BINGO!" text now white + green glow + bouncy pop animation + full-screen screenshake — matches teacher energy
+- `apps/bingo/teacher.html`: Last-round celebration overlay now shows "Ny økt" (enabled) instead of disabled "Neste runde →"; closes modal so teacher can start fresh
+
+**Bingo is now feature-complete for classroom use.**
+
+**Next session should start with:**
+- Hard-refresh teacher + student browsers
+- Full end-to-end test: create session → students join → play a full round → bingo → jingle plays → screenshake on student → "Ny økt" works
+- Then pick up from the vision roadmap below (podium first)
+
+---
+
 ### 2026-04-13 — Session 6: Student mobile layout — all game info fits on screen
 
 **What was fixed:**
@@ -239,41 +259,70 @@ This is why `refreshTeacherParticipantProgress()` always showed "Ingen elever er
   - `lerke_logo.svg` and `lerke_bingo_banner.svg` confirmed in `index.html`
   - Check: `apps/bingo/teacher.html`, `apps/bingo/student.html`, `apps/bingo-generator/index.html`
 
-### Tier 1 — Complete Live Bingo
+### Tier 1 — Bingo: Engagement Extras (do these next, in order)
 
+- [ ] **End-of-round podium** ← START HERE next session
+  - Top 3 bingo winners shown on teacher screen after each round (gold/silver/bronze)
+  - Fastest to bingo wins; tie-break by `draw_index` at which `has_bingo` flipped
+  - Data already in DB (`participant_round_boards.has_bingo` + `participant_draw_responses.answered_at`)
+  - Show on the celebration overlay or as a separate "round over" panel
+- [ ] **Near-bingo alert on teacher screen**
+  - Elevoversikt highlights students who need only 1 more correct answer for bingo
+  - Computable from `marked_cells` count (N−1 marked on a 5×5 board = 24 marked)
+  - Teacher can call it out: "Blid Stjerne trenger bare én til!" — creates class suspense
+- [ ] **Fastest-answer stat per draw**
+  - After locking a draw, show who answered first (correctly) on teacher screen
+  - `answered_at` already stored in `participant_draw_responses`
+- [ ] **Student reaction button**
+  - One-tap emoji reaction (🎉 😬 😤) during a live draw
+  - Flashes briefly on teacher screen — lightweight fun, small RPC write
 - [ ] **Phase out anonymous join** — login required for all students
   - Disable/remove guest code path in `apps/bingo/student.html`
   - Student portal login (`index.html`) is the only entry point
-  - Update teacher-facing join instructions
-- [ ] **Teacher live dashboard improvements** (`apps/bingo/teacher.html`)
-  - Show connected students during live play (currently lobby-only)
-  - Draw response counts, near-BINGO alerts, round winners
-  - Clearer reset / next-round controls
 
-### Tier 2 — Polish
+### Tier 2 — Identity & Progression (the Kahoot layer)
+
+- [ ] **Avatar creator in the portal** ← biggest engagement driver for 8th graders
+  - Pick body/color/accessory, stored on student account
+  - Tiny avatar shown next to name in Elevoversikt and on the podium
+  - Atle mentioned this himself — save for when Quiz is also ready so it feels like a real platform
+- [ ] **XP and level system**
+  - Students earn XP: correct answer, bingo, speed bonus
+  - Level badge shown in the portal — 8th graders will grind for the number
+  - Carries across Bingo and Quiz when that arrives
+- [ ] **Session history / hall of fame**
+  - Teacher portal stats: most wins per student across all sessions, longest win streak
+  - Gives returning students something to chase
+- [ ] **Comeback wildcard**
+  - After being shut out of N draws, student gets one ⚡ "gratis kryss" per round
+  - Keeps trailing students engaged instead of giving up
+
+### Tier 3 — Content & Modes
 
 - [ ] **Glosebingo content improvements**
   - Language selector (Norwegian–German, Norwegian–French)
   - Easier reuse/import of saved teaching sets across sessions
-- [ ] **Portal UX polish** (`index.html`)
-  - Refine teacher/student portal flows
-  - Student class management → polished everyday workflow
-- [ ] **Full lerio → lerke cleanup** (deploy URL: `johimja.com/Lerke`)
-  - CSS variable names: `--lerio-*` → `--lerke-*` in `index.html`
-  - Rename `media/leriobingo.jpg` → `media/lerkebingo.jpg`, update all references
-  - Replace any `johimja.com/lerio` or `johimja.com/bingo` URL strings with `johimja.com/Lerke`
+- [ ] **Custom winning patterns**
+  - Teacher picks: any 5-in-a-row (current), diagonal only, T-form, full card
+  - Adds strategic layer without changing core mechanics
+- [ ] **Team mode**
+  - Student pairs share a board; both must agree on the cell
+  - Good for vocabulary pair work
 
-### Tier 3 — Next Tool
+### Tier 4 — Next Tool
 
 - [ ] **Lerke Quiz Mode**
   - Teacher creates multiple-choice questions; students answer on their devices
+  - Avatar + XP system carries over from Bingo
   - Add portal tile with rollout state
 
-### Tier 4 — Platform Polish
+### Tier 5 — Platform Polish
 
 - [ ] PWA support (installable on phone home screen)
-- [ ] Optional leaderboard / round winner tracking
 - [ ] Mobile-first polish on teacher live screens
+- [ ] **Full lerio → lerke cleanup**
+  - CSS variable names: `--lerio-*` → `--lerke-*` in `index.html`
+  - Rename `media/leriobingo.jpg` → `media/lerkebingo.jpg`, update all references
 
 ---
 
