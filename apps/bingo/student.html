@@ -169,6 +169,21 @@ body.strict-live .session-panel,
 body.strict-live .bingo-count-wrap{display:none!important}
 body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 
+/* Leaderboard panel */
+.leaderboard-panel{width:100%;max-width:420px;margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface)}
+.lb-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:.4px;cursor:pointer;text-transform:uppercase}
+.lb-toggle:hover{background:rgba(255,255,255,.04)}
+.lb-body{border-top:1px solid var(--border)}
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.lb-row:last-child{border-bottom:none}
+.lb-row.lb-me{background:rgba(42,207,141,.07)}
+.lb-rank{font-size:1rem;min-width:26px;text-align:center;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-sub{font-size:0.68rem;color:var(--muted);margin-top:1px}
+.lb-bingo{font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;color:var(--accent);flex-shrink:0;min-width:28px;text-align:right}
+.lb-empty{padding:12px 14px;font-size:0.78rem;color:var(--muted);text-align:center}
+
 /* Compact card-header extras for live mode */
 .card-live-right{display:none;align-items:center;gap:8px}
 .card-name-tag{font-size:0.62rem;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -243,6 +258,17 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 </div>
 
 <div id="card-wrap"></div>
+
+<div class="leaderboard-panel" id="leaderboard-panel" style="display:none">
+  <button class="lb-toggle" id="lb-toggle" onclick="toggleLeaderboard()">
+    <span>Poengtavle</span>
+    <span id="lb-arrow">▲</span>
+  </button>
+  <div class="lb-body" id="lb-body">
+    <div class="lb-empty" id="lb-loading">Laster...</div>
+    <div id="lb-rows"></div>
+  </div>
+</div>
 
 <div class="bingo-count-wrap" id="bingo-count-wrap" style="display:none">
   <span class="bingo-count-label">Bingo</span>
@@ -719,6 +745,7 @@ function applyStrictLiveState(payload){
   }
   updateStrictSessionPanel(payload);
   updateStrictPrompt(payload);
+  if(state.phase==='round_complete'){showLeaderboard();}else{hideLeaderboard();}
   const responseKey=`${roundNumber}:${state.draw_index||0}:${response?.answered_at||''}:${response?.response_outcome||''}`;
   if(response&&responseKey!==currentResponseKey){
     currentResponseKey=responseKey;
@@ -874,6 +901,75 @@ async function submitStrictAnswer(idx){
   } catch(error){
     if(cellEl) cellEl.classList.remove('marked');
     setJoinNote(error.message||String(error),true);
+  }
+}
+
+// ===== LEADERBOARD =====
+let leaderboardExpanded=true;
+let leaderboardRefreshTimer=null;
+
+async function fetchLeaderboard(){
+  if(!supabaseClient||!liveSessionId) return;
+  try{
+    const {data,error}=await supabaseClient.rpc('get_session_leaderboard',{p_session_id:liveSessionId});
+    if(error) throw error;
+    renderLeaderboard(Array.isArray(data)?data:(data||[]));
+  }catch(e){
+    const el=document.getElementById('lb-loading');
+    if(el){el.style.display='block';el.textContent='Kunne ikke laste poengtavle.';}
+  }
+}
+function renderLeaderboard(rows){
+  const loadingEl=document.getElementById('lb-loading');
+  const rowsEl=document.getElementById('lb-rows');
+  if(!rowsEl) return;
+  if(loadingEl) loadingEl.style.display='none';
+  if(!rows.length){
+    rowsEl.innerHTML='<div class="lb-empty">Ingen data ennå.</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  const myName=participantRecord?.display_name||'';
+  rowsEl.innerHTML=rows.map((row,i)=>{
+    const rank=i<3?medals[i]:`${i+1}.`;
+    const acc=row.total_answers>0?Math.round((row.correct_total/row.total_answers)*100):0;
+    const bingoStr=row.bingo_total>0
+      ?(row.bingo_total<=4?'🎯'.repeat(row.bingo_total):`🎯×${row.bingo_total}`)
+      :'—';
+    const fastStr=row.fastest_bingo_draw!=null?` · bingo trekk ${row.fastest_bingo_draw}`:'';
+    const isMe=row.name===myName;
+    return `<div class="lb-row${isMe?' lb-me':''}">
+      <span class="lb-rank">${rank}</span>
+      <div class="lb-info">
+        <div class="lb-name">${escapeHtml(row.name)}${isMe?' 👈':''}</div>
+        <div class="lb-sub">${row.correct_total} rett av ${row.total_answers} · ${acc}%${fastStr}</div>
+      </div>
+      <span class="lb-bingo">${bingoStr}</span>
+    </div>`;
+  }).join('');
+}
+function toggleLeaderboard(){
+  leaderboardExpanded=!leaderboardExpanded;
+  const body=document.getElementById('lb-body');
+  const arrow=document.getElementById('lb-arrow');
+  if(body) body.style.display=leaderboardExpanded?'':'none';
+  if(arrow) arrow.textContent=leaderboardExpanded?'▲':'▼';
+}
+function showLeaderboard(){
+  const panel=document.getElementById('leaderboard-panel');
+  if(!panel||panel.style.display==='block') return;
+  panel.style.display='block';
+  fetchLeaderboard();
+  if(!leaderboardRefreshTimer){
+    leaderboardRefreshTimer=window.setInterval(fetchLeaderboard,5000);
+  }
+}
+function hideLeaderboard(){
+  const panel=document.getElementById('leaderboard-panel');
+  if(panel) panel.style.display='none';
+  if(leaderboardRefreshTimer){
+    window.clearInterval(leaderboardRefreshTimer);
+    leaderboardRefreshTimer=null;
   }
 }
 
