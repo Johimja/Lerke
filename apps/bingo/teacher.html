@@ -278,6 +278,14 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .celebrate-btn:hover{opacity:.88}
 .celebrate-btn.primary{background:linear-gradient(135deg,var(--accent),#2acf8d);color:#000}
 .celebrate-btn.secondary{background:#20283d;border:1px solid #33405f;color:#dbe4ff}
+.podium-wrap{width:100%;max-width:460px;display:flex;flex-direction:column;gap:7px;margin:4px 0 6px}
+.podium-place{display:flex;align-items:center;gap:14px;padding:9px 16px;border-radius:12px}
+.podium-place.p1{background:rgba(255,215,0,.14);border:1px solid rgba(255,215,0,.35)}
+.podium-place.p2{background:rgba(192,192,192,.1);border:1px solid rgba(192,192,192,.3)}
+.podium-place.p3{background:rgba(205,127,50,.1);border:1px solid rgba(205,127,50,.3)}
+.podium-medal{font-size:1.4rem;min-width:28px;text-align:center}
+.podium-name{font-family:'Raleway',sans-serif;font-weight:900;flex:1;color:#fff;font-size:1rem;text-align:left}
+.podium-draw{font-size:0.7rem;color:#6b84a8;white-space:nowrap}
 
 @keyframes liveJoinPulse{
   0%,100%{opacity:.45;transform:scale(1)}
@@ -1172,6 +1180,19 @@ function showTeacherBingoCelebration(winners){
     nextBtn.onclick=isLastRound
       ?()=>{stopBingoJingle();document.getElementById('teacher-bingo-overlay')?.classList.remove('show');closeLiveMode();}
       :()=>dismissTeacherBingo(true);
+  }
+  const podium=(teacherLiveState?.teacher_summary?.bingo_podium||[]).slice(0,3);
+  const medals=['🥇','🥈','🥉'];
+  const podiumEl=document.getElementById('celebrate-podium');
+  if(podiumEl){
+    podiumEl.innerHTML=podium.length>1
+      ?podium.map((p,i)=>
+        `<div class="podium-place p${i+1}">
+          <span class="podium-medal">${medals[i]}</span>
+          <span class="podium-name">${escapeHtml(p.name)}</span>
+          <span class="podium-draw">${p.draw_index!=null?'Trekk '+p.draw_index:''}</span>
+        </div>`).join('')
+      :'';
   }
   launchConfetti();
   playBingoJingle();
@@ -2179,6 +2200,7 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
   <div class="celebrate-box">
     <div class="celebrate-bingo">BINGO!</div>
     <div class="celebrate-winners" id="celebrate-winners"></div>
+    <div class="podium-wrap" id="celebrate-podium"></div>
     <div class="celebrate-actions">
       <button class="celebrate-btn primary" id="celebrate-next-round-btn" onclick="dismissTeacherBingo(true)">Neste runde →</button>
       <button class="celebrate-btn secondary" onclick="dismissTeacherBingo(false)">Fortsett runden</button>
