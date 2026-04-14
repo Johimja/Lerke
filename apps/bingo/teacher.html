@@ -217,6 +217,10 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-roster-dot.on{background:#4caf7d;border-color:#4caf7d;box-shadow:0 0 10px rgba(76,175,125,.28)}
 .live-roster-dot.bingo{background:#f5a623;border-color:#f5a623;box-shadow:0 0 12px rgba(245,166,35,.32)}
 .live-roster-empty{color:#8c94b3;font-size:.9rem;line-height:1.4;padding:10px 4px}
+.live-roster-item.near-bingo{border-color:#f5a623;background:#1e2418;box-shadow:0 0 0 1px rgba(245,166,35,.18),0 2px 14px rgba(245,166,35,.12)}
+.live-roster-item.near-bingo .live-roster-meta{color:#f5c842;font-weight:700}
+.near-bingo-alert{display:flex;align-items:center;gap:8px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:.78rem;color:#f5c842;font-weight:600;flex-shrink:0}
+.near-bingo-alert-icon{font-size:1rem}
 .lobby-modal{display:none;position:fixed;inset:0;background:rgba(5,8,14,.88);z-index:1090;padding:clamp(12px,2vw,24px)}
 .lobby-modal.show{display:flex}
 .lobby-shell{width:min(1200px,100%);margin:auto;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px}
@@ -1111,13 +1115,19 @@ function renderTeacherParticipantProgress(){
     container.innerHTML='<div class="live-roster-empty">Ingen elever er inne ennå.</div>';
     return;
   }
-  container.innerHTML=teacherParticipantProgress.map(item=>{
+  const nearBingoNames=teacherParticipantProgress.filter(p=>p.progress===4&&!p.hasBingo).map(p=>p.name);
+  const alertHtml=nearBingoNames.length
+    ? `<div class="near-bingo-alert"><span class="near-bingo-alert-icon">⚡</span>${nearBingoNames.map(n=>escapeHtml(n)).join(', ')} mangler 1!</div>`
+    : '';
+  container.innerHTML=alertHtml+teacherParticipantProgress.map(item=>{
+    const isNearBingo=item.progress===4&&!item.hasBingo;
     const dots=Array.from({length:5},(_,idx)=>{
       const on=idx<item.progress;
       const bingo=item.hasBingo&&idx<5;
       return `<span class="live-roster-dot ${on?'on':''} ${bingo?'bingo':''}"></span>`;
     }).join('');
-    return `<div class="live-roster-item"><div class="live-roster-name">${escapeHtml(item.name)}</div><div class="live-roster-meta">${item.hasBingo?'Bingo':`${item.progress}/5`}</div><div class="live-roster-dots">${dots}</div></div>`;
+    const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${item.progress}/5`;
+    return `<div class="live-roster-item${isNearBingo?' near-bingo':''}"><div class="live-roster-name">${escapeHtml(item.name)}</div><div class="live-roster-meta">${meta}</div><div class="live-roster-dots">${dots}</div></div>`;
   }).join('');
   // Bingo celebration
   const winners=teacherParticipantProgress.filter(p=>p.hasBingo).map(p=>p.name);
