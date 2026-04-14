@@ -1,5 +1,4 @@
-Lerke Bingo: Strict Digital Live Gameplay Spec
-
+Lerke Bingo: Strict Digital Live Gameplay Spec (The important file is shared_notes.md - This file is an older file, you should either merge this with newer another similar document with newer goals or rewrite to keep it current)
  1. Design goal
 
  Lerke Bingo should behave as a teacher-driven, live, authoritative classroom game, not as a locally self-managed bingo

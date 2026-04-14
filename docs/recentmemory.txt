@@ -109,11 +109,9 @@ Best current paths forward
 If resuming later
 -----------------
 - Read:
-  - `docs/recentmemory.txt`
+  - `shared_notes.md`
   - `README.md`
-  - `supabase/sql/README.md`
-- Then inspect:
+- Then inspect:(if mentioned in shared notes, if not, just inspect needed parts if needed)
   - `index.html`
   - `apps/bingo/teacher.html`
   - `apps/bingo/student.html`
-  - `apps/bingo-generator/index.html`
