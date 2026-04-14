@@ -43,7 +43,32 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ## Session Log
 
-### 2026-04-13 — Session 3: Session ID staleness bug — root cause found and fixed
+### 2026-04-14 — Session 8: Podium, leaderboard, bingo banner fixes
+
+**What was shipped:**
+
+- `supabase/sql/supabase_bingo_v6_podium.sql` + migration `add_bingo_podium`:
+  - `participant_round_boards.bingo_at_draw_index` — set once when `has_bingo` first flips
+  - `submit_bingo_answer` updated to capture draw index at bingo moment
+  - `get_bingo_live_state` now returns `teacher_summary.bingo_podium` (top 3 ranked `{name, draw_index}`)
+  - `bingo_winners` sort changed from alphabetical → chronological
+- `apps/bingo/teacher.html`: gold/silver/bronze podium rows inside celebration overlay (2+ winners only)
+- `apps/bingo/student.html` — three bug fixes:
+  - **F5 bingo repeat** fixed: `lastStrictBingoShownRound` replaced with `sessionStorage` keyed to `session_id+round` — survives page refresh
+  - **Banner auto-dismiss** on new round: bingo banner and other-winner guard reset when board/round changes
+  - **Game-over message**: live-strip shows "Spillet er ferdig! Bra jobbet! 🎉" when last round completes
+- `supabase/sql/supabase_bingo_v7_leaderboard.sql` + migration `add_session_leaderboard_rpc`:
+  - `get_session_leaderboard` RPC: per-participant bingo_total, correct_total, total_answers, fastest_bingo_draw
+- `apps/bingo/student.html`: collapsible Poengtavle panel — appears on `round_complete`, auto-refreshes every 5s, highlights current student's row, collapses/expands
+
+**Next session should start with:**
+- Hard-refresh teacher + student browsers
+- Play a full session end-to-end: check podium appears after 2+ students win, leaderboard shows after round ends, bingo banner doesn't repeat on F5
+- Then: near-bingo alert on teacher screen (Tier 1, ~20 min) or avatar creator (Tier 2, bigger investment)
+
+---
+
+### 2026-04-13 — Session 7: Bingo celebration polish + vision planning
 
 **Root cause confirmed (from screenshot):**
 - Teacher showed STATUS: Lobby, TRUKKET 0/25 (fresh session)
@@ -261,12 +286,10 @@ This is why `refreshTeacherParticipantProgress()` always showed "Ingen elever er
 
 ### Tier 1 — Bingo: Engagement Extras (do these next, in order)
 
-- [ ] **End-of-round podium** ← START HERE next session
-  - Top 3 bingo winners shown on teacher screen after each round (gold/silver/bronze)
-  - Fastest to bingo wins; tie-break by `draw_index` at which `has_bingo` flipped
-  - Data already in DB (`participant_round_boards.has_bingo` + `participant_draw_responses.answered_at`)
-  - Show on the celebration overlay or as a separate "round over" panel
-- [ ] **Near-bingo alert on teacher screen**
+- [x] **End-of-round podium** ✅ — gold/silver/bronze on teacher celebration overlay, ranked by `bingo_at_draw_index`
+- [x] **Student leaderboard** ✅ — collapsible Poengtavle panel on student screen, shows after each round
+- [x] **Bingo banner F5 repeat fix** ✅ — sessionStorage guard, auto-dismiss on new round, game-over message
+- [ ] **Near-bingo alert on teacher screen** ← START HERE next session
   - Elevoversikt highlights students who need only 1 more correct answer for bingo
   - Computable from `marked_cells` count (N−1 marked on a 5×5 board = 24 marked)
   - Teacher can call it out: "Blid Stjerne trenger bare én til!" — creates class suspense
