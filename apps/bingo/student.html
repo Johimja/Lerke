@@ -297,8 +297,13 @@ let strictLivePollErrorCount=0;
 let currentBoardRoundNumber=0;
 let currentBoardSignature='';
 let currentResponseKey='';
-let lastStrictBingoShownRound=0;
 let lastOtherBingoShownKey='';
+function markBingoShown(roundNumber){
+  try{sessionStorage.setItem('lerke_bingo_'+liveSessionId+'_'+roundNumber,'1');}catch(e){}
+}
+function wasBingoShown(roundNumber){
+  try{return sessionStorage.getItem('lerke_bingo_'+liveSessionId+'_'+roundNumber)==='1';}catch(e){return false;}
+}
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function parseTableValues(raw){
@@ -706,6 +711,9 @@ function applyStrictLiveState(payload){
       currentBoardRoundNumber=roundNumber;
       currentBoardSignature=nextSignature;
       renderCard(true);
+      // New round started — dismiss any lingering bingo banner and reset other-winner guard
+      document.getElementById('bingo-banner')?.classList.remove('show');
+      lastOtherBingoShownKey='';
     }
     applyMarkedCellsToGrid(board.marked_cells||[]);
   }
@@ -724,9 +732,9 @@ function applyStrictLiveState(payload){
   } else if(!response){
     currentResponseKey='';
   }
-  // Show bingo banner the first time this round
-  if(board?.has_bingo && roundNumber > lastStrictBingoShownRound){
-    lastStrictBingoShownRound=roundNumber;
+  // Show bingo banner once per round — sessionStorage guard survives F5 refresh
+  if(board?.has_bingo && !wasBingoShown(roundNumber)){
+    markBingoShown(roundNumber);
     showBingoBanner('Du fikk bingo! Vent på læreren.');
   } else if(!board?.has_bingo){
     // Show other students' bingo from teacher_summary.bingo_winners
@@ -745,6 +753,7 @@ function applyStrictLiveState(payload){
 
 function updateStrictPrompt(payload){
   const state=payload.state||{};
+  const session=payload.session||{};
   const draw=state.current_draw||null;
   const stripEl=document.getElementById('live-strip');
   const labelEl=document.getElementById('live-strip-label');
@@ -767,9 +776,13 @@ function updateStrictPrompt(payload){
     labelEl.textContent='Låst';
     wordEl.textContent=draw.prompt;
   } else if(state.phase==='round_complete'){
+    const totalRoundsInSession=Math.max(1,parseInt(session.settings?.rounds,10)||totalRounds||1);
+    const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
     stripEl.className='live-strip show phase-wait';
     labelEl.textContent='';
-    wordEl.textContent='Runden er ferdig. Vent på læreren.';
+    wordEl.textContent=roundNumber>=totalRoundsInSession
+      ?'Spillet er ferdig! Bra jobbet! 🎉'
+      :'Runden er ferdig. Vent på læreren.';
   } else {
     stripEl.className='live-strip show phase-wait';
     labelEl.textContent='';
@@ -852,8 +865,8 @@ async function submitStrictAnswer(idx){
     else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
     if(data?.has_bingo){
       const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
-      if(rn>lastStrictBingoShownRound){
-        lastStrictBingoShownRound=rn;
+      if(!wasBingoShown(rn)){
+        markBingoShown(rn);
         showBingoBanner('Du fikk bingo!');
       }
     }
