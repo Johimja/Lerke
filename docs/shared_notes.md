@@ -56,6 +56,21 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-15 — Session 11: Teacher UI Polish & Gamification
+
+**What was shipped:**
+- `apps/bingo/teacher.html`: Restored large, glowing font for the join code (`live-join-code`).
+- `apps/bingo/teacher.html`: Added auto-collapse logic for the join box when the first draw starts.
+- `apps/bingo/teacher.html`: Implemented a "Live Ticker" with gamified messages (e.g., "Wow, for en fart! ⚡", "I know 5 x 5 is 25! 💡").
+- `apps/bingo/teacher.html`: Enhanced the layout to make the countdown timer larger and more prominent when the join box is collapsed.
+- Documentation sync: Logged teacher UI improvements and gamification features.
+
+**Next session should start with:**
+- Verify ticker message variety and timing.
+- Explore "Floating reactions" appearing in the main stage area during draws.
+
+---
+
 ### 2026-04-15 — Session 10: Removal of student-side manual controls + Documentation Sync
 
 **What was shipped:**

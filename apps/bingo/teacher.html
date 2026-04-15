@@ -164,8 +164,8 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-modal.show{display:flex}
 .live-shell{width:100%;height:100%;display:grid;grid-template-columns:minmax(0,1.8fr) minmax(280px,.9fr);gap:16px}
 .live-main,.live-side{background:#141926;border:1px solid var(--border);border-radius:18px;min-height:0}
-.live-main{display:flex;flex-direction:column;padding:clamp(16px,2vw,26px);position:relative;overflow:hidden}
-.live-side{padding:16px;display:flex;flex-direction:column;min-height:0}
+.live-main{display:flex;flex-direction:column;padding:clamp(16px,2vw,26px);position:relative;overflow-y:auto}
+.live-side{padding:16px;display:flex;flex-direction:column;min-height:0;overflow-y:auto}
 .live-close{position:absolute;top:16px;right:18px;background:none;border:none;color:#8c94b3;font-size:2rem;line-height:1;cursor:pointer}
 .live-kicker{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
 .live-join-wrap{display:flex;align-items:stretch;gap:16px;margin:4px 0 18px}
@@ -188,6 +188,14 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .timer-circle-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:10}
 .timer-circle-progress{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 0.3s linear}
 .countdown-text{position:absolute;font-family:'Raleway',sans-serif;font-weight:900;font-size:2.4rem;color:#fff;text-shadow:0 0 15px rgba(245,166,35,.4)}
+
+.live-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.live-answer{font-size:.85rem;color:var(--muted);margin-bottom:12px;cursor:pointer;user-select:none;transition:color .15s}
+.live-answer.revealable:hover{color:#fff}
+.live-stage{flex:1;display:flex;align-items:center;justify-content:center;background:#0f1420;border:1px solid #1e2740;border-radius:22px;padding:30px;position:relative;margin-bottom:18px;min-height:160px}
+.live-current{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3.5rem,10vw,8.5rem);line-height:.95;color:#fff;text-align:center;word-break:break-word}
+.live-current.live-empty{font-size:1.8rem;color:var(--muted);font-weight:700;opacity:0.6}
+
 .live-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .live-action{flex:1;min-width:120px;padding:14px 16px;border:none;border-radius:12px;font-family:'Raleway',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
 .live-action.primary{background:linear-gradient(135deg,var(--accent),#e09010);color:#000}
@@ -670,6 +678,21 @@ let selectedClassId='';
 let currentClassStudents=[];
 let classAdminCollapsed=true;
 window._words=defaultWords.map(w=>[...w]);
+
+const tickerMessages = [
+  "Bli med nå, trekningen starter straks! 🎲",
+  "Ooooh, det var et raskt klikk! ⚡",
+  "Noen ganger er det lurt å tenke seg om to ganger... 🤔",
+  "DENNE ØKTEN BEGYNNER Å BLI SPENNENDE! 🔥",
+  "Hvem får den første medaljen i dag? 🥇",
+  "Visste du at 5 x 5 er 25? Bare et lite tips... 😉",
+  "Følg med på skjermen for neste trekk! 👀",
+  "Heia heia! Snart er det BINGO! 🎉",
+  "Husk å puste, det er bare et spill! 🧘",
+  "Er du raskest på avtrekkeren i dag? 🔫",
+  "Hvem har flest kryss så langt? ✖️"
+];
+let lastTickerIndex = -1;
 
 // ===== TABS =====
 function switchTab(tab){
@@ -1911,6 +1934,15 @@ function renderStrictTeacherLiveMode(){
   const configuredSeconds=Math.max(0,parseInt(teacherLiveState?.session?.settings?.draw_duration_seconds,10)||getLiveCountdownSeconds());
   const remainingSeconds=Math.max(0,Math.min(configuredSeconds,Math.ceil((closesAt-Date.now())/1000)));
   const history=buildTeacherHistory(roundNumber,drawIndex);
+  
+  // Auto collapse join info if we have already drawn something or are currently drawing
+  if (drawIndex > 0 || state.phase === 'draw_open' || state.phase === 'draw_locked') {
+    const wrap = document.getElementById('live-join-wrap');
+    if (wrap && !wrap.classList.contains('collapsed')) {
+      toggleLiveJoin();
+    }
+  }
+
   const currentEl=document.getElementById('live-current');
   const currentPrompt=currentDraw?.prompt||'Venter på at læreren åpner neste trekk';
   const answerKey=currentDraw?`strict:${roundNumber}:${drawIndex}:${currentDraw.prompt}`:'';
@@ -2396,15 +2428,13 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
           <span class="countdown-text" id="countdown-number"></span>
         </div>
       </div>
-      <div id="live-ticker-wrap" style="display:none;margin-top:-6px;margin-bottom:12px">
+      <div class="live-stage">
+        <div class="live-current live-empty" id="live-current">Klar til første trekning</div>
+      </div>
+      <div id="live-ticker-wrap" style="display:none;margin-top:0;margin-bottom:12px">
         <div class="live-ticker">
           <div class="live-ticker-text" id="live-ticker-text">Venter på neste trekk...</div>
         </div>
-      </div>
-      <div class="live-title" id="live-round-label">Runde 1 av 1</div>
-      <div class="live-answer" id="live-answer" onclick="toggleTeacherAnswerReveal()">Trykk på "Neste" for å vise første trekk.</div>
-      <div class="live-stage">
-        <div class="live-current live-empty" id="live-current">Klar til første trekning</div>
       </div>
       <div class="live-toolbar">
         <button class="live-action primary" id="live-next-draw" onclick="nextLiveDraw()">Neste</button>
