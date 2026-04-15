@@ -204,10 +204,13 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 
 .connection-lost-overlay{display:none;position:fixed;inset:0;background:rgba(15,17,23,.94);z-index:2000;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 .connection-lost-overlay.show{display:flex}
-.connection-lost-box{max-width:320px;padding:30px;background:#1a1d27;border:1px solid #e05a5a;border-radius:20px;box-shadow:0 0 30px rgba(224,90,90,.15)}
-.connection-lost-icon{font-size:3rem;margin-bottom:15px;display:block}
-.connection-lost-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.4rem;color:#fff;margin-bottom:10px}
-.connection-lost-text{font-size:0.95rem;color:#aeb7d5;line-height:1.5;margin-bottom:20px}
+.connection-lost-box{max-width:320px;padding:32px;background:#1a1d27;border:1px solid #e05a5a;border-radius:20px;box-shadow:0 0 40px rgba(224,90,90,.2);display:flex;flex-direction:column;align-items:center;gap:12px}
+.connection-lost-icon{font-size:3.2rem;margin-bottom:4px;animation:pulse-opacity 2.2s infinite}
+.connection-lost-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.5rem;color:#fff}
+.connection-lost-text{font-size:0.95rem;color:#aeb7d5;line-height:1.6}
+.connection-lost-btn{margin-top:8px;padding:12px 24px;background:#22263a;border:1px solid #33405f;border-radius:12px;color:#dce7ff;font-family:'Raleway',sans-serif;font-weight:800;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.connection-lost-btn:hover{border-color:#e05a5a;color:#fff;background:#2a1a1a}
+@keyframes pulse-opacity{0%,100%{opacity:.4}50%{opacity:1}}
 </style>
 </head>
 <body>
@@ -294,6 +297,7 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
     <span class="connection-lost-icon">📡</span>
     <div class="connection-lost-title">Mistet kontakt</div>
     <div class="connection-lost-text">Læreren har mistet forbindelsen eller lukket økten. Venter på nytt signal...</div>
+    <button class="connection-lost-btn" onclick="leaveSession()">Avbryt og gå tilbake</button>
   </div>
 </div>
 
@@ -1288,6 +1292,14 @@ function newCard(){
   roundsWon=0;
   roundWon=false;
   renderCard();
+}
+
+function leaveSession() {
+  stopStrictLivePolling();
+  const url = new URL(window.location.href);
+  url.searchParams.delete('session');
+  url.searchParams.delete('join');
+  window.location.href = url.toString();
 }
 
 function showError(title,msg,link){
