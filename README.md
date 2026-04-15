@@ -62,15 +62,6 @@ Older planning notes and project history now live under [docs/archive/reference]
 
 ---
 
-## Supporting Docs
-
-- [docs/recentmemory.txt](docs/recentmemory.txt)
-- [supabase/sql/README.md](supabase/sql/README.md)
-- [docs/archive/reference](docs/archive/reference)
-- [docs/archive/prototypes](docs/archive/prototypes)
-
----
-
 ## How to Use
 
 ### Teacher
@@ -106,7 +97,6 @@ Older planning notes and project history now live under [docs/archive/reference]
 - `apps/bingo-generator/index.html` contains the classic generator/print flow
 - shared frontend config files now live in `config/`
 - active images/audio now live in `media/`
-- archived launcher pages live under `docs/archive/prototypes/` and should be treated as backtracking-only
 - Live Bingo uses Supabase for auth, session state, join flow, and participant presence
 - Student accounts use the teacher-managed class + student + PIN backend track
 - `config/supabase-public-config.js` provides `window.LERKE_SUPABASE = { url, anonKey }`
@@ -126,9 +116,9 @@ Older planning notes and project history now live under [docs/archive/reference]
 
 #### 1. Teacher live overview / dashboard
 
-- [ ] Show connected students during live play, not only in the lobby
-- [ ] Add teacher view of progress, near-BINGO boards, and round winners
-- [ ] Add clearer live controls for reset / next round / session state
+- [x] Show connected students during live play, not only in the lobby
+- [x] Add teacher view of progress, near-BINGO boards, and round winners
+- [x] Add clearer live controls for reset / next round / session state
 
 #### 2. Glosebingo content improvements
 
