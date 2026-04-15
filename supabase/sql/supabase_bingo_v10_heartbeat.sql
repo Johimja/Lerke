@@ -1,7 +1,73 @@
--- V9: Fastest-answer stats
--- Adds 'fastest_participant' (for the current draw) and 'speed_leaderboard' (average for the round)
--- to the get_bingo_live_state teacher_summary.
+-- V10: Session Heartbeat / Host Active Status
+-- Adds last_heartbeat_at to sessions to track if the teacher is still connected.
 
+begin;
+
+-- 1. Add column to sessions
+alter table public.sessions 
+add column if not exists last_heartbeat_at timestamptz default now();
+
+-- 2. Create heartbeat RPC
+create or replace function public.touch_session_heartbeat(
+  p_session_id uuid
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_session_teacher(p_session_id) then
+    raise exception 'Only the teacher can update the heartbeat';
+  end if;
+
+  update public.sessions
+  set last_heartbeat_at = now()
+  where id = p_session_id;
+end;
+$$;
+
+grant execute on function public.touch_session_heartbeat(uuid) to authenticated;
+
+-- 3. Update get_bingo_live_state to include host_active
+create or replace function public.get_bingo_session_teacher(
+  p_session_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_session public.sessions;
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  if not public.is_session_teacher(p_session_id) then
+    raise exception 'Session access required';
+  end if;
+
+  select *
+  into v_session
+  from public.sessions
+  where id = p_session_id
+  limit 1;
+
+  return jsonb_build_object(
+    'id', v_session.id,
+    'title', v_session.title,
+    'status', v_session.status,
+    'join_code', v_session.join_code,
+    'settings', v_session.settings
+  );
+end;
+$$;
+
+grant execute on function public.get_bingo_session_teacher(uuid) to authenticated;
+
+-- 4. Update get_bingo_live_state to include host_active
 create or replace function public.get_bingo_live_state(
   p_session_id uuid
 )
@@ -26,6 +92,7 @@ declare
   v_bingo_podium jsonb := '[]'::jsonb;
   v_fastest_participant jsonb := null;
   v_speed_leaderboard jsonb := '[]'::jsonb;
+  v_host_active boolean := false;
 begin
   if auth.uid() is null then
     raise exception 'Authentication required';
@@ -40,6 +107,9 @@ begin
   from public.sessions
   where id = p_session_id
   limit 1;
+
+  -- Host is active if last heartbeat was within the last 20 seconds
+  v_host_active := (v_session.last_heartbeat_at > (now() - interval '20 seconds'));
 
   select *
   into v_state
@@ -101,7 +171,7 @@ begin
     and round_number = coalesce(v_state.round_number, 0)
     and has_bingo = true;
 
-  -- fastest_participant: The person who answered correctly first in the current draw
+  -- fastest_participant
   select jsonb_build_object(
     'name', sp.display_name,
     'seconds', extract(epoch from (pdr.answered_at - v_state.current_draw_opened_at))
@@ -117,7 +187,7 @@ begin
   order by pdr.answered_at asc
   limit 1;
 
-  -- speed_leaderboard: Average response time for correct answers this round (Top 3)
+  -- speed_leaderboard
   select coalesce(
     jsonb_agg(
       jsonb_build_object('name', sub.display_name, 'avg_seconds', sub.avg_seconds)
@@ -144,7 +214,7 @@ begin
     order by avg_seconds asc
     limit 3
   ) sub;
-  -- bingo_winners: all winner names sorted by when they got bingo
+
   select coalesce(jsonb_agg(sp.display_name order by prb.bingo_at_draw_index asc nulls last), '[]'::jsonb)
   into v_bingo_winner_names
   from public.participant_round_boards prb
@@ -153,7 +223,6 @@ begin
     and prb.round_number = coalesce(v_state.round_number, 0)
     and prb.has_bingo = true;
 
-  -- bingo_podium: top 3 winners with draw_index
   select coalesce(
     jsonb_agg(
       jsonb_build_object('name', sub.display_name, 'draw_index', sub.bingo_at_draw_index)
@@ -179,7 +248,8 @@ begin
       'title', v_session.title,
       'status', v_session.status,
       'join_code', v_session.join_code,
-      'settings', v_session.settings
+      'settings', v_session.settings,
+      'host_active', v_host_active
     ),
     'state', jsonb_build_object(
       'phase', v_state.phase,
@@ -234,3 +304,5 @@ begin
   );
 end;
 $$;
+
+commit;

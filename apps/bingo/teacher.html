@@ -185,8 +185,12 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;border-radius:18px;background:linear-gradient(135deg,#1b2236,#111521);border:1px solid #293149;text-align:center;position:relative;overflow:hidden}
 .live-current{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(2.4rem,7vw,6rem);line-height:1.02;letter-spacing:-1px;color:#fff;word-break:break-word}
 .live-empty{font-family:'Raleway',sans-serif;font-weight:700;font-size:clamp(1.1rem,2.2vw,1.5rem);color:#8c94b3}
-.live-countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(245,166,35,.18),rgba(11,16,26,.82));font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(5rem,18vw,11rem);letter-spacing:-2px;color:#fff;text-shadow:0 0 24px rgba(245,166,35,.28)}
+.live-countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(245,166,35,.18),rgba(11,16,26,.82));font-family:'Raleway',sans-serif;font-weight:900;z-index:10}
 .live-countdown.show{display:flex}
+.timer-svg{width:min(320px, 60%);height:min(320px, 60%);transform:rotate(-90deg);overflow:visible}
+.timer-circle-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:12}
+.timer-circle-progress{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 0.3s linear}
+.countdown-text{position:absolute;font-size:clamp(4rem,14vw,9rem);color:#fff;text-shadow:0 0 24px rgba(245,166,35,.28);letter-spacing:-2px}
 .live-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .live-action{flex:1;min-width:120px;padding:14px 16px;border:none;border-radius:12px;font-family:'Raleway',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
 .live-action.primary{background:linear-gradient(135deg,var(--accent),#e09010);color:#000}
@@ -412,6 +416,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="launch-title">Start live-økt</div>
         <div class="launch-copy">Sett opp innhold i egne arbeidsvinduer og start økten direkte. Join-kode og QR vises i selve øktvinduet.</div>
         <div class="launch-actions">
+          <button class="btn btn-primary recover-session-btn" onclick="resumeActiveSession()" style="display:none;background:linear-gradient(135deg,#2acf8d,#1f7a4a);border-color:#1f7a4a;margin-bottom:12px;width:100%;padding:14px;border-radius:12px;color:#fff;font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;cursor:pointer">
+            <span style="font-size:1.2rem;margin-right:8px">🔄</span> Gjenopprett aktiv økt
+          </button>
           <button class="generate-btn prepare-live-btn" onclick="prepareLiveSession()">🚀 Start live-økt</button>
         </div>
         <div class="launch-note">Øktvinduet åpner direkte og viser både join-info og trekning i samme flate.</div>
@@ -451,6 +458,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="launch-title">Start live-økt</div>
         <div class="launch-copy">Sett opp tabeller og spillform i egne arbeidsvinduer og start økten direkte. Join-kode og QR vises i selve øktvinduet.</div>
         <div class="launch-actions">
+          <button class="btn btn-primary recover-session-btn" onclick="resumeActiveSession()" style="display:none;background:linear-gradient(135deg,#2acf8d,#1f7a4a);border-color:#1f7a4a;margin-bottom:12px;width:100%;padding:14px;border-radius:12px;color:#fff;font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;cursor:pointer">
+            <span style="font-size:1.2rem;margin-right:8px">🔄</span> Gjenopprett aktiv økt
+          </button>
           <button class="generate-btn prepare-live-btn" onclick="prepareLiveSession()">🚀 Start live-økt</button>
         </div>
         <div class="launch-note">Øktvinduet åpner direkte og viser både join-info og trekning i samme flate.</div>
@@ -644,6 +654,7 @@ let lobbyAudioMuted=false;
 let teacherLiveState=null;
 let teacherLivePollTimer=null;
 let teacherLiveRenderTimer=null;
+let teacherHeartbeatTimer=null;
 let teacherPollErrorCount=0;
 let teacherAutoLockInFlight=false;
 let teacherParticipantProgress=[];
@@ -1047,6 +1058,10 @@ async function syncLiveSession(payload){
     }
 
     activeLiveSession={id:sessionRow.id,joinCode:sessionRow.join_code,title:sessionRow.title||payload.session_name};
+    try {
+      localStorage.setItem('lerke_bingo_teacher_session_id', sessionRow.id);
+      localStorage.setItem('lerke_bingo_teacher_session_title', sessionRow.title || payload.session_name);
+    } catch(e) {}
     teacherLiveState=null;
     setLiveSyncStatus(`Liveøkt opprettet: ${sessionRow.join_code}`,false);
     await refreshTeacherLiveState({silent:true}).catch(()=>null);
@@ -1258,6 +1273,23 @@ function toggleTeacherAnswerReveal(){
   teacherAnswerVisible=!teacherAnswerVisible;
   renderLiveMode();
 }
+function stopTeacherHeartbeat(){
+  if(teacherHeartbeatTimer){
+    clearInterval(teacherHeartbeatTimer);
+    teacherHeartbeatTimer=null;
+  }
+}
+function startTeacherHeartbeat(){
+  stopTeacherHeartbeat();
+  if(!activeLiveSession?.id) return;
+  teacherHeartbeatTimer=setInterval(async ()=>{
+    try{
+      await supabaseClient.rpc('touch_session_heartbeat',{p_session_id:activeLiveSession.id});
+    }catch(e){
+      console.warn('Heartbeat failed',e);
+    }
+  },5000);
+}
 function stopTeacherLivePolling(){
   if(teacherLivePollTimer){
     clearInterval(teacherLivePollTimer);
@@ -1267,10 +1299,12 @@ function stopTeacherLivePolling(){
     clearInterval(teacherLiveRenderTimer);
     teacherLiveRenderTimer=null;
   }
+  stopTeacherHeartbeat();
 }
 function startTeacherLivePolling(){
   stopTeacherLivePolling();
   teacherPollErrorCount=0;
+  startTeacherHeartbeat();
   teacherLivePollTimer=setInterval(()=>{
     refreshTeacherLiveState({silent:true}).then(()=>{
       if(teacherPollErrorCount>0){
@@ -1817,8 +1851,28 @@ function renderLiveMode(){
   const resetBtn=document.querySelector('#live-modal .live-action.secondary');
   if(resetBtn) resetBtn.textContent='Start runden på nytt';
   const countdownEl=document.getElementById('live-countdown');
-  countdownEl.textContent='';
-  countdownEl.classList.remove('show');
+  const countdownNumber=document.getElementById('countdown-number');
+  const timerProgress=document.getElementById('timer-progress');
+  
+  const isStrict = !!(teacherLiveState?.state && activeLiveSession?.id);
+  const showCountdown = isStrict 
+    ? (state.phase==='draw_open' && remainingSeconds > 0)
+    : (liveCountdownActive && liveCountdownValue > 0);
+  
+  if(showCountdown) {
+    const currentVal = isStrict ? remainingSeconds : liveCountdownValue;
+    const totalVal = isStrict ? (configuredSeconds || 15) : (getLiveCountdownSeconds() || 15);
+    countdownEl.classList.add('show');
+    if(countdownNumber) countdownNumber.textContent = currentVal;
+    if(timerProgress) {
+      const progress = currentVal / totalVal;
+      const offset = 283 * (1 - progress);
+      timerProgress.style.strokeDashoffset = offset;
+    }
+  } else {
+    countdownEl.classList.remove('show');
+  }
+
   const historyEl=document.getElementById('live-history');
   historyEl.innerHTML=liveHistory.length
     ? [...liveHistory].reverse().map((item,i)=>`<div class="live-history-item"><span class="num">Trekk ${liveHistory.length-i}</span><span class="main">${escapeHtml(item.prompt)}</span><span class="sub">Fasit skjult</span></div>`).join('')
@@ -1896,8 +1950,28 @@ function renderStrictTeacherLiveMode(){
   const resetBtn=document.querySelector('#live-modal .live-action.secondary');
   if(resetBtn) resetBtn.textContent=state.phase==='round_complete'?'Start denne runden på nytt':'Nullstill runden';
   const countdownEl=document.getElementById('live-countdown');
-  countdownEl.textContent='';
-  countdownEl.classList.remove('show');
+  const countdownNumber=document.getElementById('countdown-number');
+  const timerProgress=document.getElementById('timer-progress');
+  
+  const isStrict = !!(teacherLiveState?.state && activeLiveSession?.id);
+  const showCountdown = isStrict 
+    ? (state.phase==='draw_open' && remainingSeconds > 0)
+    : (liveCountdownActive && liveCountdownValue > 0);
+  
+  if(showCountdown) {
+    const currentVal = isStrict ? remainingSeconds : liveCountdownValue;
+    const totalVal = isStrict ? (configuredSeconds || 15) : (getLiveCountdownSeconds() || 15);
+    countdownEl.classList.add('show');
+    if(countdownNumber) countdownNumber.textContent = currentVal;
+    if(timerProgress) {
+      const progress = currentVal / totalVal;
+      const offset = 283 * (1 - progress);
+      timerProgress.style.strokeDashoffset = offset;
+    }
+  } else {
+    countdownEl.classList.remove('show');
+  }
+
   const historyEl=document.getElementById('live-history');
   historyEl.innerHTML=history.length
     ? [...history].reverse().map((item,i)=>`<div class="live-history-item"><span class="num">Trekk ${history.length-i}</span><span class="main">${escapeHtml(item.prompt)}</span><span class="sub">Fasit skjult</span></div>`).join('')
@@ -2106,6 +2180,63 @@ function importList(event){
   event.target.value=''; // reset so same file can be re-imported
 }
 
+// ===== RECOVERY =====
+async function checkRecoverableSession() {
+  const savedId = localStorage.getItem('lerke_bingo_teacher_session_id');
+  const savedTitle = localStorage.getItem('lerke_bingo_teacher_session_title');
+  if (!savedId || !supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient.rpc('get_bingo_live_state', { p_session_id: savedId });
+    if (error) throw error;
+    const state = Array.isArray(data) ? data[0] : data;
+    
+    if (state && state.session && state.state && state.state.phase !== 'finished') {
+      activeLiveSession = {
+        id: savedId,
+        joinCode: state.session.join_code,
+        title: savedTitle || state.session.title || 'Bingo-økt'
+      };
+      
+      document.querySelectorAll('.recover-session-btn').forEach(btn => {
+        btn.style.display = 'block';
+        btn.innerHTML = `<span style="font-size:1.2rem;margin-right:8px">🔄</span> Gjenopprett økt: ${activeLiveSession.joinCode}`;
+      });
+      
+      setLiveSyncStatus(`Fant aktiv økt (${activeLiveSession.joinCode}). Du kan gjenopprette den.`, false);
+    } else {
+      clearRecoverableSession();
+    }
+  } catch (e) {
+    console.warn('Recovery check failed', e);
+  }
+}
+
+function clearRecoverableSession() {
+  localStorage.removeItem('lerke_bingo_teacher_session_id');
+  localStorage.removeItem('lerke_bingo_teacher_session_title');
+  document.querySelectorAll('.recover-session-btn').forEach(btn => btn.style.display = 'none');
+}
+
+async function resumeActiveSession() {
+  if (!activeLiveSession) return;
+  
+  try {
+    setLiveSyncStatus('Gjenoppretter økt...');
+    await refreshTeacherLiveState({ silent: false });
+    
+    if (teacherLiveState?.session?.rounds_data) {
+        liveRounds = teacherLiveState.session.rounds_data.map(round => round.map(item => ({ ...item })));
+        const mode = teacherLiveState.session.settings?.game_mode === 'matte' ? 'Matte' : 'Glose';
+        liveLabel = `Lerke Bingo · ${mode}`;
+    }
+
+    await openLiveMode();
+  } catch (error) {
+    setLiveSyncStatus(`Gjenoppretting feilet: ${error.message}`, true);
+  }
+}
+
 // ===== INIT =====
 async function init(){
   const versionBadge=document.getElementById('app-version-badge');
@@ -2120,6 +2251,7 @@ async function init(){
   }
   updateTeacherLaunchAccess();
   initQR();
+  await checkRecoverableSession();
 }
 
 if(document.readyState==='loading'){
@@ -2188,7 +2320,7 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
       <div class="live-join-wrap">
         <div class="live-join-box">
           <div class="live-join-copy">
-            <div class="live-join-label">Bli med med kode</div>
+            <div class="live-join-label">Bli med med kode eller QR</div>
             <div class="live-join-code" id="live-join-code">------</div>
             <div class="live-join-hint">Be elevene skanne QR-koden eller skrive inn denne koden.</div>
           </div>
@@ -2201,7 +2333,13 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
       <div class="live-title" id="live-round-label">Runde 1 av 1</div>
       <div class="live-answer" id="live-answer" onclick="toggleTeacherAnswerReveal()">Trykk på "Neste" for å vise første trekk.</div>
       <div class="live-stage">
-        <div class="live-countdown" id="live-countdown"></div>
+        <div class="live-countdown" id="live-countdown">
+          <svg class="timer-svg" viewBox="0 0 100 100">
+            <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+            <circle class="timer-circle-progress" id="timer-progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="0"></circle>
+          </svg>
+          <span class="countdown-text" id="countdown-number"></span>
+        </div>
         <div class="live-current live-empty" id="live-current">Klar til første trekning</div>
       </div>
       <div class="live-toolbar">

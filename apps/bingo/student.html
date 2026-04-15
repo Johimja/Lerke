@@ -201,6 +201,13 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 .live-strip-word{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;color:#111;flex:1;line-height:1.2}
 .live-strip.phase-locked .live-strip-word{color:#888}
 .live-strip.phase-wait .live-strip-word{font-size:0.8rem;font-weight:400;color:#666;font-family:'Source Sans 3',sans-serif}
+
+.connection-lost-overlay{display:none;position:fixed;inset:0;background:rgba(15,17,23,.94);z-index:2000;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.connection-lost-overlay.show{display:flex}
+.connection-lost-box{max-width:320px;padding:30px;background:#1a1d27;border:1px solid #e05a5a;border-radius:20px;box-shadow:0 0 30px rgba(224,90,90,.15)}
+.connection-lost-icon{font-size:3rem;margin-bottom:15px;display:block}
+.connection-lost-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.4rem;color:#fff;margin-bottom:10px}
+.connection-lost-text{font-size:0.95rem;color:#aeb7d5;line-height:1.5;margin-bottom:20px}
 </style>
 </head>
 <body>
@@ -280,6 +287,14 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
   <div class="bingo-text">BINGO!</div>
   <div class="bingo-sub" id="bingo-sub">Fem på rad!</div>
   <button class="bingo-close" onclick="dismissBingo()">Fortsett</button>
+</div>
+
+<div class="connection-lost-overlay" id="connection-lost-overlay">
+  <div class="connection-lost-box">
+    <span class="connection-lost-icon">📡</span>
+    <div class="connection-lost-title">Mistet kontakt</div>
+    <div class="connection-lost-text">Læreren har mistet forbindelsen eller lukket økten. Venter på nytt signal...</div>
+  </div>
 </div>
 
 <div class="bottom-bar">
@@ -718,8 +733,12 @@ async function ensureStrictBoardForCurrentRound(){
 function applyStrictLiveState(payload){
   strictLiveState=payload||null;
   if(!payload) return;
-  const state=payload.state||{};
   const session=payload.session||{};
+  const hostActive = !!session.host_active;
+  document.getElementById('connection-lost-overlay')?.classList.toggle('show', !hostActive);
+  if(!hostActive) return;
+
+  const state=payload.state||{};
   const board=payload.board||null;
   const response=payload.current_response||null;
   const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);

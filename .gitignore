@@ -1,0 +1,21 @@
+# Developer tools
+.vs/
+.vscode/
+
+# Supabase
+supabase/.temp/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build/Deps
+node_modules/
+dist/
+build/
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db

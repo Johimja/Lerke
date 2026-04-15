@@ -15,6 +15,10 @@ Reading order for a cold start:
 2. **This file** — decisions, session history, roadmap
 3. `README.md` — full project docs
 
+## Technical Tips for Gemini CLI
+
+- **Supabase CLI Access:** This project is linked to Supabase. I can run SQL patches directly using `supabase db query --linked --file path/to/file.sql`. This is the preferred way to apply migrations quickly without manual user intervention.
+
 ---
 
 ## Project Identity
@@ -41,7 +45,23 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
-## Session Log
+### 2026-04-15 — Session 9: Fix fastest stats SQL error and restore strict live UI
+
+**Root cause:**
+- `supabase/sql/supabase_bingo_v9_fastest_stats.sql` contained a syntax error (`ss_hist` table reference was undefined) in the `get_bingo_live_state` RPC.
+- This caused the RPC to fail, which in turn caused the teacher UI to fall back to the "offline" manual rendering mode (showing the "Neste" button instead of live controls).
+- Students were also unable to join sessions because the same RPC failed for them.
+
+**What was fixed:**
+- `supabase/sql/supabase_bingo_v9_fastest_stats.sql`: Updated the `speed_leaderboard` subquery to correctly join with `public.session_events` to retrieve draw opening times (`created_at`).
+- This restores the functional `get_bingo_live_state` RPC.
+
+**Next session should start with:**
+- Hard-refresh teacher + student browsers.
+- Create a fresh live session and verify that the "Strict Live Mode" UI (Lobby, then "Svar nå" / "Lås trekk") is active.
+- Verify that students can join the session successfully.
+
+---
 
 ### 2026-04-14 — Session 8: Podium, leaderboard, bingo banner fixes
 
