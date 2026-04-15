@@ -324,7 +324,10 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
       <h1>LERKE BINGO</h1>
       <p class="subtitle">Glose- og mattebingo for klasserommet</p>
     </div>
-    <div class="version-badge" id="app-version-badge">v--</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="../../index.html" class="auth-btn portal" style="text-decoration:none">Tilbake til portal</a>
+      <div class="version-badge" id="app-version-badge">v--</div>
+    </div>
   </div>
   <div class="auth-bar no-print" id="auth-bar">
     <input id="auth-email" type="email" placeholder="Lærer e-post">
@@ -638,7 +641,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ===== STATE =====
-const APP_VERSION='2026.04.12.4';
+const APP_VERSION='2026.04.15.1';
 const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
 const defaultWords=[['Answer','Svar'],['Because','Fordi'],['School','Skole'],['Where','Hvor'],['Could','Kunne'],['Should','Burde'],['Important','Viktig'],['Opposite','Motsatt'],['Knowledge','Kunnskap'],['Possible','Mulig'],['Probably','Sannsynligvis'],['Strength','Styrke'],['Beautiful','Vakker / Fin'],['Ordinary','Vanlig'],['Again','Igjen'],['Early','Tidlig'],['Freedom','Frihet'],['History','Historie'],['Language','Språk'],['Society','Samfunn'],['Change','Endring'],['Power','Makt'],['Between','Mellom'],['Almost','Nesten'],['Together','Sammen']];
 let gloseMode='no';
