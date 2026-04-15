@@ -60,6 +60,8 @@ h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spac
 }
 .reroll-btn:hover{border-color:var(--blue)}
 .reroll-btn:disabled{opacity:.45;cursor:default}
+.account-link{font-size:0.75rem;color:var(--blue);text-decoration:none;cursor:pointer;font-weight:600;display:inline-block;margin-top:4px}
+.account-link:hover{text-decoration:underline}
 .session-panel{
   width:100%;max-width:420px;margin-bottom:14px;padding:12px 14px;
   background:var(--surface);border:1px solid var(--border);border-radius:12px
@@ -210,6 +212,7 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
     <div class="account-badge">Portal</div>
   </div>
   <div class="account-meta" id="student-account-meta">Ingen elevkonto aktiv.</div>
+  <a class="account-link" onclick="signOutStudent()">Bytt bruker</a>
 </div>
 <div class="join-panel" id="join-panel" style="display:none">
   <div class="join-panel-title">Bli med i Lerke Bingo</div>
@@ -229,6 +232,7 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
     <button class="reroll-btn" id="reroll-btn" onclick="rerollNickname()">Prøv nytt navn</button>
   </div>
   <div class="identity-meta" id="identity-meta">Du kan bytte navn opptil 3 ganger per økt.</div>
+  <a class="account-link" href="../../index.html">Logg inn med elevkode</a>
 </div>
 
 <div class="session-panel" id="session-panel" style="display:none">
@@ -1236,6 +1240,19 @@ function showError(title,msg,link){
       <h2>${title}</h2>
       <p>${msg}${link?`<br><br><a href="https://${link}">Gå til lærersiden →</a>`:''}</p>
     </div>`;
+}
+
+function escapeHtml(str){
+  const div=document.createElement('div');
+  div.textContent=str;
+  return div.innerHTML;
+}
+
+async function signOutStudent(){
+  if(supabaseClient){
+    await supabaseClient.auth.signOut();
+  }
+  window.location.reload();
 }
 
 document.getElementById('join-code-input')?.addEventListener('input',event=>{

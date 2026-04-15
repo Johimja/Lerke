@@ -46,6 +46,16 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-15 — Session 11: Authentication & Account Management in Student Bingo
+
+**What was shipped:**
+- `apps/bingo/student.html`: Added a "Logg inn med elevkode" link to the guest identity panel, allowing students to authenticate even if they skipped the portal.
+- `apps/bingo/student.html`: Added a "Bytt bruker" link to the student account panel, enabling quick logout and switching between profiles.
+- `apps/bingo/student.html`: Implemented `signOutStudent()` and `escapeHtml()` for secure and functional account management.
+- `apps/bingo/student.html`: Maintained anonymous join as a primary option for flexibility ("party game" mode).
+
+---
+
 ### 2026-04-15 — Session 10: Removal of student-side manual controls + Documentation Sync
 
 **What was shipped:**
@@ -325,19 +335,17 @@ This is why `refreshTeacherParticipantProgress()` always showed "Ingen elever er
 - [x] **End-of-round podium** ✅ — gold/silver/bronze on teacher celebration overlay, ranked by `bingo_at_draw_index`
 - [x] **Student leaderboard** ✅ — collapsible Poengtavle panel on student screen, shows after each round
 - [x] **Bingo banner F5 repeat fix** ✅ — sessionStorage guard, auto-dismiss on new round, game-over message
-- [ ] **Near-bingo alert on teacher screen** ← START HERE next session
+- [x] **Near-bingo alert on teacher screen** ✅ (applied 15042026)
   - Elevoversikt highlights students who need only 1 more correct answer for bingo
-  - Computable from `marked_cells` count (N−1 marked on a 5×5 board = 24 marked)
-  - Teacher can call it out: "Blid Stjerne trenger bare én til!" — creates class suspense
-- [x] **Fastest-answer stat per draw** (implemented 15042026_1645)
-  - After locking a draw, show who answered first (correctly) on teacher screen
-  - SQL `get_bingo_live_state` updated with `fastest_participant`
+- [x] **Fastest-answer stat per draw** ✅ (implemented 15042026_1645)
 - [ ] **End-of-round Speed Podium**
-  - Add "Speed Master" badge or separate podium for the person with the best average time.
-- [ ] **Phase out anonymous join**
-
+- [x] **Live Reaction Feed** ✅ (implemented 15042026)
   - One-tap emoji reaction (🎉 😬 😤) during a live draw
   - Flashes briefly on teacher screen — lightweight fun, small RPC write
+- [x] **UI & Gamification Update** ✅ (implemented 15042026)
+  - Restored large, glowing join code (Raleway 900) for better visibility.
+  - Implemented auto-collapsible "Bli med"-info box that hides on the first draw.
+  - Added a "Live Ticker" system with 20+ gamified and humorous messages.
 - [ ] **Phase out anonymous join** — login required for all students
   - Disable/remove guest code path in `apps/bingo/student.html`
   - Student portal login (`index.html`) is the only entry point

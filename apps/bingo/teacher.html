@@ -169,8 +169,20 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-close{position:absolute;top:16px;right:18px;background:none;border:none;color:#8c94b3;font-size:2rem;line-height:1;cursor:pointer}
 .live-kicker{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
 .live-join-wrap{display:flex;align-items:stretch;gap:16px;margin:4px 0 18px}
-.live-join-box{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:18px 24px;border-radius:22px;border:2px solid rgba(255,185,50,.65);background:linear-gradient(135deg,rgba(255,168,30,.18),rgba(43,72,120,.24));box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 28px rgba(255,168,30,.18);overflow:hidden;flex:1}
-.live-timer-panel{display:none;align-items:center;justify-content:center;background:#1b2232;border:2px solid var(--accent);border-radius:22px;padding:10px 24px;min-width:180px;position:relative;overflow:hidden}
+.live-join-box{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:18px 24px;border-radius:22px;border:2px solid rgba(255,185,50,.65);background:linear-gradient(135deg,rgba(255,168,30,.18),rgba(43,72,120,.24));box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 28px rgba(255,168,30,.18);overflow:hidden;flex:1;transition:all .4s cubic-bezier(0.4, 0, 0.2, 1);max-height:400px;opacity:1}
+.live-join-wrap.collapsed .live-join-box{max-height:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;opacity:0;pointer-events:none;border-width:0}
+.live-join-code{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3rem,8vw,5.5rem);line-height:1;letter-spacing:.12em;color:#fff;text-shadow:0 0 25px rgba(255,185,50,.55),0 0 50px rgba(255,185,50,.25);margin:4px 0;text-transform:uppercase}
+.live-join-toggle{position:absolute;top:0;right:0;padding:8px 12px;background:rgba(255,255,255,.05);border:none;border-bottom-left-radius:12px;color:var(--muted);font-family:'Raleway',sans-serif;font-weight:800;font-size:0.65rem;text-transform:uppercase;cursor:pointer;z-index:10;letter-spacing:1px}
+.live-join-toggle:hover{color:#fff;background:rgba(255,255,255,.1)}
+.live-join-wrap.collapsed .live-join-toggle{position:static;width:100%;border-radius:12px;margin-bottom:12px;background:var(--surface2);border:1px solid var(--border)}
+
+.live-ticker{height:44px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.03);border-radius:12px;margin-top:10px;padding:0 16px;border:1px solid rgba(255,255,255,.05);position:relative}
+.live-ticker-text{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent);text-align:center;animation:tickerIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
+@keyframes tickerIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.live-timer-panel{display:none;align-items:center;justify-content:center;background:#1b2232;border:2px solid var(--accent);border-radius:22px;padding:10px 24px;min-width:180px;position:relative;overflow:hidden;transition:all .3s ease}
+.live-join-wrap.collapsed .live-timer-panel{min-width:240px;padding:20px 32px}
+.live-join-wrap.collapsed .live-timer-panel .countdown-text{font-size:3.5rem}
 .live-timer-panel.show{display:flex}
 .timer-svg{width:90px;height:90px;transform:rotate(-90deg);overflow:visible}
 .timer-circle-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:10}
@@ -1955,6 +1967,11 @@ function renderStrictTeacherLiveMode(){
 function revealNextLiveDraw(){
   const round=liveRounds[liveRoundIndex]||[];
   if(liveHistory.length>=round.length) return;
+  
+  // Auto collapse on first draw
+  if (liveHistory.length === 0) autoCollapseJoinOnFirstDraw();
+  else updateLiveTicker();
+  
   liveCurrent=round[liveHistory.length];
   liveHistory.push(liveCurrent);
   playTone(760,220,.03);
@@ -2001,6 +2018,10 @@ async function runStrictTeacherPrimaryAction(state,roundNumber,totalDraws){
         await runTeacherLiveRpc('start_bingo_round',{p_round_number:roundNumber+1},`Runde ${roundNumber+1} startet.`);
       }
     } else {
+      // Auto collapse on first draw (draw_index is 0 before opening)
+      if ((parseInt(state.draw_index,10)||0) === 0) autoCollapseJoinOnFirstDraw();
+      else updateLiveTicker();
+      
       await runTeacherLiveRpc('open_bingo_draw',{},'Nytt trekk åpnet.');
     }
   } catch(error){
@@ -2212,6 +2233,68 @@ async function resumeActiveSession() {
   }
 }
 
+let tickerMessages = [
+  "Lykke til alle sammen! 🍀",
+  "Hvem får første Bingo? 🏆",
+  "Husk å følge med på skjermen! 👀",
+  "Wow, for en fart! ⚡",
+  "Lerke Bingo — Gøy for hele klassen! 🎉",
+  "Noen er veldig nærme nå... 😱",
+  "Visste du? Bingo betyr 'her er det!' på italiensk... kanskje? 🤔",
+  "Pust med magen — neste trekk kommer snart! 🧘",
+  "Er du klar for neste runde? 🚀",
+  "Vær klar med musepekeren! 🐭",
+  "Bli med på moroa! 🎈",
+  "Hvem vinner i dag? 🏅",
+  "Ooooh, for en fart! ⚡",
+  "Raskere enn lynet? 🏃💨",
+  "Noen trykket visst veldig fort der! 😉",
+  "Sjekk skjermen — er du helt sikker? 🧐",
+  "Visste du? 5 x 4 er 20. Eller var det 25? Nei, 20! 🤡",
+  "DETTE ER SPENNENDE! 🔊",
+  "Hvem vinner? Alle vinner (erfaring)! 🎓",
+  "Pust ut... og trekk! 🧘‍♂️",
+  "Har du husket å drikke vann i dag? 💧",
+  "Bingo-feber i klasserommet! 🤒✨",
+  "I know 5 x 5 is 25! 💡",
+  "Klikking er gøy, men riktig svar er gøyere! 🎯"
+];
+let lastTickerIndex = -1;
+
+function toggleLiveJoin() {
+  const wrap = document.getElementById('live-join-wrap');
+  const btn = document.getElementById('live-join-toggle-btn');
+  const tickerWrap = document.getElementById('live-ticker-wrap');
+  if (!wrap) return;
+  const isCollapsed = wrap.classList.toggle('collapsed');
+  if (btn) btn.textContent = isCollapsed ? 'Vis bli med-info' : 'Skjul bli med-info';
+  if (tickerWrap) tickerWrap.style.display = isCollapsed ? 'block' : 'none';
+  if (isCollapsed) updateLiveTicker();
+}
+
+function updateLiveTicker(forcedMsg) {
+  const el = document.getElementById('live-ticker-text');
+  if (!el) return;
+  let msg = forcedMsg;
+  if (!msg) {
+    let idx;
+    do { idx = Math.floor(Math.random() * tickerMessages.length); } while (idx === lastTickerIndex);
+    lastTickerIndex = idx;
+    msg = tickerMessages[idx];
+  }
+  el.style.animation = 'none';
+  el.offsetHeight; // trigger reflow
+  el.textContent = msg;
+  el.style.animation = 'tickerIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+}
+
+function autoCollapseJoinOnFirstDraw() {
+  const wrap = document.getElementById('live-join-wrap');
+  if (wrap && !wrap.classList.contains('collapsed')) {
+    toggleLiveJoin();
+  }
+}
+
 // ===== INIT =====
 async function init(){
   const versionBadge=document.getElementById('app-version-badge');
@@ -2292,7 +2375,8 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
     <div class="live-main">
       <button class="live-close" onclick="closeLiveMode()">✕</button>
       <div class="live-kicker" id="live-kicker">Live trekning</div>
-      <div class="live-join-wrap">
+      <div class="live-join-wrap" id="live-join-wrap">
+        <button class="live-join-toggle" id="live-join-toggle-btn" onclick="toggleLiveJoin()">Skjul bli med-info</button>
         <div class="live-join-box">
           <div class="live-join-copy">
             <div class="live-join-label">Bli med med kode eller QR</div>
@@ -2310,6 +2394,11 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
             <circle class="timer-circle-progress" id="timer-progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="0"></circle>
           </svg>
           <span class="countdown-text" id="countdown-number"></span>
+        </div>
+      </div>
+      <div id="live-ticker-wrap" style="display:none;margin-top:-6px;margin-bottom:12px">
+        <div class="live-ticker">
+          <div class="live-ticker-text" id="live-ticker-text">Venter på neste trekk...</div>
         </div>
       </div>
       <div class="live-title" id="live-round-label">Runde 1 av 1</div>
