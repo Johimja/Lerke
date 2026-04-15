@@ -293,10 +293,13 @@ This is why `refreshTeacherParticipantProgress()` always showed "Ingen elever er
   - Elevoversikt highlights students who need only 1 more correct answer for bingo
   - Computable from `marked_cells` count (N−1 marked on a 5×5 board = 24 marked)
   - Teacher can call it out: "Blid Stjerne trenger bare én til!" — creates class suspense
-- [ ] **Fastest-answer stat per draw**
+- [x] **Fastest-answer stat per draw** (implemented 15042026_1645)
   - After locking a draw, show who answered first (correctly) on teacher screen
-  - `answered_at` already stored in `participant_draw_responses`
-- [ ] **Student reaction button**
+  - SQL `get_bingo_live_state` updated with `fastest_participant`
+- [ ] **End-of-round Speed Podium**
+  - Add "Speed Master" badge or separate podium for the person with the best average time.
+- [ ] **Phase out anonymous join**
+
   - One-tap emoji reaction (🎉 😬 😤) during a live draw
   - Flashes briefly on teacher screen — lightweight fun, small RPC write
 - [ ] **Phase out anonymous join** — login required for all students

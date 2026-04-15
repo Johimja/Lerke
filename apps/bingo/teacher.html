@@ -1856,10 +1856,11 @@ function renderStrictTeacherLiveMode(){
   const answerKey=currentDraw?`strict:${roundNumber}:${drawIndex}:${currentDraw.prompt}`:'';
   setTeacherAnswerContext(answerKey);
   const responseText=state.phase==='draw_open'
-    ? `Svar: ${summary.total_answers||0} av ${summary.participant_count||0}`
-    : state.phase==='draw_locked'
-      ? `Låst. Riktig: ${summary.correct_answers||0} · Feil: ${summary.wrong_answers||0} · Tidsavbrudd: ${summary.timeout_answers||0}`
-      : state.phase==='round_complete'
+  ? `Svar: ${summary.total_answers||0} av ${summary.participant_count||0}`
+  : state.phase==='draw_locked'
+    ? `Låst. Riktig: ${summary.correct_answers||0} · Feil: ${summary.wrong_answers||0} · Tidsavbrudd: ${summary.timeout_answers||0}${summary.fastest_participant?`<br><span style="color:var(--accent);font-size:0.9em">⚡ Raskest: ${escapeHtml(summary.fastest_participant.name)} (${parseFloat(summary.fastest_participant.seconds).toFixed(1)}s)</span>`:''}`
+    : state.phase==='round_complete'
+
         ? `Runden er ferdig. Bingoer: ${summary.bingo_count||0}`
         : 'Åpne et trekk når klassen er klar.';
   let primaryLabel='Åpne trekk';
