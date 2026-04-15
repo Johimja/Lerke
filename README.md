@@ -92,12 +92,13 @@ Older planning notes and project history now live under [docs/archive/reference]
 3. Tap **Prøv nytt navn** if you want a reroll and still have rerolls left
 4. Tap cells to mark them as the teacher calls out words/equations
 5. Get five in a row → BINGO!
-6. Tap 🧹 to clear for the next round, or 🎲 for a new card
+6. For non-live sessions, rounds are managed automatically by the app. In live sessions, the teacher manages round transitions.
 
 ---
 
 ## Technical Notes
 
+- **CONTEXT EFFICIENCY:** For AI agents working on this repo: Do not overfill the context window. Use surgical tools like grep/glob/read_file with line limits. Avoid reading entire large files unless absolutely necessary.
 - Frontend is mostly plain HTML/CSS/JavaScript with no framework
 - `index.html` now carries the shared portal login flows for teachers and students
 - `apps/bingo/teacher.html` is the live-only teacher surface for Bingo setup, lobby, and draw flow

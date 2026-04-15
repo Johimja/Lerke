@@ -8,6 +8,7 @@ This is the **living collaborative log** for the Lerke project — shared betwee
 - **Add a session entry** when starting or ending a work session
 - **Check off roadmap items** as they're completed
 - **Log decisions** here so neither of us forgets why we chose something
+- **CONTEXT EFFICIENCY:** Do not overfill the context window with unnecessary files. Use grep/glob to find what you need, and only read relevant parts of files.
 - This file is version-controlled — it's always in sync with the code
 
 Reading order for a cold start:
@@ -38,10 +39,25 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 |---|---|
 | Live URL | `johimja.com/Lerke` |
 | Old URLs | `johimja.com/lerio`, `johimja.com/bingo` — **offline** |
-| Supabase DB | V1 + student accounts + V2 strict live + V3 join stability — all applied |
+| Supabase DB | V1-V10 + student accounts + strict live — all applied |
 | Session expiry | Fixed: 24h (was 12h) — applied via migration 2026-04-13 |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
 | Remaining lerio references | CSS vars in `index.html`, `media/leriobingo.jpg`, internal only |
+
+---
+
+### 2026-04-15 — Session 10: Removal of student-side manual controls + Documentation Sync
+
+**What was shipped:**
+- `apps/bingo/student.html`: Removed "Tøm" (clear) and "Nytt kort" (new card) buttons. Manual controls are no longer needed as the teacher manages rounds and card resets in strict live mode.
+- `apps/bingo/student.html`: Cleaned up associated CSS (`.bottom-bar`, `.new-btn`, `.clear-btn`) and JS functions (`clearMarks()`, `newCard()`).
+- `apps/bingo/student.html`: Updated version to `2026.04.15.1`.
+- `.gitignore`: Added `.aimemory` for better local state management.
+- Documentation sync: Updated `shared_notes.md` and `README.md` to reflect current state and architectural decisions.
+
+**Next session should start with:**
+- Verify that student-side automated resets work correctly when the teacher starts a new round or draw.
+- Check "Near-bingo alert on teacher screen" (Tier 1 roadmap item).
 
 ---
 

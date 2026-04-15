@@ -126,27 +126,6 @@ h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spac
 .bingo-sub{color:#b6f5d9;font-size:1rem;margin-top:8px;margin-bottom:24px}
 .bingo-close{padding:12px 32px;background:var(--accent);border:none;border-radius:10px;font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:#000;cursor:pointer;letter-spacing:1px}
 
-.bottom-bar{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--surface);border-top:1px solid var(--border);
-  padding:12px 16px;display:flex;gap:10px;justify-content:center
-}
-.new-btn{
-  flex:1;max-width:200px;padding:13px;
-  background:linear-gradient(135deg,var(--accent),#e09010);
-  border:none;border-radius:10px;
-  font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;
-  color:#000;cursor:pointer;letter-spacing:1px;text-transform:uppercase;
-  transition:opacity .15s
-}
-.new-btn:hover{opacity:.88}
-.clear-btn{
-  padding:13px 18px;background:var(--bg);border:1px solid var(--border);
-  border-radius:10px;font-family:'Raleway',sans-serif;font-weight:700;
-  font-size:0.85rem;color:var(--muted);cursor:pointer;transition:all .15s
-}
-.clear-btn:hover{border-color:var(--accent2);color:var(--accent2)}
-
 .bingo-count-wrap{width:100%;max-width:420px;margin-top:12px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:10px}
 .bingo-count-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .bingo-count-num{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.4rem;color:var(--accent);letter-spacing:2px;transition:transform .2s}
@@ -301,16 +280,11 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
   </div>
 </div>
 
-<div class="bottom-bar">
-  <button class="clear-btn" id="clear-btn" onclick="clearMarks()" title="Fjern alle kryss">🧹 Tøm</button>
-  <button class="new-btn" id="new-btn" onclick="newCard()">🎲 Nytt kort</button>
-</div>
-
 <script src="../../config/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ===== PARSE URL PARAMS =====
-const APP_VERSION='2026.04.12.4';
+const APP_VERSION='2026.04.15.1';
 const params=new URLSearchParams(window.location.search);
 const initialType=params.get('type'); // 'glose' or 'matte'
 const initialMode=params.get('mode')||'no'; // glose: 'no' or 'en'
@@ -433,17 +407,6 @@ function isStrictLiveSession(){
   return !!(strictLiveMode&&liveSessionId);
 }
 function setStrictControlsDisabled(disabled){
-  const clearBtn=document.getElementById('clear-btn');
-  const newBtn=document.getElementById('new-btn');
-  if(clearBtn){
-    clearBtn.disabled=!!disabled;
-    clearBtn.style.opacity=disabled?'.45':'';
-    clearBtn.title=disabled?'Læreren styrer kortet i liveøkten':'Fjern alle kryss';
-  }
-  if(newBtn){
-    newBtn.disabled=!!disabled;
-    newBtn.style.opacity=disabled?'.45':'';
-  }
   document.body.classList.toggle('strict-live',!!disabled);
   const liveRight=document.getElementById('card-live-right');
   const roundStatic=document.getElementById('card-round-static');
@@ -1256,42 +1219,6 @@ function showBingo(msg){
 }
 function dismissBingo(){
   document.getElementById('bingo-banner').classList.remove('show');
-}
-
-function clearMarks(){
-  if(isStrictLiveSession()){
-    setJoinNote('Læreren styrer kortet i liveøkten.',true);
-    return;
-  }
-  const hasRoundActivity=roundWon||Array.from(markedCells).some(i=>!currentCells[i]?.isFree);
-  if(totalRounds>1&&completedRounds<totalRounds&&hasRoundActivity){
-    completedRounds++;
-  }
-  markedCells=new Set();
-  bingoDismissed=new Set();
-  roundWon=false;
-  const grid=document.getElementById('bingo-grid');
-  if(!grid) return;
-  Array.from(grid.children).forEach((el,i)=>{
-    if(!currentCells[i]?.isFree){
-      el.classList.remove('marked','bingo-hit');
-    }
-    // re-add free
-    if(currentCells[i]?.isFree) markedCells.add(i);
-  });
-  updateBingoCount(false);
-  updateSessionPanel();
-}
-
-function newCard(){
-  if(isStrictLiveSession()){
-    setJoinNote('Læreren styrer kortet i liveøkten.',true);
-    return;
-  }
-  completedRounds=0;
-  roundsWon=0;
-  roundWon=false;
-  renderCard();
 }
 
 function leaveSession() {
