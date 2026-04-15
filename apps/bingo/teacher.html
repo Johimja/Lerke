@@ -1837,6 +1837,8 @@ function closeLiveMode(){
   checkRecoverableSession();
 }
 function renderLiveMode(){
+  // Never render into modal elements that aren't in the DOM yet
+  if(!document.getElementById('live-modal')?.classList.contains('show')) return;
   if(activeLiveSession?.id){
     // Strict live session — only render when state is loaded; never fall to non-strict path
     if(teacherLiveState?.state) renderStrictTeacherLiveMode();
