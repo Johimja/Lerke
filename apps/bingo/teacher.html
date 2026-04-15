@@ -1808,14 +1808,18 @@ async function openLiveMode(){
   }
   if(activeLiveSession?.id){
     stopLiveCountdown();
+    // Pre-populate immediately so join code and button are correct before first poll
+    const preJoinEl=document.getElementById('live-join-code');
+    if(preJoinEl) preJoinEl.textContent=activeLiveSession.joinCode||'------';
+    const preBtn=document.getElementById('live-next-draw');
+    if(preBtn&&!teacherLiveState?.state) preBtn.textContent='Åpne trekk';
     document.getElementById('live-modal').classList.add('show');
     renderLiveJoinQr();
-    try{
-      await refreshTeacherLiveState({silent:true});
-      startTeacherLivePolling();
-    } catch(error){
-      setLiveSyncStatus(`Kunne ikke åpne livevisningen: ${error.message||error}`,true);
-    }
+    // Always start polling regardless of whether the first load succeeds
+    startTeacherLivePolling();
+    refreshTeacherLiveState({silent:false}).catch(e=>{
+      setLiveSyncStatus(`Livesynk feilet: ${e?.message||e}`,true);
+    });
     return;
   }
   alert('Klargjør liveøkten som godkjent lærer først, slik at en ekte økt opprettes.');
