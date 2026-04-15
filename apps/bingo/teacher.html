@@ -679,21 +679,6 @@ let currentClassStudents=[];
 let classAdminCollapsed=true;
 window._words=defaultWords.map(w=>[...w]);
 
-const tickerMessages = [
-  "Bli med nå, trekningen starter straks! 🎲",
-  "Ooooh, det var et raskt klikk! ⚡",
-  "Noen ganger er det lurt å tenke seg om to ganger... 🤔",
-  "DENNE ØKTEN BEGYNNER Å BLI SPENNENDE! 🔥",
-  "Hvem får den første medaljen i dag? 🥇",
-  "Visste du at 5 x 5 er 25? Bare et lite tips... 😉",
-  "Følg med på skjermen for neste trekk! 👀",
-  "Heia heia! Snart er det BINGO! 🎉",
-  "Husk å puste, det er bare et spill! 🧘",
-  "Er du raskest på avtrekkeren i dag? 🔫",
-  "Hvem har flest kryss så langt? ✖️"
-];
-let lastTickerIndex = -1;
-
 // ===== TABS =====
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['glose','matte'][i]===tab));
@@ -914,7 +899,7 @@ async function fetchAndRenderReactions(){
   if(error) return;
   const reactions=Array.isArray(data)?data:(data||[]);
   feed.innerHTML=reactions.map(r=>
-    `<span class="reaction-chip"><span class="chip-emoji">${escapeHtml(r.emoji)}</span>${escapeHtml(r.name)}</span>`
+    `<span class="reaction-chip" title="${escapeHtml(r.name)}"><span class="chip-emoji">${escapeHtml(r.emoji)}</span> ${escapeHtml(r.name)}</span>`
   ).join('');
 }
 function generateJoinCode(length=6){

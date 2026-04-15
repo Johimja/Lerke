@@ -183,6 +183,12 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 .live-strip.phase-locked .live-strip-word{color:#888}
 .live-strip.phase-wait .live-strip-word{font-size:0.8rem;font-weight:400;color:#666;font-family:'Source Sans 3',sans-serif}
 
+.live-reactions{display:flex;justify-content:center;gap:8px;padding:8px 14px;background:#f8f9fd;border-bottom:1px solid #dce0ee}
+.reaction-btn{background:#fff;border:1px solid #dce0ee;border-radius:10px;padding:6px 12px;font-size:1.2rem;cursor:pointer;transition:all .1s;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.reaction-btn:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.reaction-btn:active{transform:translateY(0);background:#f0f0f0}
+.reaction-btn.sending{opacity:0.6;pointer-events:none}
+
 .connection-lost-overlay{display:none;position:fixed;inset:0;background:rgba(15,17,23,.94);z-index:2000;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 .connection-lost-overlay.show{display:flex}
 .connection-lost-box{max-width:320px;padding:32px;background:#1a1d27;border:1px solid #e05a5a;border-radius:20px;box-shadow:0 0 40px rgba(224,90,90,.2);display:flex;flex-direction:column;align-items:center;gap:12px}
@@ -775,6 +781,7 @@ function updateStrictPrompt(payload){
   const stripEl=document.getElementById('live-strip');
   const labelEl=document.getElementById('live-strip-label');
   const wordEl=document.getElementById('live-strip-word');
+  const reactEl=document.getElementById('live-reactions');
   if(!stripEl||!labelEl||!wordEl){
     // Card not rendered yet — fall back to subtitle
     if(state.phase==='draw_open'&&draw?.prompt) setSubtitle(`Nå: ${draw.prompt}`);
@@ -788,10 +795,12 @@ function updateStrictPrompt(payload){
     stripEl.className='live-strip show phase-open';
     labelEl.textContent='Svar nå';
     wordEl.textContent=draw.prompt;
+    if(reactEl) reactEl.style.display='flex';
   } else if(state.phase==='draw_locked'&&draw?.prompt){
     stripEl.className='live-strip show phase-locked';
     labelEl.textContent='Låst';
     wordEl.textContent=draw.prompt;
+    if(reactEl) reactEl.style.display='flex';
   } else if(state.phase==='round_complete'){
     const totalRoundsInSession=Math.max(1,parseInt(session.settings?.rounds,10)||totalRounds||1);
     const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
@@ -800,10 +809,12 @@ function updateStrictPrompt(payload){
     wordEl.textContent=roundNumber>=totalRoundsInSession
       ?'Spillet er ferdig! Bra jobbet! 🎉'
       :'Runden er ferdig. Vent på læreren.';
+    if(reactEl) reactEl.style.display='none';
   } else {
     stripEl.className='live-strip show phase-wait';
     labelEl.textContent='';
     wordEl.textContent='Vent på neste trekk fra læreren.';
+    if(reactEl) reactEl.style.display='none';
   }
 }
 
@@ -891,6 +902,25 @@ async function submitStrictAnswer(idx){
   } catch(error){
     if(cellEl) cellEl.classList.remove('marked');
     setJoinNote(error.message||String(error),true);
+  }
+}
+
+async function submitReaction(emoji){
+  if(!supabaseClient||!isStrictLiveSession()||!emoji) return;
+  // Rate limiting visual hint (simple local prevent)
+  const container=document.getElementById('live-reactions');
+  if(container?.classList.contains('sending')) return;
+  container?.classList.add('sending');
+  setTimeout(()=>container?.classList.remove('sending'),800);
+
+  try{
+    const {error}=await supabaseClient.rpc('submit_bingo_reaction',{
+      p_session_id:liveSessionId,
+      p_reaction_type:emoji
+    });
+    if(error) throw error;
+  }catch(e){
+    console.warn('Reaction failed',e);
   }
 }
 
@@ -1091,6 +1121,13 @@ function renderCard(skipGeneration=false){
     <div class="live-strip phase-wait" id="live-strip">
       <span class="live-strip-label" id="live-strip-label"></span>
       <span class="live-strip-word" id="live-strip-word">Vent på neste trekk.</span>
+    </div>
+    <div class="live-reactions" id="live-reactions" style="display:none">
+      <button class="reaction-btn" onclick="submitReaction('👍')">👍</button>
+      <button class="reaction-btn" onclick="submitReaction('😮')">😮</button>
+      <button class="reaction-btn" onclick="submitReaction('🔥')">🔥</button>
+      <button class="reaction-btn" onclick="submitReaction('⚡')">⚡</button>
+      <button class="reaction-btn" onclick="submitReaction('🎉')">🎉</button>
     </div>
     <div class="card-subtitle" id="card-subtitle-inner">${sub}</div>
     <div class="bingo-grid g5 ${cardData.type==='glose'?'glose-grid':''}" id="bingo-grid"></div>
