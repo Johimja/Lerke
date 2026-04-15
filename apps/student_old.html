@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bingo</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--accent:#0f7960;--accent2:#ef3ac2;--green:#794645;--blue:#2acf8d;--text:#e8eaf0;--muted:#b3a89d;--border:#2e3248}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;padding-bottom:100px}
+
+h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.6rem;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:4px}
+.title-row{width:100%;max-width:420px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.title-copy{flex:1;min-width:220px}
+.version-badge{padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:800;font-size:.68rem;letter-spacing:.9px;text-transform:uppercase}
+.subtitle{color:var(--muted);font-size:0.8rem;text-align:center;margin-bottom:20px}
+.join-panel{
+  width:100%;max-width:420px;margin-bottom:14px;padding:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px
+}
+.account-panel{
+  width:100%;max-width:420px;margin-bottom:14px;padding:12px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px
+}
+.account-panel.student{border-color:#285a4a;box-shadow:0 0 0 1px rgba(42,207,141,.12) inset}
+.account-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.account-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.account-name{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.05rem;color:var(--text)}
+.account-meta{margin-top:8px;color:var(--muted);font-size:0.75rem;line-height:1.5}
+.account-badge{
+  padding:8px 10px;border-radius:999px;border:1px solid #2f6d57;background:#173126;
+  color:#9fe0ba;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.68rem;letter-spacing:.8px;text-transform:uppercase
+}
+.join-panel-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;margin-bottom:6px}
+.join-panel-text{color:var(--muted);font-size:0.78rem;line-height:1.55;margin-bottom:12px}
+.join-row{display:flex;gap:8px}
+.join-input{
+  flex:1;background:#22263a;border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-family:'Raleway',sans-serif;font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:12px 14px
+}
+.join-input:focus{outline:none;border-color:var(--blue)}
+.join-btn{
+  padding:12px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),#e09010);
+  color:#000;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.82rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer
+}
+.join-btn:hover{opacity:.88}
+.identity-panel{
+  width:100%;max-width:420px;margin-bottom:14px;padding:12px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px
+}
+.identity-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.identity-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.identity-name{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.05rem;color:var(--text)}
+.identity-meta{margin-top:8px;color:var(--muted);font-size:0.75rem}
+.reroll-btn{
+  padding:10px 12px;border-radius:10px;border:1px solid #33405f;background:#22263a;color:#dce7ff;
+  font-family:'Raleway',sans-serif;font-weight:900;font-size:0.72rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer
+}
+.reroll-btn:hover{border-color:var(--blue)}
+.reroll-btn:disabled{opacity:.45;cursor:default}
+.session-panel{
+  width:100%;max-width:420px;margin-bottom:14px;padding:12px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px
+}
+.session-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.session-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.session-value{font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;color:var(--text)}
+.session-score{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.2rem;color:var(--accent)}
+.session-bar{height:8px;background:#22263a;border-radius:999px;overflow:hidden}
+.session-bar-fill{height:100%;width:0;background:linear-gradient(135deg,var(--accent),var(--blue));transition:width .2s}
+.session-help{margin-top:8px;font-size:0.72rem;color:var(--muted);line-height:1.5}
+.join-note{width:100%;max-width:420px;margin-top:-8px;margin-bottom:14px;font-size:0.74rem;color:var(--blue);text-align:center}
+
+.bingo-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.4);width:100%;max-width:420px}
+.card-header{background:#1a1d27;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.card-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;letter-spacing:3px;color:var(--accent)}
+.card-round{font-size:0.72rem;color:var(--muted)}
+.card-subtitle{background:#f8f9ff;padding:5px 14px;font-size:0.7rem;color:#555;border-bottom:1px solid #e8eaf0;text-align:center}
+
+.bingo-grid{display:grid;padding:8px;gap:5px}
+.bingo-grid.g5{grid-template-columns:repeat(5,1fr)}
+.bingo-grid.glose-grid .bingo-cell{font-size:clamp(.48rem,2.7vw,.72rem);padding:3px 2px;line-height:1.1}
+.bingo-cell{
+  aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:'Source Sans 3',sans-serif;font-size:clamp(.55rem,3.5vw,.82rem);
+  font-weight:600;text-align:center;padding:4px 3px;line-height:1.2;
+  background:#f0f4ff;color:#222;border:1px solid #dce0f5;
+  cursor:pointer;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent;
+  position:relative
+}
+.bingo-cell.dark{background:#3a4068;color:#fff;border-color:#4a5090}
+.bingo-cell.free{background:var(--accent);color:#000;font-size:0.65rem;font-weight:700;letter-spacing:.5px;cursor:default}
+.bingo-cell.marked{background:#4caf7d!important;color:#fff!important;border-color:#3a9060!important;transform:scale(.95);box-shadow:0 0 0 2px rgba(255,255,255,.18) inset,0 0 14px rgba(76,175,125,.28)}
+.bingo-cell.marked.dark{background:#2d7a52!important}
+.bingo-cell.marked::after{content:'✓';position:absolute;top:4px;right:6px;font-family:'Raleway',sans-serif;font-size:.78rem;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.bingo-cell.bingo-hit{animation:bingo-flash .4s ease;}
+@keyframes bingo-flash{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+.bingo-banner{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.85);z-index:100;
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:20px;overflow:hidden
+}
+.student-confetti-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.student-confetti-piece{position:absolute;top:-14px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.bingo-banner.show{display:flex;animation:bingo-shake .55s ease .1s}
+@keyframes bingo-shake{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  10%{transform:translate(-12px,5px) rotate(-.6deg)}
+  20%{transform:translate(12px,-5px) rotate(.6deg)}
+  30%{transform:translate(-9px,4px) rotate(-.4deg)}
+  40%{transform:translate(9px,-4px) rotate(.4deg)}
+  50%{transform:translate(-6px,2px)}
+  60%{transform:translate(6px,-2px)}
+  70%{transform:translate(-3px,1px)}
+  80%{transform:translate(3px,-1px)}
+  90%{transform:translate(-1px,0)}
+}
+.bingo-text{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(3.5rem,18vw,5.5rem);color:#fff;letter-spacing:4px;text-shadow:0 0 60px rgba(42,207,141,.6),0 0 120px rgba(42,207,141,.3);animation:bingo-celebrate-pop .45s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes bingo-celebrate-pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.12) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes count-pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+.bingo-sub{color:#b6f5d9;font-size:1rem;margin-top:8px;margin-bottom:24px}
+.bingo-close{padding:12px 32px;background:var(--accent);border:none;border-radius:10px;font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:#000;cursor:pointer;letter-spacing:1px}
+
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:12px 16px;display:flex;gap:10px;justify-content:center
+}
+.new-btn{
+  flex:1;max-width:200px;padding:13px;
+  background:linear-gradient(135deg,var(--accent),#e09010);
+  border:none;border-radius:10px;
+  font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;
+  color:#000;cursor:pointer;letter-spacing:1px;text-transform:uppercase;
+  transition:opacity .15s
+}
+.new-btn:hover{opacity:.88}
+.clear-btn{
+  padding:13px 18px;background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;font-family:'Raleway',sans-serif;font-weight:700;
+  font-size:0.85rem;color:var(--muted);cursor:pointer;transition:all .15s
+}
+.clear-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+
+.bingo-count-wrap{width:100%;max-width:420px;margin-top:12px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:10px}
+.bingo-count-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.bingo-count-num{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.4rem;color:var(--accent);letter-spacing:2px;transition:transform .2s}
+.bingo-count-num.pop{animation:count-pop .3s ease}
+
+.error-box{
+  background:var(--surface);border:1px solid var(--accent2);border-radius:12px;
+  padding:24px;max-width:340px;text-align:center;margin-top:40px
+}
+.error-box h2{font-family:'Raleway',sans-serif;color:var(--accent2);margin-bottom:10px}
+.error-box p{color:var(--muted);font-size:0.85rem;line-height:1.6}
+.error-box a{color:var(--blue);text-decoration:none}
+
+/* Strict live mode: hide all non-card panels, compact padding */
+body.strict-live{padding:6px;padding-bottom:72px}
+body.strict-live .title-row,
+body.strict-live .account-panel,
+body.strict-live .identity-panel,
+body.strict-live .session-panel,
+body.strict-live .bingo-count-wrap{display:none!important}
+body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
+
+/* Leaderboard panel */
+.leaderboard-panel{width:100%;max-width:420px;margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface)}
+.lb-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:.4px;cursor:pointer;text-transform:uppercase}
+.lb-toggle:hover{background:rgba(255,255,255,.04)}
+.lb-body{border-top:1px solid var(--border)}
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.lb-row:last-child{border-bottom:none}
+.lb-row.lb-me{background:rgba(42,207,141,.07)}
+.lb-rank{font-size:1rem;min-width:26px;text-align:center;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-sub{font-size:0.68rem;color:var(--muted);margin-top:1px}
+.lb-bingo{font-family:'Raleway',sans-serif;font-weight:900;font-size:0.95rem;color:var(--accent);flex-shrink:0;min-width:28px;text-align:right}
+.lb-empty{padding:12px 14px;font-size:0.78rem;color:var(--muted);text-align:center}
+
+/* Compact card-header extras for live mode */
+.card-live-right{display:none;align-items:center;gap:8px}
+.card-name-tag{font-size:0.62rem;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-round-tag{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;color:var(--muted)}
+.card-score-tag{font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:var(--accent);min-width:14px;text-align:right}
+
+/* Live draw strip between card header and grid */
+.live-strip{display:none;padding:9px 14px;align-items:center;gap:10px;border-bottom:1px solid #dce0ee;background:#eef1fa;min-height:44px}
+.live-strip.show{display:flex}
+.live-strip.phase-open{background:#e5f4ec;border-bottom-color:#acd9bf}
+.live-strip.phase-locked{background:#f4f4f6;border-bottom-color:#ddd}
+.live-strip-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:.9px;color:#888;white-space:nowrap;min-width:42px}
+.live-strip.phase-open .live-strip-label{color:#1f7a4a;font-weight:700}
+.live-strip.phase-locked .live-strip-label{color:#999}
+.live-strip-word{font-family:'Raleway',sans-serif;font-weight:900;font-size:1.1rem;color:#111;flex:1;line-height:1.2}
+.live-strip.phase-locked .live-strip-word{color:#888}
+.live-strip.phase-wait .live-strip-word{font-size:0.8rem;font-weight:400;color:#666;font-family:'Source Sans 3',sans-serif}
+/* Reaction buttons */
+.reaction-row{display:none;padding:6px 14px;gap:8px;background:#f5f7ff;border-bottom:1px solid #dce0ee}
+.reaction-row.show{display:flex}
+.reaction-btn{font-size:1.4rem;background:none;border:2px solid transparent;border-radius:12px;padding:4px 10px;cursor:pointer;transition:transform .1s,border-color .15s,background .15s;line-height:1}
+.reaction-btn:active{transform:scale(1.25)}
+.reaction-btn.selected{border-color:#4caf7d;background:#e5f4ec}
+</style>
+</head>
+<body>
+
+<div class="title-row">
+  <div class="title-copy">
+    <h1>BINGO</h1>
+    <p class="subtitle" id="subtitle">Laster kort...</p>
+  </div>
+  <div class="version-badge" id="app-version-badge">v--</div>
+</div>
+<div class="account-panel student" id="student-account-panel" style="display:none">
+  <div class="account-top">
+    <div>
+      <div class="account-label">Elevkonto</div>
+      <div class="account-name" id="student-account-name">-</div>
+    </div>
+    <div class="account-badge">Portal</div>
+  </div>
+  <div class="account-meta" id="student-account-meta">Ingen elevkonto aktiv.</div>
+</div>
+<div class="join-panel" id="join-panel" style="display:none">
+  <div class="join-panel-title">Bli med i Lerke Bingo</div>
+  <div class="join-panel-text">Skriv inn øktkoden fra læreren, eller skann QR-koden for å bli med automatisk.</div>
+  <div class="join-row">
+    <input class="join-input" id="join-code-input" type="text" maxlength="10" placeholder="ØKTKODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button class="join-btn" id="join-btn" onclick="submitJoinCode()">Bli med</button>
+  </div>
+</div>
+<div class="join-note" id="join-note" style="display:none"></div>
+<div class="identity-panel" id="identity-panel" style="display:none">
+  <div class="identity-top">
+    <div>
+      <div class="identity-label">Ditt navn i denne økten</div>
+      <div class="identity-name" id="identity-name">-</div>
+    </div>
+    <button class="reroll-btn" id="reroll-btn" onclick="rerollNickname()">Prøv nytt navn</button>
+  </div>
+  <div class="identity-meta" id="identity-meta">Du kan bytte navn opptil 3 ganger per økt.</div>
+</div>
+
+<div class="session-panel" id="session-panel" style="display:none">
+  <div class="session-top">
+    <div>
+      <div class="session-label">Runde</div>
+      <div class="session-value" id="session-round-label">1 av 1</div>
+    </div>
+    <div style="text-align:right">
+      <div class="session-label">Seiere</div>
+      <div class="session-score" id="session-score-label">0</div>
+    </div>
+  </div>
+  <div class="session-bar"><div class="session-bar-fill" id="session-bar-fill"></div></div>
+  <div class="session-help" id="session-help">Tøm kortet for neste runde.</div>
+</div>
+
+<div id="card-wrap"></div>
+
+<div class="leaderboard-panel" id="leaderboard-panel" style="display:none">
+  <button class="lb-toggle" id="lb-toggle" onclick="toggleLeaderboard()">
+    <span>Poengtavle</span>
+    <span id="lb-arrow">▲</span>
+  </button>
+  <div class="lb-body" id="lb-body">
+    <div class="lb-empty" id="lb-loading">Laster...</div>
+    <div id="lb-rows"></div>
+  </div>
+</div>
+
+<div class="bingo-count-wrap" id="bingo-count-wrap" style="display:none">
+  <span class="bingo-count-label">Bingo</span>
+  <span class="bingo-count-num" id="bingo-count-num">0</span>
+</div>
+
+<div class="bingo-banner" id="bingo-banner">
+  <div class="student-confetti-wrap" id="student-confetti-wrap"></div>
+  <div class="bingo-text">BINGO!</div>
+  <div class="bingo-sub" id="bingo-sub">Fem på rad!</div>
+  <button class="bingo-close" onclick="dismissBingo()">Fortsett</button>
+</div>
+
+<div class="bottom-bar">
+  <button class="clear-btn" id="clear-btn" onclick="clearMarks()" title="Fjern alle kryss">🧹 Tøm</button>
+  <button class="new-btn" id="new-btn" onclick="newCard()">🎲 Nytt kort</button>
+</div>
+
+<script src="../../config/supabase-public-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ===== PARSE URL PARAMS =====
+const APP_VERSION='2026.04.12.4';
+const params=new URLSearchParams(window.location.search);
+const initialType=params.get('type'); // 'glose' or 'matte'
+const initialMode=params.get('mode')||'no'; // glose: 'no' or 'en'
+const dataParam=params.get('data'); // glose pairs encoded
+const tablesParam=params.get('tables'); // matte tables comma separated
+let currentSessionName=params.get('name')||''; // optional session/class name
+let totalRounds=Math.max(1,Math.min(20,parseInt(params.get('rounds'),10)||1));
+let liveSessionId=params.get('session')||'';
+let joinCode=params.get('join')||'';
+let currentType=initialType;
+let currentMode=initialMode;
+const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
+const SUPABASE_CONFIG=window.LERKE_SUPABASE||window.LERIO_SUPABASE||{};
+
+let cardData=null; // {type, pairs/tables, mode}
+let markedCells=new Set();
+let bingoDismissed=new Set();
+let completedRounds=0;
+let roundsWon=0;
+let roundWon=false;
+let supabaseClient=null;
+let participantRecord=null;
+let touchTimer=null;
+let currentStudentProfile=null;
+let strictLiveMode=false;
+let strictLiveState=null;
+let strictLivePollTimer=null;
+let strictLivePollErrorCount=0;
+let currentBoardRoundNumber=0;
+let currentBoardSignature='';
+let currentResponseKey='';
+let lastOtherBingoShownKey='';
+function markBingoShown(roundNumber){
+  try{sessionStorage.setItem('lerke_bingo_'+liveSessionId+'_'+roundNumber,'1');}catch(e){}
+}
+function wasBingoShown(roundNumber){
+  try{return sessionStorage.getItem('lerke_bingo_'+liveSessionId+'_'+roundNumber)==='1';}catch(e){return false;}
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function parseTableValues(raw){
+  return [...new Set((raw||'')
+    .split(/[^0-9]+/)
+    .map(Number)
+    .filter(n=>Number.isInteger(n)&&n>0))];
+}
+function getMatteMultiplierMax(tables){
+  return Math.max(...tables);
+}
+function hasSupabaseConfig(){
+  return !!(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase?.createClient);
+}
+function getClientToken(){
+  const key='lerke_client_token';
+  let token=localStorage.getItem(key);
+  if(!token){
+    token=(crypto?.randomUUID?.()||String(Date.now())+Math.random().toString(36).slice(2));
+    localStorage.setItem(key,token);
+  }
+  return token;
+}
+function setJoinNote(msg,isError){
+  const el=document.getElementById('join-note');
+  if(!el) return;
+  if(!msg){
+    el.style.display='none';
+    el.textContent='';
+    return;
+  }
+  el.style.display='block';
+  el.style.color=isError?'#ef8f8f':'#5b8dee';
+  el.textContent=msg;
+}
+function setJoinBusy(isBusy){
+  const input=document.getElementById('join-code-input');
+  const btn=document.getElementById('join-btn');
+  if(input) input.disabled=!!isBusy;
+  if(btn){
+    btn.disabled=!!isBusy;
+    btn.textContent=isBusy?'Kobler til…':'Bli med';
+    btn.style.opacity=isBusy?'.7':'';
+  }
+}
+function updateStudentAccountPanel(){
+  const panel=document.getElementById('student-account-panel');
+  if(!panel) return;
+  if(!currentStudentProfile){
+    panel.style.display='none';
+    return;
+  }
+  panel.style.display='block';
+  document.getElementById('student-account-name').textContent=currentStudentProfile.display_name||'-';
+  document.getElementById('student-account-meta').textContent=
+    `${currentStudentProfile.class_name||'Klasse'} · klassekode ${currentStudentProfile.class_code||'-'} · elevkode ${currentStudentProfile.student_code||'-'}. Bruk fortsatt øktkoden fra læreren for å bli med i live-spillet.`;
+}
+function showJoinPanel(){
+  const panel=document.getElementById('join-panel');
+  if(panel) panel.style.display='block';
+}
+function hideJoinPanel(){
+  const panel=document.getElementById('join-panel');
+  if(panel) panel.style.display='none';
+}
+function updateIdentityPanel(){
+  const panel=document.getElementById('identity-panel');
+  if(!panel) return;
+  if(!participantRecord){
+    panel.style.display='none';
+    return;
+  }
+  panel.style.display='block';
+  document.getElementById('identity-name').textContent=participantRecord.display_name||'-';
+  const remaining=Math.max(0,3-(participantRecord.reroll_count||0));
+  document.getElementById('identity-meta').textContent=remaining>0
+    ? `Du kan bytte navn ${remaining} gang${remaining===1?'':'er'} til i denne økten.`
+    : 'Du har brukt opp navnebyttene i denne økten.';
+  document.getElementById('reroll-btn').disabled=remaining<=0||!liveSessionId;
+}
+function isStrictLiveSession(){
+  return !!(strictLiveMode&&liveSessionId);
+}
+function setStrictControlsDisabled(disabled){
+  const clearBtn=document.getElementById('clear-btn');
+  const newBtn=document.getElementById('new-btn');
+  if(clearBtn){
+    clearBtn.disabled=!!disabled;
+    clearBtn.style.opacity=disabled?'.45':'';
+    clearBtn.title=disabled?'Læreren styrer kortet i liveøkten':'Fjern alle kryss';
+  }
+  if(newBtn){
+    newBtn.disabled=!!disabled;
+    newBtn.style.opacity=disabled?'.45':'';
+  }
+  document.body.classList.toggle('strict-live',!!disabled);
+  const liveRight=document.getElementById('card-live-right');
+  const roundStatic=document.getElementById('card-round-static');
+  const liveStrip=document.getElementById('live-strip');
+  const cardSubInner=document.getElementById('card-subtitle-inner');
+  if(liveRight) liveRight.style.display=disabled?'flex':'none';
+  if(roundStatic) roundStatic.style.display=disabled?'none':'';
+  if(liveStrip) liveStrip.classList.toggle('show',!!disabled);
+  if(cardSubInner) cardSubInner.style.display=disabled?'none':'';
+}
+function isRetryableJoinError(error){
+  const msg=String(error?.message||error||'').toLowerCase();
+  return msg.includes('statement timeout')
+    || msg.includes('canceling statement due to statement timeout')
+    || msg.includes('timeout')
+    || msg.includes('gateway')
+    || msg.includes('network');
+}
+function delay(ms){
+  return new Promise(resolve=>window.setTimeout(resolve,ms));
+}
+function getCurrentBoardLabels(){
+  return currentCells.map(cell=>cell.label);
+}
+function getBoardSignature(labels){
+  return JSON.stringify(labels||[]);
+}
+function setSubtitle(text){
+  const el=document.getElementById('subtitle');
+  if(el) el.textContent=text;
+}
+function applyMarkedCellsToGrid(markedIndices){
+  markedCells=new Set((markedIndices||[]).map(Number));
+  const grid=document.getElementById('bingo-grid');
+  if(!grid) return;
+  Array.from(grid.children).forEach((el,i)=>{
+    el.classList.toggle('marked',markedCells.has(i));
+    if(!markedCells.has(i)) el.classList.remove('bingo-hit');
+  });
+  updateBingoCount(false);
+}
+async function upsertStrictBoard(roundNumber){
+  if(!supabaseClient||!liveSessionId||!participantRecord||!roundNumber) return null;
+  const {data,error}=await supabaseClient.rpc('upsert_participant_board',{
+    p_session_id:liveSessionId,
+    p_round_number:roundNumber,
+    p_board_cells:getCurrentBoardLabels()
+  });
+  if(error) throw error;
+  return Array.isArray(data)?data[0]:data;
+}
+function stopStrictLivePolling(){
+  if(strictLivePollTimer){
+    window.clearInterval(strictLivePollTimer);
+    strictLivePollTimer=null;
+  }
+}
+function startStrictLivePolling(){
+  stopStrictLivePolling();
+  if(!isStrictLiveSession()) return;
+  strictLivePollErrorCount=0;
+  strictLivePollTimer=window.setInterval(async()=>{
+    try{
+      await refreshStrictLiveState();
+      if(strictLivePollErrorCount>0){
+        strictLivePollErrorCount=0;
+        setJoinNote('Kontakten er gjenopprettet.',false);
+      }
+    }catch(e){
+      strictLivePollErrorCount++;
+      if(strictLivePollErrorCount>=3){
+        setJoinNote(`Mistet kontakten med liveøkten. Prøver igjen… (${e?.message||e})`,true);
+      }
+    }
+  },2000);
+}
+async function ensureStudentSupabase(){
+  if(!hasSupabaseConfig()) throw new Error('Live join krever window.LERKE_SUPABASE med url og anonKey.');
+  if(!supabaseClient){
+    supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{
+      auth:{persistSession:true,autoRefreshToken:true}
+    });
+  }
+  let {data:{session}}=await supabaseClient.auth.getSession();
+  if(!session){
+    const anonRes=await supabaseClient.auth.signInAnonymously();
+    if(anonRes.error) throw anonRes.error;
+    session=anonRes.data.session;
+  }
+  if(!session) throw new Error('Kunne ikke starte anonym elevøkt.');
+  return session;
+}
+async function loadCurrentStudentProfile(){
+  if(!supabaseClient) return null;
+  const {data,error}=await supabaseClient.rpc('get_current_student_profile');
+  if(error){
+    currentStudentProfile=null;
+    updateStudentAccountPanel();
+    return null;
+  }
+  currentStudentProfile=Array.isArray(data)?data[0]:data;
+  updateStudentAccountPanel();
+  return currentStudentProfile;
+}
+function applySessionSettings(sessionRow){
+  const settings=sessionRow?.settings||{};
+  currentSessionName=sessionRow?.title||currentSessionName||'';
+  strictLiveMode=!!settings.strict_live_mode;
+  totalRounds=Math.max(1,Math.min(20,parseInt(settings.rounds,10)||1));
+  if(settings.game_mode==='glose'){
+    const pairs=Array.isArray(settings.word_pairs)?settings.word_pairs:[];
+    if(!pairs.length) throw new Error('Mangler orddata for denne økten.');
+    currentType='glose';
+    currentMode=settings.direction||'no';
+    cardData={type:'glose',pairs,mode:currentMode};
+    setSubtitle(currentMode==='no'?'Marker det norske ordet':'Marker øveordet');
+    return;
+  }
+  if(settings.game_mode==='matte'){
+    const tables=Array.isArray(settings.tables)?settings.tables.map(Number).filter(Number.isInteger):[];
+    const effectiveTables=tables.length?tables:[...DEFAULT_MATTE_TABLES];
+    currentType='matte';
+    cardData={type:'matte',tables:effectiveTables};
+    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker svaret');
+    return;
+  }
+  throw new Error('Ukjent spilltype for denne økten.');
+}
+async function fetchJoinableSession(code){
+  await ensureStudentSupabase();
+  await loadCurrentStudentProfile();
+  const {data,error}=await supabaseClient.rpc('get_joinable_bingo_session',{p_join_code:code});
+  if(error) throw error;
+  return Array.isArray(data)?data[0]:data;
+}
+async function joinLiveSessionByCode(code){
+  const normalized=(code||'').trim().toUpperCase();
+  if(!normalized){
+    setJoinNote('Skriv inn en øktkode først.',true);
+    return;
+  }
+  setJoinBusy(true);
+  try{
+    const sessionRow=await fetchJoinableSession(normalized);
+    if(!sessionRow?.id) throw new Error('Fant ikke økten.');
+    liveSessionId=sessionRow.id;
+    joinCode=sessionRow.join_code||normalized;
+    applySessionSettings(sessionRow);
+    hideJoinPanel();
+    setJoinNote('Økten funnet. Kobler deg til…',false);
+    const joined=await initSupabaseJoin();
+    if(!joined){
+      showJoinPanel();
+      return;
+    }
+    if(!isStrictLiveSession()){
+      renderCard();
+    }
+    const nextUrl=new URL(window.location.href);
+    nextUrl.searchParams.set('join',joinCode);
+    nextUrl.searchParams.set('session',liveSessionId);
+    window.history.replaceState({},'',nextUrl.toString());
+  } catch(error){
+    setJoinNote(`Kunne ikke bli med i liveøkten: ${error.message||error}`,true);
+    showJoinPanel();
+  } finally {
+    setJoinBusy(false);
+  }
+}
+async function initSupabaseJoin(){
+  if(!liveSessionId||!joinCode) return;
+  try{
+    await ensureStudentSupabase();
+    await loadCurrentStudentProfile();
+    participantRecord=await joinBingoSessionWithRecovery();
+    // Sync liveSessionId to the actual session the participant was placed in.
+    // Corrects stale session UUIDs cached in the URL from a previous session.
+    if(participantRecord?.session_id&&participantRecord.session_id!==liveSessionId){
+      liveSessionId=participantRecord.session_id;
+      const nextUrl=new URL(window.location.href);
+      nextUrl.searchParams.set('session',liveSessionId);
+      window.history.replaceState({},'',nextUrl.toString());
+    }
+    setJoinNote(`Koblet til liveøkten som ${participantRecord.display_name}.`,false);
+    updateIdentityPanel();
+    if(touchTimer) window.clearInterval(touchTimer);
+    touchTimer=window.setInterval(()=>touchParticipant().catch(e=>{
+      setJoinNote(`Tilkoblingsfeil: ${e?.message||e}`,true);
+    }),60000);
+    if(isStrictLiveSession()){
+      setStrictControlsDisabled(true);
+      await ensureStrictBoardForCurrentRound();
+      await refreshStrictLiveState();
+      startStrictLivePolling();
+    }
+    return true;
+  } catch(error){
+    participantRecord=null;
+    updateIdentityPanel();
+    setJoinNote(`Kunne ikke bli med i liveøkten: ${error.message||error}`,true);
+    return false;
+  }
+}
+async function joinBingoSessionWithRecovery(){
+  const clientToken=getClientToken();
+  let lastError=null;
+  for(let attempt=1;attempt<=3;attempt++){
+    const {data,error}=await supabaseClient.rpc('join_bingo_session',{
+      p_join_code:joinCode,
+      p_client_token:clientToken
+    });
+    if(!error){
+      return Array.isArray(data)?data[0]:data;
+    }
+    lastError=error;
+    if(!isRetryableJoinError(error)||attempt===3){
+      break;
+    }
+    await delay(250*attempt);
+  }
+  try{
+    const recovered=await touchParticipant();
+    if(recovered?.id){
+      setJoinNote('Økten svarte tregt, men du ble koblet til likevel.',false);
+      return recovered;
+    }
+  } catch(recoveryError){
+    lastError=lastError||recoveryError;
+  }
+  throw lastError||new Error('Ukjent feil ved innkobling');
+}
+async function touchParticipant(){
+  if(!supabaseClient||!liveSessionId) return;
+  const {data,error}=await supabaseClient.rpc('touch_participant',{p_session_id:liveSessionId});
+  if(error) throw error;
+  participantRecord=Array.isArray(data)?data[0]:data;
+  updateIdentityPanel();
+}
+async function rerollNickname(){
+  if(!supabaseClient||!liveSessionId) return;
+  try{
+    const {data,error}=await supabaseClient.rpc('reroll_nickname',{p_session_id:liveSessionId});
+    if(error) throw error;
+    participantRecord=Array.isArray(data)?data[0]:data;
+    updateIdentityPanel();
+    setJoinNote(`Nytt navn: ${participantRecord.display_name}`,false);
+  } catch(error){
+    setJoinNote(`Navnebytte feilet: ${error.message||error}`,true);
+  }
+}
+async function submitJoinCode(){
+  const input=document.getElementById('join-code-input');
+  await joinLiveSessionByCode(input?.value||'');
+}
+
+async function refreshStrictLiveState(){
+  if(!supabaseClient||!isStrictLiveSession()) return null;
+  const {data,error}=await supabaseClient.rpc('get_bingo_live_state',{p_session_id:liveSessionId});
+  if(error) throw error;
+  const payload=Array.isArray(data)?data[0]:data;
+  if(!payload?.board&&participantRecord){
+    await ensureStrictBoardForCurrentRound();
+    const retry=await supabaseClient.rpc('get_bingo_live_state',{p_session_id:liveSessionId});
+    if(retry.error) throw retry.error;
+    const nextPayload=Array.isArray(retry.data)?retry.data[0]:retry.data;
+    applyStrictLiveState(nextPayload);
+    return nextPayload;
+  }
+  applyStrictLiveState(payload);
+  return payload;
+}
+
+async function ensureStrictBoardForCurrentRound(){
+  if(!supabaseClient||!isStrictLiveSession()) return null;
+  const {data,error}=await supabaseClient.rpc('get_bingo_live_state',{p_session_id:liveSessionId});
+  if(error) throw error;
+  const payload=Array.isArray(data)?data[0]:data;
+  const roundNumber=Math.max(1,parseInt(payload?.state?.round_number,10)||1);
+  if(payload?.board?.board_cells){
+    applyStrictLiveState(payload);
+    return payload.board;
+  }
+  currentBoardRoundNumber=roundNumber;
+  currentCells=cardData.type==='glose'?buildGloseCard():buildMatteCard();
+  currentBoardSignature=getBoardSignature(getCurrentBoardLabels());
+  renderCard(true);
+  await upsertStrictBoard(roundNumber);
+  return null;
+}
+
+function applyStrictLiveState(payload){
+  strictLiveState=payload||null;
+  if(!payload) return;
+  const state=payload.state||{};
+  const session=payload.session||{};
+  const board=payload.board||null;
+  const response=payload.current_response||null;
+  const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+  currentSessionName=session.title||currentSessionName||'Lerke Bingo';
+  totalRounds=Math.max(1,Math.min(20,parseInt(session.settings?.rounds,10)||totalRounds||1));
+  document.getElementById('session-panel').style.display='block';
+  if(board?.board_cells){
+    const boardLabels=board.board_cells.map(value=>({
+      label:String(value),
+      isFree:false
+    }));
+    const nextSignature=getBoardSignature(board.board_cells);
+    if(currentBoardRoundNumber!==roundNumber||currentBoardSignature!==nextSignature){
+      currentCells=boardLabels;
+      currentBoardRoundNumber=roundNumber;
+      currentBoardSignature=nextSignature;
+      renderCard(true);
+      // New round started — dismiss any lingering bingo banner and reset other-winner guard
+      document.getElementById('bingo-banner')?.classList.remove('show');
+      lastOtherBingoShownKey='';
+    }
+    applyMarkedCellsToGrid(board.marked_cells||[]);
+  }
+  updateStrictSessionPanel(payload);
+  updateStrictPrompt(payload);
+  if(state.phase==='round_complete'){showLeaderboard();}else{hideLeaderboard();}
+  const responseKey=`${roundNumber}:${state.draw_index||0}:${response?.answered_at||''}:${response?.response_outcome||''}`;
+  if(response&&responseKey!==currentResponseKey){
+    currentResponseKey=responseKey;
+    if(response.response_outcome==='correct'){
+      setJoinNote('Riktig!',false);
+    } else if(response.response_outcome==='wrong'){
+      setJoinNote('Feil.',true);
+    } else if(response.response_outcome==='timeout'){
+      setJoinNote('Tiden er ute.',true);
+    }
+  } else if(!response){
+    currentResponseKey='';
+  }
+  // Show bingo banner once per round — sessionStorage guard survives F5 refresh
+  if(board?.has_bingo && !wasBingoShown(roundNumber)){
+    markBingoShown(roundNumber);
+    showBingoBanner('Du fikk bingo! Vent på læreren.');
+  } else if(!board?.has_bingo){
+    // Show other students' bingo from teacher_summary.bingo_winners
+    const winners=payload.teacher_summary?.bingo_winners||[];
+    const myName=participantRecord?.display_name;
+    const otherWinners=winners.filter(n=>n!==myName);
+    if(otherWinners.length>0){
+      const otherKey=`${roundNumber}:${otherWinners.join(',')}`;
+      if(otherKey!==lastOtherBingoShownKey){
+        lastOtherBingoShownKey=otherKey;
+        showBingoBanner(otherWinners.join(' og ')+' fikk bingo!');
+      }
+    }
+  }
+}
+
+function updateStrictPrompt(payload){
+  const state=payload.state||{};
+  const session=payload.session||{};
+  const draw=state.current_draw||null;
+  const stripEl=document.getElementById('live-strip');
+  const labelEl=document.getElementById('live-strip-label');
+  const wordEl=document.getElementById('live-strip-word');
+  if(!stripEl||!labelEl||!wordEl){
+    // Card not rendered yet — fall back to subtitle
+    if(state.phase==='draw_open'&&draw?.prompt) setSubtitle(`Nå: ${draw.prompt}`);
+    else if(state.phase==='draw_locked'&&draw?.prompt) setSubtitle(`Låst: ${draw.prompt}`);
+    else if(state.phase==='round_complete') setSubtitle('Runden er ferdig. Venter på læreren.');
+    else if(state.phase==='round_active') setSubtitle('Venter på neste trekk fra læreren.');
+    else setSubtitle('Venter på at læreren starter.');
+    return;
+  }
+  const reactionRow=document.getElementById('reaction-row');
+  const isDrawOpen=state.phase==='draw_open'&&draw?.prompt;
+  if(reactionRow) reactionRow.classList.toggle('show',!!isDrawOpen);
+  // Reset selection highlight when draw changes
+  if(isDrawOpen){
+    const currentDrawKey=`${state.round_number||1}:${draw?.draw_index}`;
+    if(reactionRow&&reactionRow.dataset.drawKey!==currentDrawKey){
+      reactionRow.dataset.drawKey=currentDrawKey;
+      reactionRow.querySelectorAll('.reaction-btn').forEach(b=>b.classList.remove('selected'));
+    }
+  }
+  if(state.phase==='draw_open'&&draw?.prompt){
+    stripEl.className='live-strip show phase-open';
+    labelEl.textContent='Svar nå';
+    wordEl.textContent=draw.prompt;
+  } else if(state.phase==='draw_locked'&&draw?.prompt){
+    stripEl.className='live-strip show phase-locked';
+    labelEl.textContent='Låst';
+    wordEl.textContent=draw.prompt;
+  } else if(state.phase==='round_complete'){
+    const totalRoundsInSession=Math.max(1,parseInt(session.settings?.rounds,10)||totalRounds||1);
+    const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+    stripEl.className='live-strip show phase-wait';
+    labelEl.textContent='';
+    wordEl.textContent=roundNumber>=totalRoundsInSession
+      ?'Spillet er ferdig! Bra jobbet! 🎉'
+      :'Runden er ferdig. Vent på læreren.';
+  } else {
+    stripEl.className='live-strip show phase-wait';
+    labelEl.textContent='';
+    wordEl.textContent='Vent på neste trekk fra læreren.';
+  }
+}
+
+function updateStrictSessionPanel(payload){
+  const state=payload.state||{};
+  const board=payload.board||{};
+  const session=payload.session||{};
+  const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+  const drawIndex=Math.max(0,parseInt(state.draw_index,10)||0);
+  const totalDraws=Array.isArray(session.settings?.word_pairs)
+    ? session.settings.word_pairs.length
+    : 25;
+  // Keep the hidden session-panel updated (in case it's ever visible)
+  const panel=document.getElementById('session-panel');
+  if(panel){
+    const roundLabel=document.getElementById('session-round-label');
+    const scoreLabel=document.getElementById('session-score-label');
+    const barFill=document.getElementById('session-bar-fill');
+    const help=document.getElementById('session-help');
+    if(roundLabel) roundLabel.textContent=`${roundNumber} av ${Math.max(totalRounds,roundNumber)}`;
+    if(scoreLabel) scoreLabel.textContent=String(board.bingo_count||0);
+    if(barFill) barFill.style.width=`${Math.max(0,Math.min(100,(drawIndex/Math.max(totalDraws,1))*100))}%`;
+    if(help){
+      if(state.phase==='draw_open') help.textContent='Svar nå. Du har ett forsøk på dette trekket.';
+      else if(state.phase==='draw_locked') help.textContent='Trekket er låst. Vent på neste fra læreren.';
+      else if(state.phase==='round_complete') help.textContent='Runden er ferdig. Vent på neste runde eller avslutning.';
+      else help.textContent='Læreren styrer når neste trekk åpnes.';
+    }
+  }
+  // Update compact card-header
+  const nameTag=document.getElementById('card-name-tag');
+  const roundTag=document.getElementById('card-round-tag');
+  const scoreTag=document.getElementById('card-score-tag');
+  if(nameTag) nameTag.textContent=participantRecord?.display_name||'';
+  if(roundTag) roundTag.textContent=`R${roundNumber}/${Math.max(totalRounds,roundNumber)}`;
+  if(scoreTag) scoreTag.textContent=String(board.bingo_count||0);
+}
+
+function launchStudentConfetti(){
+  const wrap=document.getElementById('student-confetti-wrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const colors=['#0f7960','#2acf8d','#ef3ac2','#f5a623','#5b8dee','#fff','#ff6b6b','#ffe066'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    p.className='student-confetti-piece';
+    const size=5+Math.random()*9;
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};`
+      +`animation-delay:${Math.random()*2.5}s;animation-duration:${2+Math.random()*2.5}s;`
+      +`width:${size}px;height:${size*(Math.random()>.5?.4:1)}px;`
+      +`border-radius:${Math.random()>.4?'50%':'2px'};transform:rotate(${Math.random()*360}deg)`;
+    wrap.appendChild(p);
+  }
+}
+function showBingoBanner(text){
+  const sub=document.getElementById('bingo-sub');
+  if(sub) sub.textContent=text;
+  launchStudentConfetti();
+  document.getElementById('bingo-banner')?.classList.add('show');
+}
+
+async function submitStrictAnswer(idx){
+  if(!supabaseClient||!isStrictLiveSession()||!currentCells[idx]) return;
+  const grid=document.getElementById('bingo-grid');
+  const cellEl=grid?.children[idx];
+  if(cellEl) cellEl.classList.add('marked');
+  try{
+    const {data,error}=await supabaseClient.rpc('submit_bingo_answer',{
+      p_session_id:liveSessionId,
+      p_selected_cell_index:idx,
+      p_selected_value:currentCells[idx].label
+    });
+    if(error) throw error;
+    if(data?.marked_cells) applyMarkedCellsToGrid(data.marked_cells);
+    if(data?.response_outcome==='correct') setJoinNote('Riktig!',false);
+    else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
+    if(data?.has_bingo){
+      const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
+      if(!wasBingoShown(rn)){
+        markBingoShown(rn);
+        showBingoBanner('Du fikk bingo!');
+      }
+    }
+    await refreshStrictLiveState();
+  } catch(error){
+    if(cellEl) cellEl.classList.remove('marked');
+    setJoinNote(error.message||String(error),true);
+  }
+}
+
+// ===== REACTIONS =====
+async function sendReaction(emoji){
+  if(!supabaseClient||!liveSessionId||!isStrictLiveSession()) return;
+  const state=strictLiveState?.state||{};
+  if(state.phase!=='draw_open') return;
+  const drawIndex=state.current_draw?.draw_index??-1;
+  const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+  // Optimistic UI: mark selected
+  document.querySelectorAll('.reaction-btn').forEach(b=>b.classList.remove('selected'));
+  const emojis=['🎉','😬','😤'];
+  const idx=emojis.indexOf(emoji);
+  const btn=document.getElementById(`react-${idx}`);
+  if(btn) btn.classList.add('selected');
+  try{
+    await supabaseClient.rpc('send_bingo_reaction',{
+      p_session_id:liveSessionId,
+      p_draw_index:drawIndex,
+      p_round_number:roundNumber,
+      p_emoji:emoji
+    });
+  }catch(e){
+    // silently ignore — reaction is cosmetic
+  }
+}
+
+// ===== LEADERBOARD =====
+let leaderboardExpanded=true;
+let leaderboardRefreshTimer=null;
+
+async function fetchLeaderboard(){
+  if(!supabaseClient||!liveSessionId) return;
+  try{
+    const {data,error}=await supabaseClient.rpc('get_session_leaderboard',{p_session_id:liveSessionId});
+    if(error) throw error;
+    renderLeaderboard(Array.isArray(data)?data:(data||[]));
+  }catch(e){
+    const el=document.getElementById('lb-loading');
+    if(el){el.style.display='block';el.textContent='Kunne ikke laste poengtavle.';}
+  }
+}
+function renderLeaderboard(rows){
+  const loadingEl=document.getElementById('lb-loading');
+  const rowsEl=document.getElementById('lb-rows');
+  if(!rowsEl) return;
+  if(loadingEl) loadingEl.style.display='none';
+  if(!rows.length){
+    rowsEl.innerHTML='<div class="lb-empty">Ingen data ennå.</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  const myName=participantRecord?.display_name||'';
+  rowsEl.innerHTML=rows.map((row,i)=>{
+    const rank=i<3?medals[i]:`${i+1}.`;
+    const acc=row.total_answers>0?Math.round((row.correct_total/row.total_answers)*100):0;
+    const bingoStr=row.bingo_total>0
+      ?(row.bingo_total<=4?'🎯'.repeat(row.bingo_total):`🎯×${row.bingo_total}`)
+      :'—';
+    const fastStr=row.fastest_bingo_draw!=null?` · bingo trekk ${row.fastest_bingo_draw}`:'';
+    const isMe=row.name===myName;
+    return `<div class="lb-row${isMe?' lb-me':''}">
+      <span class="lb-rank">${rank}</span>
+      <div class="lb-info">
+        <div class="lb-name">${escapeHtml(row.name)}${isMe?' 👈':''}</div>
+        <div class="lb-sub">${row.correct_total} rett av ${row.total_answers} · ${acc}%${fastStr}</div>
+      </div>
+      <span class="lb-bingo">${bingoStr}</span>
+    </div>`;
+  }).join('');
+}
+function toggleLeaderboard(){
+  leaderboardExpanded=!leaderboardExpanded;
+  const body=document.getElementById('lb-body');
+  const arrow=document.getElementById('lb-arrow');
+  if(body) body.style.display=leaderboardExpanded?'':'none';
+  if(arrow) arrow.textContent=leaderboardExpanded?'▲':'▼';
+}
+function showLeaderboard(){
+  const panel=document.getElementById('leaderboard-panel');
+  if(!panel||panel.style.display==='block') return;
+  panel.style.display='block';
+  fetchLeaderboard();
+  if(!leaderboardRefreshTimer){
+    leaderboardRefreshTimer=window.setInterval(fetchLeaderboard,5000);
+  }
+}
+function hideLeaderboard(){
+  const panel=document.getElementById('leaderboard-panel');
+  if(panel) panel.style.display='none';
+  if(leaderboardRefreshTimer){
+    window.clearInterval(leaderboardRefreshTimer);
+    leaderboardRefreshTimer=null;
+  }
+}
+
+async function init(){
+  const versionBadge=document.getElementById('app-version-badge');
+  if(versionBadge) versionBadge.textContent=`v${APP_VERSION}`;
+  setStrictControlsDisabled(false);
+  if(hasSupabaseConfig()){
+    try{
+      await ensureStudentSupabase();
+      await loadCurrentStudentProfile();
+    } catch(error){
+      currentStudentProfile=null;
+      updateStudentAccountPanel();
+    }
+  }
+  if(!currentType){
+    if(joinCode){
+      await joinLiveSessionByCode(joinCode);
+      return;
+    }
+    setSubtitle('Skriv inn øktkode eller skann QR-koden fra læreren');
+    showJoinPanel();
+    return;
+  }
+
+  if(currentType==='glose'){
+    if(!dataParam){showError('Mangler orddata','QR-koden inneholder ingen gloser.');return}
+    const pairs=decodeURIComponent(dataParam).split(';').map(p=>p.split('|'));
+    if(!pairs.length||!pairs[0][0]){showError('Ugyldig data','Kunne ikke lese glosene fra QR-koden.');return}
+    cardData={type:'glose',pairs,mode:currentMode};
+    setSubtitle(currentMode==='no'?'Marker det norske ordet':'Marker øveordet');
+  } else if(currentType==='matte'){
+    const tables=parseTableValues(tablesParam);
+    const effectiveTables=tables.length?tables:[...DEFAULT_MATTE_TABLES];
+    cardData={type:'matte',tables:effectiveTables};
+    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker svaret');
+  }
+
+  if(totalRounds>1){
+    document.getElementById('session-panel').style.display='block';
+    updateSessionPanel();
+  }
+
+  const joined=await initSupabaseJoin();
+  if(joined&&!isStrictLiveSession()){
+    renderCard();
+  }
+}
+
+function buildGloseCard(){
+  const {pairs,mode}=cardData;
+  const SIZE=5,CELLS=25;
+  let pool=[...pairs];
+  while(pool.length<CELLS) pool=[...pool,...pairs];
+  const sel=shuffle(pool).slice(0,CELLS);
+  return sel.map(pair=>({
+    label:mode==='no'?pair[1]:pair[0],
+    isFree:false
+  }));
+}
+
+function buildMatteCard(){
+  const {tables}=cardData;
+  const multiplierMax=getMatteMultiplierMax(tables);
+  const allFacts=[];
+  tables.forEach(t=>{for(let n=1;n<=multiplierMax;n++)allFacts.push({eq:`${t}×${n}`,ans:t*n})});
+  const uniqueAns=[...new Set(allFacts.map(f=>f.ans))];
+  const SIZE=5,CELLS=25;
+  if(isStrictLiveSession()){
+    let strictPool=[...uniqueAns];
+    while(strictPool.length<CELLS) strictPool=[...strictPool,...uniqueAns];
+    const strictSel=shuffle(strictPool).slice(0,CELLS);
+    return strictSel.map(v=>({label:String(v),isFree:false}));
+  }
+  if(uniqueAns.length<CELLS-1){
+    // not enough unique — repeat
+    let pool=[...uniqueAns];
+    while(pool.length<CELLS-1) pool=[...pool,...uniqueAns];
+    const sel=shuffle(pool).slice(0,CELLS-1);
+    const gratisIdx=Math.floor(Math.random()*CELLS);
+    sel.splice(gratisIdx,0,'GRATIS');
+    return sel.map((v,i)=>({label:String(v),isFree:v==='GRATIS'}));
+  }
+  const sel=shuffle(uniqueAns).slice(0,CELLS-1);
+  const gratisIdx=Math.floor(Math.random()*CELLS);
+  sel.splice(gratisIdx,0,'GRATIS');
+  return sel.map(v=>({label:String(v),isFree:v==='GRATIS'}));
+}
+
+let currentCells=[];
+
+function renderCard(skipGeneration=false){
+  markedCells=new Set();
+  if(!isStrictLiveSession()){
+    bingoDismissed=new Set();
+    roundWon=false;
+  }
+  const wrap=document.getElementById('card-wrap');
+  wrap.innerHTML='';
+
+  if(!skipGeneration){
+    currentCells=cardData.type==='glose'?buildGloseCard():buildMatteCard();
+  }
+  currentBoardSignature=getBoardSignature(getCurrentBoardLabels());
+
+  const darkPat=[];
+  for(let r=0;r<5;r++) for(let c=0;c<5;c++) darkPat.push((r+c)%2===1);
+
+  const cardEl=document.createElement('div');
+  cardEl.className='bingo-card';
+
+  const title=cardData.type==='glose'?'BINGO':'GANGEBINGO';
+  const sub=cardData.type==='glose'
+    ?(cardData.mode==='no'?'Marker det NORSKE ordet':'Marker ØVEORDET')
+    :(cardData.tables.join(', ')+'-gangen · Marker SVARET');
+  const roundLabel=currentSessionName?currentSessionName:'Trykk for å krysse av';
+
+  cardEl.innerHTML=`
+    <div class="card-header">
+      <span class="card-title">${title}</span>
+      <div class="card-live-right" id="card-live-right">
+        <span class="card-name-tag" id="card-name-tag"></span>
+        <span class="card-round-tag" id="card-round-tag">—</span>
+        <span class="card-score-tag" id="card-score-tag">0</span>
+      </div>
+      <span class="card-round" id="card-round-static">${roundLabel}</span>
+    </div>
+    <div class="live-strip phase-wait" id="live-strip">
+      <span class="live-strip-label" id="live-strip-label"></span>
+      <span class="live-strip-word" id="live-strip-word">Vent på neste trekk.</span>
+    </div>
+    <div class="reaction-row" id="reaction-row">
+      <button class="reaction-btn" id="react-0" onclick="sendReaction('🎉')" title="Jubel">🎉</button>
+      <button class="reaction-btn" id="react-1" onclick="sendReaction('😬')" title="Usikker">😬</button>
+      <button class="reaction-btn" id="react-2" onclick="sendReaction('😤')" title="Frustrert">😤</button>
+    </div>
+    <div class="card-subtitle" id="card-subtitle-inner">${sub}</div>
+    <div class="bingo-grid g5 ${cardData.type==='glose'?'glose-grid':''}" id="bingo-grid"></div>
+  `;
+  wrap.appendChild(cardEl);
+
+  const grid=document.getElementById('bingo-grid');
+  currentCells.forEach((cell,i)=>{
+    const el=document.createElement('div');
+    if(cell.isFree){
+      el.className='bingo-cell free';
+      el.textContent='GRATIS';
+      markedCells.add(i); // free cell is always marked
+    } else {
+      el.className='bingo-cell'+(darkPat[i]?' dark':'');
+      el.textContent=cell.label;
+      el.addEventListener('click',()=>toggleCell(i,el));
+    }
+    grid.appendChild(el);
+  });
+  if(isStrictLiveSession()){
+    setStrictControlsDisabled(true);
+  }
+  updateBingoCount(false);
+  updateSessionPanel();
+}
+
+function updateBingoCount(pop){
+  const n=isStrictLiveSession()
+    ? Math.max(0,parseInt(strictLiveState?.board?.bingo_count,10)||0)
+    : bingoDismissed.size;
+  const el=document.getElementById('bingo-count-num');
+  el.textContent=n;
+  if(pop){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}
+  document.getElementById('bingo-count-wrap').style.display='flex';
+}
+
+function updateSessionPanel(){
+  if(isStrictLiveSession()&&strictLiveState){
+    updateStrictSessionPanel(strictLiveState);
+    return;
+  }
+  const panel=document.getElementById('session-panel');
+  if(!panel||totalRounds<=1) return;
+  const nextRound=Math.min(completedRounds+1,totalRounds);
+  const roundLabel=document.getElementById('session-round-label');
+  const scoreLabel=document.getElementById('session-score-label');
+  const barFill=document.getElementById('session-bar-fill');
+  const help=document.getElementById('session-help');
+  roundLabel.textContent=completedRounds>=totalRounds?`${totalRounds} av ${totalRounds}`:`${nextRound} av ${totalRounds}`;
+  scoreLabel.textContent=`${roundsWon}/${totalRounds}`;
+  barFill.style.width=`${(completedRounds/totalRounds)*100}%`;
+  if(completedRounds>=totalRounds){
+    help.textContent=`Økten er ferdig. Du fikk ${roundsWon} av ${totalRounds} mulige bingoer. Trykk på nytt kort for å starte på nytt.`;
+  } else if(roundWon){
+    help.textContent='Bingo registrert for denne runden. Tøm kortet når læreren starter neste runde.';
+  } else {
+    help.textContent='Tøm kortet for neste runde. Nytt kort starter sporingen på nytt.';
+  }
+}
+
+function toggleCell(idx,el){
+  if(isStrictLiveSession()){
+    if(markedCells.has(idx)) return;
+    if(strictLiveState?.state?.phase!=='draw_open'){
+      setJoinNote('Vent på at læreren åpner trekket.',true);
+      return;
+    }
+    if(strictLiveState?.current_response){
+      setJoinNote('Du har allerede svart på dette trekket.',true);
+      return;
+    }
+    submitStrictAnswer(idx);
+    return;
+  }
+  if(markedCells.has(idx)){
+    markedCells.delete(idx);
+    el.classList.remove('marked');
+  } else {
+    markedCells.add(idx);
+    el.classList.add('marked');
+    checkBingo();
+  }
+}
+
+function checkBingo(){
+  const SIZE=5;
+  const lines=[];
+  // Rows
+  for(let r=0;r<SIZE;r++){
+    const row=[];
+    for(let c=0;c<SIZE;c++) row.push(r*SIZE+c);
+    lines.push(row);
+  }
+  // Cols
+  for(let c=0;c<SIZE;c++){
+    const col=[];
+    for(let r=0;r<SIZE;r++) col.push(r*SIZE+c);
+    lines.push(col);
+  }
+  // Diagonals
+  lines.push([0,6,12,18,24]);
+  lines.push([4,8,12,16,20]);
+
+  for(const line of lines){
+    const key=line.join(',');
+    if(bingoDismissed.has(key)) continue;
+    if(line.every(i=>markedCells.has(i))){
+      bingoDismissed.add(key);
+      if(!roundWon){
+        roundWon=true;
+        roundsWon++;
+        updateSessionPanel();
+      }
+      updateBingoCount(true);
+      showBingo('Fem på rad! 🎉');
+      // Animate the winning cells
+      line.forEach(i=>{
+        const grid=document.getElementById('bingo-grid');
+        if(grid&&grid.children[i]) grid.children[i].classList.add('bingo-hit');
+      });
+      break;
+    }
+  }
+}
+
+function showBingo(msg){
+  document.getElementById('bingo-sub').textContent=msg;
+  document.getElementById('bingo-banner').classList.add('show');
+}
+function dismissBingo(){
+  document.getElementById('bingo-banner').classList.remove('show');
+}
+
+function clearMarks(){
+  if(isStrictLiveSession()){
+    setJoinNote('Læreren styrer kortet i liveøkten.',true);
+    return;
+  }
+  const hasRoundActivity=roundWon||Array.from(markedCells).some(i=>!currentCells[i]?.isFree);
+  if(totalRounds>1&&completedRounds<totalRounds&&hasRoundActivity){
+    completedRounds++;
+  }
+  markedCells=new Set();
+  bingoDismissed=new Set();
+  roundWon=false;
+  const grid=document.getElementById('bingo-grid');
+  if(!grid) return;
+  Array.from(grid.children).forEach((el,i)=>{
+    if(!currentCells[i]?.isFree){
+      el.classList.remove('marked','bingo-hit');
+    }
+    // re-add free
+    if(currentCells[i]?.isFree) markedCells.add(i);
+  });
+  updateBingoCount(false);
+  updateSessionPanel();
+}
+
+function newCard(){
+  if(isStrictLiveSession()){
+    setJoinNote('Læreren styrer kortet i liveøkten.',true);
+    return;
+  }
+  completedRounds=0;
+  roundsWon=0;
+  roundWon=false;
+  renderCard();
+}
+
+function showError(title,msg,link){
+  document.getElementById('subtitle').textContent='';
+  document.getElementById('card-wrap').innerHTML=`
+    <div class="error-box">
+      <h2>${title}</h2>
+      <p>${msg}${link?`<br><br><a href="https://${link}">Gå til lærersiden →</a>`:''}</p>
+    </div>`;
+}
+
+document.getElementById('join-code-input')?.addEventListener('input',event=>{
+  event.target.value=(event.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+document.getElementById('join-code-input')?.addEventListener('keydown',event=>{
+  if(event.key==='Enter'){
+    event.preventDefault();
+    submitJoinCode();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
