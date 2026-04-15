@@ -1408,7 +1408,9 @@ function getTeacherLiveRoundCount(){
   return Math.max(1,parseInt(teacherLiveState?.session?.settings?.rounds,10)||liveRounds.length||1);
 }
 function getTeacherRoundDrawTotal(roundNumber){
-  return Array.isArray(liveRounds?.[roundNumber-1]) ? liveRounds[roundNumber-1].length : 0;
+  if(Array.isArray(liveRounds?.[roundNumber-1])) return liveRounds[roundNumber-1].length;
+  // Recovery mode: liveRounds is empty — fall back to session settings if available
+  return parseInt(teacherLiveState?.session?.settings?.draws_per_round,10)||0;
 }
 function buildTeacherHistory(roundNumber,drawIndex){
   const round=liveRounds?.[roundNumber-1]||[];
@@ -1507,7 +1509,8 @@ async function prepareLiveSession() {
           direction: gloseMode,
           rounds,
           word_pairs: pairs,
-          draw_duration_seconds: drawDurationSeconds
+          draw_duration_seconds: drawDurationSeconds,
+          draws_per_round: gloseRoundsData[0]?.length || 0
         },
         rounds_data: gloseRoundsData
       };
@@ -1524,7 +1527,8 @@ async function prepareLiveSession() {
           matte_mode: matteMode,
           rounds,
           tables,
-          draw_duration_seconds: drawDurationSeconds
+          draw_duration_seconds: drawDurationSeconds,
+          draws_per_round: matteData.roundsData[0]?.length || 0
         },
         rounds_data: matteData.roundsData
       };
@@ -1812,7 +1816,7 @@ async function openLiveMode(){
     const preJoinEl=document.getElementById('live-join-code');
     if(preJoinEl) preJoinEl.textContent=activeLiveSession.joinCode||'------';
     const preBtn=document.getElementById('live-next-draw');
-    if(preBtn&&!teacherLiveState?.state) preBtn.textContent='Åpne trekk';
+    if(preBtn) preBtn.textContent='Åpne trekk'; // will be corrected by first render tick
     document.getElementById('live-modal').classList.add('show');
     renderLiveJoinQr();
     // Always start polling regardless of whether the first load succeeds
@@ -1908,7 +1912,8 @@ function phaseLabel(phase){
   return 'Venter';
 }
 function drawIndexReachedRoundEnd(state,totalDraws){
-  return Math.max(0,parseInt(state?.draw_index,10)||0) >= Math.max(0,totalDraws||0);
+  if(totalDraws<=0) return false; // unknown total (e.g. recovery mode) — don't prematurely end round
+  return Math.max(0,parseInt(state?.draw_index,10)||0) >= totalDraws;
 }
 function renderStrictTeacherLiveMode(){
   const state=teacherLiveState?.state||{};
@@ -2241,16 +2246,16 @@ function clearRecoverableSession() {
 
 async function resumeActiveSession() {
   if (!activeLiveSession) return;
-  
+
   try {
     setLiveSyncStatus('Gjenoppretter økt...');
     await refreshTeacherLiveState({ silent: false });
-    
-    if (teacherLiveState?.session?.rounds_data) {
-        liveRounds = teacherLiveState.session.rounds_data.map(round => round.map(item => ({ ...item })));
-        const mode = teacherLiveState.session.settings?.game_mode === 'matte' ? 'Matte' : 'Glose';
-        liveLabel = `Lerke Bingo · ${mode}`;
-    }
+
+    // Set a reasonable liveLabel from session settings (rounds_data is not in the API response)
+    const mode = teacherLiveState?.session?.settings?.game_mode;
+    liveLabel = mode === 'matte' ? 'Lerke Bingo · Matte'
+              : mode === 'glose' ? 'Lerke Bingo · Glose'
+              : 'Lerke Bingo';
 
     await openLiveMode();
   } catch (error) {
