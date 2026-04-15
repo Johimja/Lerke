@@ -1833,8 +1833,9 @@ function closeLiveMode(){
   checkRecoverableSession();
 }
 function renderLiveMode(){
-  if(teacherLiveState?.state&&activeLiveSession?.id){
-    renderStrictTeacherLiveMode();
+  if(activeLiveSession?.id){
+    // Strict live session — only render when state is loaded; never fall to non-strict path
+    if(teacherLiveState?.state) renderStrictTeacherLiveMode();
     return;
   }
   const round=liveRounds[liveRoundIndex]||[];
