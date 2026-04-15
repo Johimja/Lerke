@@ -221,6 +221,14 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .live-roster-item.near-bingo .live-roster-meta{color:#f5c842;font-weight:700}
 .near-bingo-alert{display:flex;align-items:center;gap:8px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:.78rem;color:#f5c842;font-weight:600;flex-shrink:0}
 .near-bingo-alert-icon{font-size:1rem}
+
+/* Reaction feed */
+.reaction-feed{display:flex;flex-wrap:wrap;gap:6px;min-height:0;margin-bottom:2px}
+.reaction-feed:empty::after{content:'–';font-size:.75rem;color:#4a5270}
+.reaction-chip{display:inline-flex;align-items:center;gap:4px;background:#1c2334;border:1px solid #2b3349;border-radius:999px;padding:3px 9px;font-size:.76rem;color:#c8d0ed;animation:chipIn .18s ease}
+@keyframes chipIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.reaction-chip .chip-emoji{font-size:1rem;line-height:1}
+.reaction-feed-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;margin-top:10px;flex-shrink:0}
 .lobby-modal{display:none;position:fixed;inset:0;background:rgba(5,8,14,.88);z-index:1090;padding:clamp(12px,2vw,24px)}
 .lobby-modal.show{display:flex}
 .lobby-shell{width:min(1200px,100%);margin:auto;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px}
@@ -862,6 +870,22 @@ async function resetStudentPinFromUI(studentId){
   showLatestCredentials({...details,display_name:student?.display_name||details?.display_name||'Elev'});
   setClassAdminStatus(`Ny PIN generert for elevkode ${details?.student_code||''}`,false);
 }
+async function fetchAndRenderReactions(){
+  const feed=document.getElementById('reaction-feed');
+  if(!feed||!supabaseClient||!activeLiveSession?.id) return;
+  const state=teacherLiveState?.state;
+  if(!state) return;
+  const {data,error}=await supabaseClient.rpc('get_draw_reactions',{
+    p_session_id:activeLiveSession.id,
+    p_round_number:Math.max(1,parseInt(state.round_number,10)||1),
+    p_draw_index:Math.max(0,parseInt(state.draw_index,10)||0)
+  });
+  if(error) return;
+  const reactions=Array.isArray(data)?data:(data||[]);
+  feed.innerHTML=reactions.map(r=>
+    `<span class="reaction-chip"><span class="chip-emoji">${escapeHtml(r.emoji)}</span>${escapeHtml(r.name)}</span>`
+  ).join('');
+}
 function generateJoinCode(length=6){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out='';
@@ -1042,6 +1066,7 @@ async function refreshTeacherLiveState(options={}){
     await refreshTeacherParticipantProgress({silent:true}).catch(e=>{
       setLiveSyncStatus(`Elevoversikt feilet: ${e?.message||e}`,true);
     });
+    fetchAndRenderReactions().catch(()=>{});
     renderLiveMode();
     await maybeAutoLockTeacherDraw();
     return teacherLiveState;
@@ -1098,6 +1123,14 @@ async function refreshTeacherParticipantProgress(options={}){
         progress,
         hasBingo:!!board?.has_bingo
       };
+    }).sort((a, b) => {
+      // Sort priority:
+      // 1. Has Bingo
+      // 2. Higher progress (Near-Bingo 4/5, etc.)
+      // 3. Name (alphabetical)
+      if (a.hasBingo !== b.hasBingo) return a.hasBingo ? -1 : 1;
+      if (a.progress !== b.progress) return b.progress - a.progress;
+      return a.name.localeCompare(b.name);
     });
     renderTeacherParticipantProgress();
     return teacherParticipantProgress;
@@ -2198,6 +2231,8 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
       <div class="live-roster" id="live-roster">
         <div class="live-roster-empty">Ingen elever er inne ennå.</div>
       </div>
+      <div class="reaction-feed-title">Reaksjoner</div>
+      <div class="reaction-feed" id="reaction-feed"></div>
       <div class="live-history-title">Trekkhistorikk</div>
       <div class="live-history" id="live-history"></div>
     </div>
