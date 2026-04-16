@@ -131,7 +131,38 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   .teacher-print{display:none!important}
 }
 .teacher-print{display:none}
+/* ===== GLOSE GENERATOR ===== */
+.lang-pair-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.lang-pair-row select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:5px 7px}
+.lang-arrow{color:var(--accent);font-size:1.1rem;font-weight:900;flex-shrink:0}
+.gen-tabs{display:flex;gap:4px;margin-bottom:10px}
+.gen-tab{flex:1;padding:6px 4px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.gen-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.gen-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:6px 8px;resize:vertical;min-height:68px;margin-bottom:6px}
+.gen-textarea:focus{outline:none;border-color:var(--blue)}
+.gen-action-btn{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--blue);border-radius:6px;color:var(--blue);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.74rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;margin-bottom:6px;transition:all .15s}
+.gen-action-btn:hover{background:var(--blue);color:#fff}
+.gen-action-btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+.gen-add-btn{width:100%;padding:8px;background:var(--green);border:none;border-radius:6px;color:#000;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.74rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;margin-bottom:4px}
+.gen-add-btn:hover{opacity:.88}
+.gen-preview{background:var(--surface2);border-radius:6px;padding:7px 9px;margin-bottom:7px;max-height:110px;overflow-y:auto;display:none;border:1px solid var(--border)}
+.gen-preview-pair{display:flex;gap:8px;font-size:0.77rem;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.gen-preview-pair:last-child{border-bottom:none}
+.gen-preview-pair span:first-child{color:var(--text);flex:1;font-weight:600}
+.gen-preview-pair span:last-child{color:var(--blue);flex:1}
+.gen-status{font-size:0.72rem;color:var(--muted);margin:3px 0 5px;min-height:14px}
+.gen-count-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.gen-count-row label{font-size:0.72rem;color:var(--muted);white-space:nowrap}
+.gen-count-row input[type=range]{flex:1;accent-color:var(--accent)}
+.gen-count-label{color:var(--accent);font-weight:900;min-width:26px;text-align:right;font-size:0.88rem}
+.gen-mode-row{display:flex;gap:4px;margin-bottom:8px}
+.gen-mode-btn{flex:1;padding:5px 4px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.gen-mode-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.gen-llm-config{background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.22);border-radius:6px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px}
+.gen-llm-config select,.gen-llm-config input{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.78rem;padding:5px 7px;width:100%}
+.gen-llm-note{font-size:0.67rem;color:var(--muted);line-height:1.4}
 </style>
+<script src="../../config/supabase-public-config.js"></script>
 </head>
 <body>
 
@@ -158,8 +189,8 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
       <div class="field-group">
         <label>Modus</label>
         <div class="mode-row">
-          <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til norsk<br><small>Læreren leser øveordet</small></button>
-          <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra norsk<br><small>Læreren leser på norsk</small></button>
+          <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
+          <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
         </div>
       </div>
       <div class="field-group">
@@ -197,6 +228,82 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <button class="add-btn" onclick="addWord()">+ Legg til ord</button>
       </div>
       </div>
+
+      <!-- ===== GLOSE GENERATOR ===== -->
+      <div class="sidebar-section">
+      <div class="sidebar-section-title">⚡ Generer gloser</div>
+      <div class="field-group">
+        <label>Språkpar</label>
+        <div class="lang-pair-row">
+          <select id="gen-lang-from">
+            <option value="en" selected>🇬🇧 Engelsk</option>
+            <option value="de">🇩🇪 Tysk</option>
+            <option value="fr">🇫🇷 Fransk</option>
+            <option value="es">🇪🇸 Spansk</option>
+            <option value="it">🇮🇹 Italiensk</option>
+            <option value="no">🇳🇴 Norsk</option>
+            <option value="sv">🇸🇪 Svensk</option>
+            <option value="da">🇩🇰 Dansk</option>
+            <option value="pl">🇵🇱 Polsk</option>
+            <option value="ar">🇸🇦 Arabisk</option>
+          </select>
+          <span class="lang-arrow">→</span>
+          <select id="gen-lang-to">
+            <option value="no" selected>🇳🇴 Norsk</option>
+            <option value="en">🇬🇧 Engelsk</option>
+            <option value="de">🇩🇪 Tysk</option>
+            <option value="fr">🇫🇷 Fransk</option>
+            <option value="es">🇪🇸 Spansk</option>
+            <option value="it">🇮🇹 Italiensk</option>
+            <option value="sv">🇸🇪 Svensk</option>
+            <option value="da">🇩🇰 Dansk</option>
+            <option value="pl">🇵🇱 Polsk</option>
+            <option value="ar">🇸🇦 Arabisk</option>
+          </select>
+        </div>
+      </div>
+      <div class="gen-tabs">
+        <button class="gen-tab active" id="gen-tab-words" onclick="switchGenTab('words')">📝 Oversett ord</button>
+        <button class="gen-tab" id="gen-tab-text" onclick="switchGenTab('text')">📄 Fra tekst</button>
+      </div>
+
+      <!-- Oversett ord -->
+      <div id="gen-panel-words">
+        <textarea class="gen-textarea" id="gen-words-input" placeholder="Skriv ett ord per linje:&#10;school&#10;teacher&#10;because&#10;important"></textarea>
+        <div class="gen-status" id="gen-words-status"></div>
+        <button class="gen-action-btn" id="gen-translate-btn" onclick="translateWords()">🌐 Oversett</button>
+        <div class="gen-preview" id="gen-words-preview"></div>
+        <button class="gen-add-btn" id="gen-words-add-btn" style="display:none" onclick="addGeneratedToList('words')">+ Legg til ordliste</button>
+      </div>
+
+      <!-- Fra tekst -->
+      <div id="gen-panel-text" style="display:none">
+        <textarea class="gen-textarea" id="gen-text-input" placeholder="Lim inn en tekst. Ord trekkes ut og oversettes automatisk." rows="4"></textarea>
+        <div class="gen-count-row">
+          <label>Antall ord</label>
+          <input type="range" id="gen-word-count" min="3" max="30" value="10" oninput="document.getElementById('gen-count-label').textContent=this.value">
+          <span class="gen-count-label" id="gen-count-label">10</span>
+        </div>
+        <div class="gen-mode-row">
+          <button class="gen-mode-btn active" id="gen-mode-simple" onclick="switchExtractMode('simple')">Enkel</button>
+          <button class="gen-mode-btn" id="gen-mode-llm" onclick="switchExtractMode('llm')">✨ LLM</button>
+        </div>
+        <div class="gen-llm-config" id="gen-llm-config" style="display:none">
+          <select id="gen-provider" onchange="loadSavedApiKey()">
+            <option value="anthropic">Anthropic (Claude Haiku)</option>
+            <option value="openai">OpenAI (GPT-4o mini)</option>
+          </select>
+          <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
+          <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
+        </div>
+        <div class="gen-status" id="gen-text-status"></div>
+        <button class="gen-action-btn" id="gen-extract-btn" onclick="extractAndTranslate()">🔍 Trekk ut og oversett</button>
+        <div class="gen-preview" id="gen-text-preview"></div>
+        <button class="gen-add-btn" id="gen-text-add-btn" style="display:none" onclick="addGeneratedToList('text')">+ Legg til ordliste</button>
+      </div>
+      </div>
+      <!-- ===== END GENERATOR ===== -->
+
       <div class="sidebar-section">
       <div class="sidebar-section-title">Kort og utskrift</div>
       <button class="generate-btn" onclick="generateGlose()">🎲 Generer kort</button>
@@ -514,6 +621,163 @@ function importList(e){
 document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
   label.addEventListener('click',()=>label.closest('.field-group').classList.toggle('collapsed'));
 });
+
+// ====== Glose Generator ======
+let _genPairsWords=[];
+let _genPairsText=[];
+const SUPABASE_URL=(window.LERKE_SUPABASE||{}).url||'https://isuzuuvddteejktcowev.supabase.co';
+const SUPABASE_ANON=(window.LERKE_SUPABASE||{}).anonKey||'';
+const EDGE_FN_URL=SUPABASE_URL+'/functions/v1/generate-glose';
+const MYMEMORY_URL='https://api.mymemory.translated.net/get';
+
+// Common stop words to skip during simple extraction
+const STOP_WORDS=new Set(['the','a','an','is','are','was','were','be','been','have','has','had','do','does','did','will','would','could','should','may','might','can','to','of','in','for','on','with','at','by','from','up','into','and','but','or','not','if','then','than','so','as','it','its','this','that','these','those','he','she','they','we','you','i','me','him','her','us','them','my','your','his','our','their','what','which','who','when','where','why','how','all','more','most','other','some','just','also','about','after','before','over','under','between','through','og','er','en','et','det','den','de','som','jeg','du','han','hun','vi','til','på','for','fra','med','av','ikke','om','men','at','så','når','da','der','her','eller','also','sehr','und','die','der','das','ein','eine','ist','sind','war','werden','haben','wird','kann','man','mit','des','dem','den','wie','was','auf','für','von','zu','im','es','ein','sich','auch','noch','nach','bei','um','vor','ihre','ihrer','ihrem']);
+
+function switchGenTab(tab){
+  document.getElementById('gen-panel-words').style.display=tab==='words'?'':'none';
+  document.getElementById('gen-panel-text').style.display=tab==='text'?'':'none';
+  document.getElementById('gen-tab-words').classList.toggle('active',tab==='words');
+  document.getElementById('gen-tab-text').classList.toggle('active',tab==='text');
+}
+
+function switchExtractMode(mode){
+  const isLLM=mode==='llm';
+  document.getElementById('gen-mode-simple').classList.toggle('active',!isLLM);
+  document.getElementById('gen-mode-llm').classList.toggle('active',isLLM);
+  document.getElementById('gen-llm-config').style.display=isLLM?'':'none';
+  if(isLLM) loadSavedApiKey();
+}
+
+function saveGenApiKey(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const key=document.getElementById('gen-api-key')?.value||'';
+  if(key) localStorage.setItem('lerke_gen_key_'+provider,key);
+}
+
+function loadSavedApiKey(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const saved=localStorage.getItem('lerke_gen_key_'+provider)||'';
+  const inp=document.getElementById('gen-api-key');
+  if(inp&&saved) inp.value=saved;
+}
+
+function setGenStatus(panel,msg){
+  const el=document.getElementById('gen-'+panel+'-status');
+  if(el) el.textContent=msg;
+}
+
+function escHtml(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+
+async function myMemoryTranslate(word,fromLang,toLang){
+  try{
+    const r=await fetch(`${MYMEMORY_URL}?q=${encodeURIComponent(word)}&langpair=${fromLang}|${toLang}`);
+    const d=await r.json();
+    if(d.responseStatus===200&&d.responseData?.translatedText){
+      const t=d.responseData.translatedText;
+      // MyMemory sometimes echoes the input when it can't translate — skip those
+      if(t.toLowerCase()!==word.toLowerCase()) return t;
+    }
+  }catch(e){/* silently skip */}
+  return null;
+}
+
+async function translateWords(){
+  const words=(document.getElementById('gen-words-input').value||'').split('\n').map(w=>w.trim()).filter(Boolean);
+  const from=document.getElementById('gen-lang-from').value;
+  const to=document.getElementById('gen-lang-to').value;
+  if(!words.length){setGenStatus('words','Skriv inn ord først.');return;}
+  const btn=document.getElementById('gen-translate-btn');
+  btn.disabled=true;
+  _genPairsWords=[];
+  const preview=document.getElementById('gen-words-preview');
+  preview.innerHTML='';preview.style.display='';
+  for(let i=0;i<words.length;i++){
+    setGenStatus('words',`Oversetter ${i+1}/${words.length}…`);
+    const t=await myMemoryTranslate(words[i],from,to);
+    if(t){
+      _genPairsWords.push([words[i],t]);
+      const div=document.createElement('div');
+      div.className='gen-preview-pair';
+      div.innerHTML=`<span>${escHtml(words[i])}</span><span>${escHtml(t)}</span>`;
+      preview.appendChild(div);
+    }
+    if(i<words.length-1) await new Promise(r=>setTimeout(r,250));
+  }
+  btn.disabled=false;
+  setGenStatus('words',_genPairsWords.length?`${_genPairsWords.length} par klare.`:'Ingen oversettelser funnet.');
+  document.getElementById('gen-words-add-btn').style.display=_genPairsWords.length?'':'none';
+}
+
+async function extractAndTranslate(){
+  const text=(document.getElementById('gen-text-input').value||'').trim();
+  if(!text){setGenStatus('text','Lim inn en tekst først.');return;}
+  const from=document.getElementById('gen-lang-from').value;
+  const to=document.getElementById('gen-lang-to').value;
+  const count=parseInt(document.getElementById('gen-word-count').value)||10;
+  const isLLM=document.getElementById('gen-mode-llm').classList.contains('active');
+  const btn=document.getElementById('gen-extract-btn');
+  btn.disabled=true;
+  _genPairsText=[];
+  const preview=document.getElementById('gen-text-preview');
+  preview.innerHTML='';preview.style.display='';
+  try{
+    if(isLLM){
+      const provider=document.getElementById('gen-provider').value;
+      const apiKey=(document.getElementById('gen-api-key').value||'').trim();
+      if(!apiKey) throw new Error('Skriv inn API-nøkkel i LLM-feltet.');
+      setGenStatus('text','✨ Sender til AI…');
+      const res=await fetch(EDGE_FN_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON},
+        body:JSON.stringify({text,from_lang:from,to_lang:to,word_count:count,provider,api_key:apiKey})
+      });
+      const data=await res.json();
+      if(!res.ok||data.error) throw new Error(data.error||`Serverfeil ${res.status}`);
+      _genPairsText=data.pairs||[];
+    } else {
+      // Simple mode: extract words + MyMemory
+      const words=extractWords(text,count);
+      for(let i=0;i<words.length;i++){
+        setGenStatus('text',`Oversetter ${i+1}/${words.length}…`);
+        const t=await myMemoryTranslate(words[i],from,to);
+        if(t) _genPairsText.push([words[i],t]);
+        if(i<words.length-1) await new Promise(r=>setTimeout(r,250));
+      }
+    }
+    _genPairsText.forEach(([a,b])=>{
+      const div=document.createElement('div');
+      div.className='gen-preview-pair';
+      div.innerHTML=`<span>${escHtml(a)}</span><span>${escHtml(b)}</span>`;
+      preview.appendChild(div);
+    });
+    setGenStatus('text',_genPairsText.length?`${_genPairsText.length} par klare.`:'Ingen ord funnet — prøv lengre tekst.');
+    document.getElementById('gen-text-add-btn').style.display=_genPairsText.length?'':'none';
+  } catch(err){
+    setGenStatus('text','⚠️ '+(err.message||'Ukjent feil'));
+  }
+  btn.disabled=false;
+}
+
+function extractWords(text,count){
+  const raw=text.match(/\b[a-zA-ZæøåÆØÅäöüÄÖÜß]{4,18}\b/g)||[];
+  const unique=[...new Set(raw.map(w=>w.toLowerCase()))].filter(w=>!STOP_WORDS.has(w));
+  // Fisher-Yates shuffle
+  for(let i=unique.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[unique[i],unique[j]]=[unique[j],unique[i]];}
+  return unique.slice(0,Math.min(count,unique.length));
+}
+
+function addGeneratedToList(source){
+  const pairs=source==='words'?_genPairsWords:_genPairsText;
+  if(!pairs.length) return;
+  let added=0;
+  pairs.forEach(([a,b])=>{
+    if(!window._words.some(p=>p[0].toLowerCase()===a.toLowerCase())){
+      window._words.push([a,b]);added++;
+    }
+  });
+  renderWordList();
+  setGenStatus(source,`✅ ${added} par lagt til (${pairs.length-added} duplikater hoppet over).`);
+}
 
 renderWordList();
 </script>
