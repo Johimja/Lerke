@@ -388,7 +388,7 @@ function updateStudentAccountPanel(){
   panel.style.display='block';
   document.getElementById('student-account-name').textContent=currentStudentProfile.display_name||'-';
   document.getElementById('student-account-meta').textContent=
-    `${currentStudentProfile.class_name||'Klasse'} · klassekode ${currentStudentProfile.class_code||'-'} · elevkode ${currentStudentProfile.student_code||'-'}. Bruk fortsatt øktkoden fra læreren for å bli med i live-spillet.`;
+    `${currentStudentProfile.class_name||'Klasse'}${currentStudentProfile.login_code?' · Kode: '+currentStudentProfile.login_code:''}. Bruk øktkoden fra læreren for å bli med i live-spillet.`;
 }
 function showJoinPanel(){
   const panel=document.getElementById('join-panel');

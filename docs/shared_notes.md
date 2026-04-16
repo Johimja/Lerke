@@ -116,7 +116,8 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - [x] **Fastest-answer stat per draw** ✅
 - [x] **Live Reaction Feed** — 🎉 😬 😤 one-tap emoji, flashes on teacher screen ✅
 - [x] **UI & Gamification** — glowing join code, auto-collapse, Live Ticker ✅
-- [ ] **End-of-round Speed Podium** — `speed_leaderboard` data is in the RPC response, not yet displayed in UI
+- [x] **End-of-round Speed Podium** — displayed in bingo celebration overlay, top 3 by avg response time ✅
+- [x] **Single-code student login** — `login_code` (6-char, globally unique) replaces class code + student code. Login is now: one code + PIN. Students can also change their own PIN. SQL: v11. ✅
 - [ ] **Phase out anonymous join** — login required for all students
 
 ### Tier 2 — Identity & Progression
@@ -165,3 +166,4 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 7. `supabase/sql/supabase_bingo_v6_podium.sql` ✅ applied
 8. `supabase/sql/supabase_bingo_v7_leaderboard.sql` ✅ applied
 9. `supabase/sql/supabase_bingo_v8_reactions_speed.sql` ✅ applied
+10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` — **apply next**

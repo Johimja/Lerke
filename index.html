@@ -626,15 +626,14 @@ html{scroll-behavior:smooth}
           <article class="auth-card" id="student-anchor">
             <div class="auth-kicker student">Elevinnlogging</div>
             <h3>Elevportal</h3>
-            <p>Elevportalen er for elevkontoer med klassekode, elevkode og PIN. Den er separat fra anonym Bingo-join og er laget for varig identitet og senere progresjon.</p>
+            <p>Logg inn med elevkoden (6 tegn) og PIN-en du fikk fra læreren. Du trenger ikke klassekode eller elevkode lenger.</p>
             <div class="student-login-form" id="student-login-form">
               <div class="auth-row">
-                <input id="student-class-code" type="text" placeholder="Klassekode" maxlength="10">
-                <input id="student-code" type="text" placeholder="Elevkode" maxlength="10">
+                <input id="student-login-code" type="text" placeholder="Elevkode (6 tegn)" maxlength="6" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px">
                 <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
               </div>
               <div class="auth-row">
-                <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn elev</button>
+                <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn</button>
               </div>
             </div>
             <div class="student-session-card" id="student-session-card">
@@ -644,6 +643,15 @@ html{scroll-behavior:smooth}
               <div class="student-session-actions">
                 <button class="auth-btn green" type="button" onclick="launchBingo()">Åpne Bingo</button>
               </div>
+              <details style="margin-top:10px">
+                <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted,#7c8099)">Bytt PIN</summary>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+                  <input id="change-pin-current" type="password" placeholder="Nåværende PIN" maxlength="8">
+                  <input id="change-pin-new" type="password" placeholder="Ny PIN (min. 4 tegn)" maxlength="8">
+                  <button class="auth-btn" onclick="studentChangePinPortal()">Lagre ny PIN</button>
+                  <div id="change-pin-status" style="font-size:0.78rem;color:var(--muted,#7c8099)"></div>
+                </div>
+              </details>
             </div>
             <div class="auth-row">
               <button class="auth-btn" onclick="portalSignOut()">Logg ut</button>
@@ -861,8 +869,7 @@ function renderStudentPortalState(){
   const sessionEl=document.getElementById('student-session-card');
   const nameEl=document.getElementById('student-session-name');
   const metaEl=document.getElementById('student-session-meta');
-  const classInput=document.getElementById('student-class-code');
-  const codeInput=document.getElementById('student-code');
+  const loginCodeInput=document.getElementById('student-login-code');
   const pinInput=document.getElementById('student-pin');
   const loggedIn=!!currentStudentProfile;
   if(formEl) formEl.classList.toggle('hidden',loggedIn);
@@ -870,12 +877,11 @@ function renderStudentPortalState(){
   if(nameEl) nameEl.textContent=loggedIn?(currentStudentProfile.display_name||'Elev'):'-';
   if(metaEl){
     metaEl.textContent=loggedIn
-      ? `${currentStudentProfile.class_name||'Klasse'} (${currentStudentProfile.class_code||'-'})${currentStudentProfile.student_code?` · Elevkode ${currentStudentProfile.student_code}`:''}`
+      ? `${currentStudentProfile.class_name||'Klasse'}${currentStudentProfile.login_code?` · Kode: ${currentStudentProfile.login_code}`:''}`
       : '-';
   }
-  if(loggedIn){
-    if(classInput) classInput.value=currentStudentProfile.class_code||'';
-    if(codeInput) codeInput.value=currentStudentProfile.student_code||'';
+  if(!loggedIn){
+    if(loginCodeInput) loginCodeInput.value='';
     if(pinInput) pinInput.value='';
   }
 }
@@ -919,7 +925,7 @@ function showLatestCredentials(details){
   const value=document.getElementById('student-credential-value');
   if(!box||!value||!details) return;
   box.style.display='block';
-  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Kode: ${escapeHtml(details.student_code||'-')}<br>PIN: ${escapeHtml(details.pin||'-')}`;
+  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Elevkode: ${escapeHtml(details.login_code||details.student_code||'-')}<br>PIN: ${escapeHtml(details.pin||'-')}`;
 }
 
 function renderClassPicker(){
@@ -951,7 +957,7 @@ function renderStudents(students){
     list.innerHTML='<div class="class-admin-empty">Ingen elever i denne klassen ennå.</div>';
     return;
   }
-  list.innerHTML=students.map(student=>`<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div><div class="student-item-meta">Elevkode: ${escapeHtml(student.student_code)}${student.first_name||student.last_name?` · ${escapeHtml([student.first_name,student.last_name].filter(Boolean).join(' '))}`:''}</div></div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromPortal('${student.id}')">Ny PIN</button></div></div>`).join('');
+  list.innerHTML=students.map(student=>`<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div><div class="student-item-meta">${student.login_code?`Kode: <strong>${escapeHtml(student.login_code)}</strong>`:''} ${student.first_name||student.last_name?`· ${escapeHtml([student.first_name,student.last_name].filter(Boolean).join(' '))}`:''}</div></div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromPortal('${student.id}')">Ny PIN</button></div></div>`).join('');
 }
 
 function updateClassAdminVisibility(){
@@ -1175,15 +1181,13 @@ async function ensurePortalStudentSession(){
 
 async function portalStudentLogin(){
   if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
-  const classCode=document.getElementById('student-class-code').value.trim().toUpperCase();
-  const studentCode=document.getElementById('student-code').value.trim().toUpperCase();
+  const loginCode=document.getElementById('student-login-code').value.trim().toUpperCase();
   const pin=document.getElementById('student-pin').value.trim();
-  if(!classCode||!studentCode||!pin){alert('Fyll inn klassekode, elevkode og PIN.');return}
+  if(!loginCode||!pin){alert('Fyll inn elevkode og PIN.');return}
   try{
     await ensurePortalStudentSession();
-    const {data,error}=await supabaseClient.rpc('student_login_with_pin',{
-      p_class_code:classCode,
-      p_student_code:studentCode,
+    const {data,error}=await supabaseClient.rpc('student_login_with_code',{
+      p_login_code:loginCode,
       p_pin:pin
     });
     if(error) throw error;
@@ -1191,6 +1195,26 @@ async function portalStudentLogin(){
     await refreshPortalAuthState();
   } catch(error){
     alert(error.message||'Kunne ikke logge inn elev.');
+  }
+}
+
+async function studentChangePinPortal(){
+  if(!supabaseClient) return;
+  const currentPin=document.getElementById('change-pin-current').value.trim();
+  const newPin=document.getElementById('change-pin-new').value.trim();
+  const statusEl=document.getElementById('change-pin-status');
+  if(!currentPin||!newPin){if(statusEl)statusEl.textContent='Fyll inn begge feltene.';return}
+  try{
+    const {data,error}=await supabaseClient.rpc('student_change_pin',{
+      p_current_pin:currentPin,
+      p_new_pin:newPin
+    });
+    if(error) throw error;
+    if(statusEl)statusEl.textContent='PIN er oppdatert!';
+    document.getElementById('change-pin-current').value='';
+    document.getElementById('change-pin-new').value='';
+  } catch(error){
+    if(statusEl)statusEl.textContent=error.message||'Kunne ikke bytte PIN.';
   }
 }
 

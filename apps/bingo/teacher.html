@@ -307,6 +307,16 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .podium-medal{font-size:1.4rem;min-width:28px;text-align:center}
 .podium-name{font-family:'Raleway',sans-serif;font-weight:900;flex:1;color:#fff;font-size:1rem;text-align:left}
 .podium-draw{font-size:0.7rem;color:#6b84a8;white-space:nowrap}
+.speed-podium-wrap{width:100%;max-width:460px;margin:6px 0 2px}
+.speed-podium-title{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#6b84a8;margin-bottom:5px;text-align:center}
+.speed-podium-entries{display:flex;flex-direction:column;gap:5px}
+.speed-place{display:flex;align-items:center;gap:12px;padding:7px 14px;border-radius:10px;background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.2)}
+.speed-place.sp1{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.25)}
+.speed-place.sp2{background:rgba(192,192,192,.07);border-color:rgba(192,192,192,.2)}
+.speed-place.sp3{background:rgba(205,127,50,.07);border-color:rgba(205,127,50,.2)}
+.speed-icon{font-size:1.1rem;min-width:24px;text-align:center}
+.speed-name{font-family:'Raleway',sans-serif;font-weight:700;flex:1;color:#dbe4ff;font-size:0.88rem;text-align:left}
+.speed-time{font-size:0.72rem;color:#5b8dee;white-space:nowrap;font-weight:600}
 
 @keyframes liveJoinPulse{
   0%,100%{opacity:.45;transform:scale(1)}
@@ -1259,6 +1269,23 @@ function showTeacherBingoCelebration(winners){
           <span class="podium-draw">${p.draw_index!=null?'Trekk '+p.draw_index:''}</span>
         </div>`).join('')
       :'';
+  }
+  const speedBoard=(teacherLiveState?.teacher_summary?.speed_leaderboard||[]).slice(0,3);
+  const speedWrap=document.getElementById('celebrate-speed-podium');
+  const speedEntries=document.getElementById('celebrate-speed-entries');
+  if(speedWrap&&speedEntries){
+    if(speedBoard.length>0){
+      const speedIcons=['⚡','🔥','💨'];
+      speedEntries.innerHTML=speedBoard.map((s,i)=>
+        `<div class="speed-place sp${i+1}">
+          <span class="speed-icon">${speedIcons[i]||'🏅'}</span>
+          <span class="speed-name">${escapeHtml(s.display_name)}</span>
+          <span class="speed-time">${parseFloat(s.avg_seconds).toFixed(1)}s snitt</span>
+        </div>`).join('');
+      speedWrap.style.display='';
+    }else{
+      speedWrap.style.display='none';
+    }
   }
   launchConfetti();
   playBingoJingle();
@@ -2481,6 +2508,10 @@ document.querySelectorAll('.field-group.collapsible>label').forEach(label=>{
     <div class="celebrate-bingo">BINGO!</div>
     <div class="celebrate-winners" id="celebrate-winners"></div>
     <div class="podium-wrap" id="celebrate-podium"></div>
+    <div class="speed-podium-wrap" id="celebrate-speed-podium" style="display:none">
+      <div class="speed-podium-title">⚡ Raskest svar denne runden</div>
+      <div class="speed-podium-entries" id="celebrate-speed-entries"></div>
+    </div>
     <div class="celebrate-actions">
       <button class="celebrate-btn primary" id="celebrate-next-round-btn" onclick="dismissTeacherBingo(true)">Neste runde →</button>
       <button class="celebrate-btn secondary" onclick="dismissTeacherBingo(false)">Fortsett runden</button>
