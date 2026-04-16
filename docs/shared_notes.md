@@ -39,14 +39,47 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
-### 2026-04-16 — Session 13: Single-code login, speed podium, email association
+### 2026-04-16 — Session 13: Single-code login, speed podium, email association, glose generator, LM Studio
 
 **What was shipped:**
-- `apps/bingo/teacher.html`: End-of-round Speed Podium in the bingo celebration overlay — top 3 fastest responders from `speed_leaderboard` data already in the RPC.
+
+**Speed Podium:**
+- `apps/bingo/teacher.html`: End-of-round Speed Podium in the bingo celebration overlay — top 3 fastest responders from `speed_leaderboard` data already in the RPC. Icons ⚡/🔥/💨 with average time display.
+
+**Single-code student login (V11):**
 - `supabase/sql/supabase_bingo_v11_student_login_code.sql` (applied ✅): Adds `login_code` (6-char, globally unique) to `student_profiles`. Backfills all existing students. New RPCs: `student_login_with_code(p_login_code, p_pin)` replaces 3-field login; `student_change_pin(p_current_pin, p_new_pin)` for self-service PIN changes.
-- `index.html`: Student login form simplified to 2 fields (login_code + PIN). Teacher student list shows `login_code` prominently. "Bytt PIN" section added to student session card. Fixed `ensurePortalStudentSession` to not sign out email-linked student sessions.
+- `index.html`: Student login form simplified from **3 fields** (class code + student code + PIN) to **2 fields** (login_code + PIN). Teacher student list shows `login_code` prominently. "Bytt PIN" section added to student session card. Fixed `ensurePortalStudentSession` to not sign out email-linked student sessions.
 - `apps/bingo/student.html`: Account meta now shows login_code instead of class+student codes.
-- `index.html`: Email/password association for students — logged-in students can optionally link an email + password to their account. If already linked, the option is hidden and replaced with a password-reset form. Students who forget their email password can log in with login_code + PIN and reset from there. All done via Supabase SDK `updateUser` (no extra SQL).
+
+**Email/password association:**
+- `index.html`: Logged-in students can optionally link an email + password to their account via the portal. If already linked, the option is hidden and replaced with a password-reset form. Students who forget their email password can log in with login_code + PIN and reset from there. All done via Supabase SDK `updateUser` (no extra SQL).
+- ⚠️ **Known limitation:** The email/password credentials are linked in Supabase Auth, but the portal does **not yet have a login form for students to use email+password**. Currently students can only enter via login_code + PIN. Email was added as a future upgrade path — the portal login flow still needs an "or log in with email" branch to make it usable. Add this before broadly advertising the feature.
+
+**Glose generator (`apps/bingo-generator/index.html`):**
+- Added full "⚡ Generer gloser" sidebar section with:
+  - **Language dropdowns** — source and target language, 10 languages each (Norsk, Engelsk, Tysk, Spansk, Fransk, Italiensk, Portugisisk, Arabisk, Kinesisk, Japansk).
+  - **Word-translate tab** — teacher types/pastes individual words, each gets translated via MyMemory free API (no key needed, no account, CORS-friendly: `api.mymemory.translated.net`). 250ms delay between calls to respect rate limits.
+  - **Text-extract tab** — teacher pastes a full text; system extracts candidate words (4–18 chars, filtered against 100+ stop words across 6 languages), then either:
+    - Sends to **MyMemory** for free translation word-by-word, or
+    - Sends full text + word-count setting to an **LLM** that returns word pairs as JSON.
+  - **Word count slider** — 3 to 30 pairs.
+  - **Mode toggle** — "Til Norsk" / "Fra Norsk" (direction clarified).
+  - Pairs are previewed and individually removable before being added to the active word list with duplicate detection.
+
+**LLM providers for glose generation:**
+Three providers selectable in a dropdown:
+1. **MyMemory (free)** — no key, rate-limited, word-by-word.
+2. **Anthropic (Claude Haiku)** — API key saved to `localStorage` in teacher's own browser. Routed via Supabase edge function `generate-glose` (deployed ✅ with `verify_jwt: false`). Model: `claude-haiku-4-5-20251001`.
+3. **OpenAI (GPT-4o-mini)** — same as Anthropic, different endpoint. Both cloud keys are **never stored in Lerke's DB** — localStorage only, teacher pays their own bill.
+4. **LM Studio (lokal)** — calls `http://localhost:1234` directly from the browser. Bypasses edge function entirely. Teacher can change the URL if port differs. "Hent modeller" button fetches available models via `GET /v1/models` and populates a select.
+
+**LM Studio — settings the teacher must configure:**
+> These settings are in LM Studio → Developer → Local Server → Server Settings:
+> - **Enable CORS** ✅ — must be ON (browser sends cross-origin requests from `https://johimja.com`)
+> - **Server Port** — default 1234. If changed, teacher must update the URL field in the glose generator.
+> - **Serve on Local Network** — OFF is fine for the teacher's own machine. Turn ON if the school network should reach LM Studio from another device (e.g., teacher laptop → classroom display). Note: this does NOT help students reach it from their own devices unless all are on the same LAN and CORS + firewall allow it.
+> - **Require Authentication** — leave OFF unless you know what you're doing (adding auth tokens would require extra UI in the generator).
+> - LM Studio must have a model loaded and in READY state before generation works.
 
 ---
 
@@ -141,7 +174,9 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ### Tier 3 — Content & Modes
 
-- [ ] **Glosebingo content improvements** — language selector, reuse saved teaching sets
+- [x] **Glose generator** — "⚡ Generer gloser" in bingo-generator sidebar. Language pair dropdowns (10 langs), word-translate tab (MyMemory free API), text-extract tab (MyMemory word-by-word or LLM). LLM providers: Anthropic Claude Haiku, OpenAI GPT-4o-mini (teacher's own key in localStorage, routed via edge function), LM Studio local API (direct browser→localhost, no edge function). Mode buttons: "Til Norsk" / "Fra Norsk". ✅
+- [ ] **Student email/password login path** — email association exists in Supabase Auth, but portal has no "log in with email" form yet. Need to add before advertising the feature. ⚠️
+- [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
 
