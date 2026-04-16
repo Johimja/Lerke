@@ -289,12 +289,27 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
           <button class="gen-mode-btn" id="gen-mode-llm" onclick="switchExtractMode('llm')">✨ LLM</button>
         </div>
         <div class="gen-llm-config" id="gen-llm-config" style="display:none">
-          <select id="gen-provider" onchange="loadSavedApiKey()">
+          <select id="gen-provider" onchange="onProviderChange()">
             <option value="anthropic">Anthropic (Claude Haiku)</option>
             <option value="openai">OpenAI (GPT-4o mini)</option>
+            <option value="lmstudio">💻 LM Studio (lokal)</option>
           </select>
-          <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
-          <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
+          <!-- Cloud API key (hidden for LM Studio) -->
+          <div id="gen-cloud-key-section">
+            <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
+            <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
+          </div>
+          <!-- LM Studio local config -->
+          <div id="gen-lmstudio-section" style="display:none">
+            <div style="display:flex;gap:5px;margin-bottom:5px">
+              <input type="text" id="gen-lmstudio-url" value="http://localhost:1234" placeholder="http://localhost:1234" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.78rem;padding:5px 7px">
+              <button class="list-small-btn" onclick="fetchLMStudioModels()" style="white-space:nowrap;font-size:0.7rem">Hent modeller</button>
+            </div>
+            <select id="gen-lmstudio-model" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.78rem;padding:5px 7px;width:100%;margin-bottom:4px">
+              <option value="">-- Trykk "Hent modeller" --</option>
+            </select>
+            <div class="gen-llm-note">Kaller direkte til LM Studio på din maskin. Ingen API-nøkkel trengs. Krever Chrome/Firefox (localhost er tillatt fra HTTPS).</div>
+          </div>
         </div>
         <div class="gen-status" id="gen-text-status"></div>
         <button class="gen-action-btn" id="gen-extract-btn" onclick="extractAndTranslate()">🔍 Trekk ut og oversett</button>
@@ -661,6 +676,48 @@ function loadSavedApiKey(){
   if(inp&&saved) inp.value=saved;
 }
 
+function onProviderChange(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const isLocal=provider==='lmstudio';
+  document.getElementById('gen-cloud-key-section').style.display=isLocal?'none':'';
+  document.getElementById('gen-lmstudio-section').style.display=isLocal?'':'none';
+  if(!isLocal) loadSavedApiKey();
+}
+
+async function fetchLMStudioModels(){
+  const base=(document.getElementById('gen-lmstudio-url').value||'http://localhost:1234').replace(/\/$/,'');
+  const sel=document.getElementById('gen-lmstudio-model');
+  sel.innerHTML='<option value="">Henter…</option>';
+  try{
+    const res=await fetch(`${base}/v1/models`,{headers:{'Content-Type':'application/json'}});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const models=(data.data||[]).map(m=>m.id).filter(Boolean);
+    if(!models.length) throw new Error('Ingen modeller lastet i LM Studio');
+    sel.innerHTML=models.map(m=>`<option value="${m}">${m}</option>`).join('');
+  }catch(err){
+    sel.innerHTML='<option value="">Feil: '+escHtml(err.message)+'</option>';
+  }
+}
+
+async function callLMStudioDirect(text,fromLang,toLang,count){
+  const base=(document.getElementById('gen-lmstudio-url').value||'http://localhost:1234').replace(/\/$/,'');
+  const model=document.getElementById('gen-lmstudio-model').value||'local-model';
+  if(!model||model.startsWith('--')||model.startsWith('Feil')) throw new Error('Velg en modell fra LM Studio først.');
+  const prompt=`Du er en lærer som lager glosebingo for elever. Trekk ut nøyaktig ${count} nyttige vokabularord fra teksten nedenfor (på ${fromLang}) og oversett dem til ${toLang}. Velg pedagogisk nyttige ord – ikke velg svært vanlige ord. Returner KUN et JSON-array: [["${fromLang}-ord","${toLang}-oversettelse"],...]. Ingen annen tekst.\n\nTekst:\n${text.slice(0,4000)}`;
+  const res=await fetch(`${base}/v1/chat/completions`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model,messages:[{role:'user',content:prompt}],temperature:0.4,max_tokens:1024})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`LM Studio ${res.status}`);}
+  const data=await res.json();
+  const content=data?.choices?.[0]?.message?.content||'';
+  const match=content.match(/\[[\s\S]*\]/);
+  if(!match) throw new Error('Klarte ikke å tolke svar fra LM Studio — prøv igjen');
+  return JSON.parse(match[0]).filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[String(p[0]).trim(),String(p[1]).trim()]).filter(([a,b])=>a&&b);
+}
+
 function setGenStatus(panel,msg){
   const el=document.getElementById('gen-'+panel+'-status');
   if(el) el.textContent=msg;
@@ -723,17 +780,22 @@ async function extractAndTranslate(){
   try{
     if(isLLM){
       const provider=document.getElementById('gen-provider').value;
-      const apiKey=(document.getElementById('gen-api-key').value||'').trim();
-      if(!apiKey) throw new Error('Skriv inn API-nøkkel i LLM-feltet.');
-      setGenStatus('text','✨ Sender til AI…');
-      const res=await fetch(EDGE_FN_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON},
-        body:JSON.stringify({text,from_lang:from,to_lang:to,word_count:count,provider,api_key:apiKey})
-      });
-      const data=await res.json();
-      if(!res.ok||data.error) throw new Error(data.error||`Serverfeil ${res.status}`);
-      _genPairsText=data.pairs||[];
+      if(provider==='lmstudio'){
+        setGenStatus('text','💻 Sender til LM Studio…');
+        _genPairsText=await callLMStudioDirect(text,from,to,count);
+      } else {
+        const apiKey=(document.getElementById('gen-api-key').value||'').trim();
+        if(!apiKey) throw new Error('Skriv inn API-nøkkel i LLM-feltet.');
+        setGenStatus('text','✨ Sender til AI…');
+        const res=await fetch(EDGE_FN_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON},
+          body:JSON.stringify({text,from_lang:from,to_lang:to,word_count:count,provider,api_key:apiKey})
+        });
+        const data=await res.json();
+        if(!res.ok||data.error) throw new Error(data.error||`Serverfeil ${res.status}`);
+        _genPairsText=data.pairs||[];
+      }
     } else {
       // Simple mode: extract words + MyMemory
       const words=extractWords(text,count);
