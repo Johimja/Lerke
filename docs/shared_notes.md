@@ -39,6 +39,18 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-16 — Session 15: Day/night mode toggle across all pages
+
+**What was shipped:**
+- All 4 HTML pages (`index.html`, `apps/bingo/teacher.html`, `apps/bingo/student.html`, `apps/bingo-generator/index.html`) now have a 🌙/☀️ toggle button fixed in the lower-left corner.
+- Theme follows system `prefers-color-scheme` on first visit; manual toggle persists in `localStorage` (`lerke-theme`) and carries across all pages.
+- `index.html`: Dark/night theme uses a deep plum palette (`#15101f`–`#1a1428` backgrounds, `#1e1630` panels, `#e8e2f2` text, subtle purple borders). Accent colours (plum, green, gold) are unchanged. Hardcoded warm-paper backgrounds overridden via `[data-theme="dark"]` selectors.
+- `teacher.html`, `student.html`, `bingo-generator/index.html`: These were already dark. New light/day mode uses the index.html warm-paper palette (`--bg:#f8f2e8`, panels `#fffaf2`). Live game modals and credential boxes intentionally remain dark in both modes.
+- Theme init script sits in `<head>` (synchronous, after `<style>`) to avoid flash of unstyled content. Toggle JS added before `</body>`.
+- Branch: `claude/add-night-mode-toggle-wsngP` — PR pending merge.
+
+---
+
 ### 2026-04-16 — Session 14: Student email/password login path
 
 **What was shipped:**
