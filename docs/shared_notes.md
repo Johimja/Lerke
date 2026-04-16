@@ -39,6 +39,16 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-16 — Session 14: Student email/password login path
+
+**What was shipped:**
+- `index.html`: Added "Logg inn med e-post i stedet" toggle link below the student login_code + PIN form. Clicking it swaps to an email+password form (`student-login-email-form`). `portalStudentLoginEmail()` calls `supabaseClient.auth.signInWithPassword`; existing `refreshPortalAuthState` then calls `get_current_student_profile` to hydrate `currentStudentProfile`. If the email isn't linked to any student account, the session is signed out and the user gets a clear error. Toggle link in the email form goes back to code login.
+- This closes the ⚠️ known limitation from Session 13 — email association is now a usable login path.
+
+**Next task:** Phase out anonymous join (Tier 1) — require login for all students joining Bingo.
+
+---
+
 ### 2026-04-16 — Session 13: Single-code login, speed podium, email association, glose generator, LM Studio
 
 **What was shipped:**
@@ -175,7 +185,7 @@ Three providers selectable in a dropdown:
 ### Tier 3 — Content & Modes
 
 - [x] **Glose generator** — "⚡ Generer gloser" in bingo-generator sidebar. Language pair dropdowns (10 langs), word-translate tab (MyMemory free API), text-extract tab (MyMemory word-by-word or LLM). LLM providers: Anthropic Claude Haiku, OpenAI GPT-4o-mini (teacher's own key in localStorage, routed via edge function), LM Studio local API (direct browser→localhost, no edge function). Mode buttons: "Til Norsk" / "Fra Norsk". ✅
-- [ ] **Student email/password login path** — email association exists in Supabase Auth, but portal has no "log in with email" form yet. Need to add before advertising the feature. ⚠️
+- [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
 - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board

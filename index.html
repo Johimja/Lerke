@@ -628,12 +628,29 @@ html{scroll-behavior:smooth}
             <h3>Elevportal</h3>
             <p>Logg inn med elevkoden (6 tegn) og PIN-en du fikk fra læreren. Du trenger ikke klassekode eller elevkode lenger.</p>
             <div class="student-login-form" id="student-login-form">
-              <div class="auth-row">
-                <input id="student-login-code" type="text" placeholder="Elevkode (6 tegn)" maxlength="6" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px">
-                <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
+              <div id="student-login-code-form">
+                <div class="auth-row">
+                  <input id="student-login-code" type="text" placeholder="Elevkode (6 tegn)" maxlength="6" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px">
+                  <input id="student-pin" type="password" placeholder="PIN" maxlength="8">
+                </div>
+                <div class="auth-row">
+                  <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn</button>
+                </div>
+                <div style="text-align:center;margin-top:6px">
+                  <a href="#" style="font-size:0.78rem;color:var(--muted,#7c8099)" onclick="toggleStudentEmailLogin(event)">Logg inn med e-post i stedet</a>
+                </div>
               </div>
-              <div class="auth-row">
-                <button class="auth-btn green" onclick="portalStudentLogin()">Logg inn</button>
+              <div id="student-login-email-form" style="display:none">
+                <div class="auth-row">
+                  <input id="student-email-login" type="email" placeholder="E-postadresse">
+                  <input id="student-email-password" type="password" placeholder="Passord">
+                </div>
+                <div class="auth-row">
+                  <button class="auth-btn green" onclick="portalStudentLoginEmail()">Logg inn med e-post</button>
+                </div>
+                <div style="text-align:center;margin-top:6px">
+                  <a href="#" style="font-size:0.78rem;color:var(--muted,#7c8099)" onclick="toggleStudentEmailLogin(event)">Tilbake til elevkode-innlogging</a>
+                </div>
               </div>
             </div>
             <div class="student-session-card" id="student-session-card">
@@ -1238,6 +1255,33 @@ async function portalStudentLogin(){
     await refreshPortalAuthState();
   } catch(error){
     alert(error.message||'Kunne ikke logge inn elev.');
+  }
+}
+
+function toggleStudentEmailLogin(e){
+  e.preventDefault();
+  const codeForm=document.getElementById('student-login-code-form');
+  const emailForm=document.getElementById('student-login-email-form');
+  const showEmail=codeForm.style.display!=='none';
+  codeForm.style.display=showEmail?'none':'';
+  emailForm.style.display=showEmail?'':'none';
+}
+
+async function portalStudentLoginEmail(){
+  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
+  const email=document.getElementById('student-email-login').value.trim();
+  const password=document.getElementById('student-email-password').value;
+  if(!email||!password){alert('Fyll inn e-post og passord.');return}
+  try{
+    const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    await refreshPortalAuthState();
+    if(!currentStudentProfile){
+      await supabaseClient.auth.signOut();
+      alert('Denne e-postadressen er ikke knyttet til en elevkonto. Bruk elevkode + PIN i stedet.');
+    }
+  } catch(error){
+    alert(error.message||'Kunne ikke logge inn.');
   }
 }
 
