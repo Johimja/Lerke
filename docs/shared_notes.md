@@ -105,7 +105,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - [x] **Frontend: surface poll errors** ✅
 - [x] **Session ID staleness** — `liveSessionId` synced from `participantRecord.session_id`; `ORDER BY created_at DESC` on session lookup RPCs ✅
 - [x] **End-to-end test** — confirmed working 2026-04-16 ✅
-- [ ] **Verify Lerke branding in all HTML files** — check `apps/bingo/teacher.html`, `student.html`, `apps/bingo-generator/index.html`
+- [x] **Verify Lerke branding in all HTML files** — check `apps/bingo/teacher.html`, `student.html`, `apps/bingo-generator/index.html`
 
 ### Tier 1 — Bingo: Engagement Extras
 
