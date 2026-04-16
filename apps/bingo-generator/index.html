@@ -161,7 +161,36 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .gen-llm-config{background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.22);border-radius:6px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px}
 .gen-llm-config select,.gen-llm-config input{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.78rem;padding:5px 7px;width:100%}
 .gen-llm-note{font-size:0.67rem;color:var(--muted);line-height:1.4}
+/* ===== THEME TOGGLE BUTTON ===== */
+#theme-toggle{position:fixed;bottom:20px;left:20px;z-index:9999;width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.28);transition:transform .15s,box-shadow .15s,background .22s,border-color .22s}
+#theme-toggle:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(0,0,0,.38)}
+/* ===== LIGHT / DAY MODE ===== */
+[data-theme="light"]{--bg:#f8f2e8;--surface:#fffaf2;--surface2:rgba(255,255,255,.82);--text:#2d2d2d;--muted:#6d5f72;--border:rgba(67,32,92,.16)}
+[data-theme="light"] body{background:var(--bg);color:var(--text)}
+[data-theme="light"] header{border-bottom-color:rgba(67,32,92,.16)}
+[data-theme="light"] .version-badge{background:var(--surface);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .word-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .add-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.18);color:#6d5f72}
+[data-theme="light"] .table-toggle{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .text-input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .count-input input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .rounds-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .mode-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .list-manager-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .list-small-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .saved-list-item{background:rgba(255,255,255,.72);border-color:rgba(67,32,92,.14)}
+[data-theme="light"] .saved-list-item .list-name{color:#2d2d2d}
+[data-theme="light"] .saved-list-item .list-meta{color:#6d5f72}
+[data-theme="light"] .lang-pair-row select{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .gen-textarea{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .gen-preview{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.14)}
+[data-theme="light"] .gen-preview-pair{border-bottom-color:rgba(67,32,92,.06)}
+[data-theme="light"] .gen-preview-pair span:first-child{color:#2d2d2d}
+[data-theme="light"] .gen-llm-config{background:rgba(91,141,238,.06);border-color:rgba(91,141,238,.18)}
+[data-theme="light"] .gen-llm-config select,[data-theme="light"] .gen-llm-config input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] #theme-toggle{background:rgba(255,250,242,.92);border-color:rgba(67,32,92,.2);box-shadow:0 4px 14px rgba(67,32,92,.1)}
 </style>
+<script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
 <script src="../../config/supabase-public-config.js"></script>
 </head>
 <body>
@@ -843,5 +872,7 @@ function addGeneratedToList(source){
 
 renderWordList();
 </script>
+<button id="theme-toggle" aria-label="Bytt fargetema" title="Bytt mellom lys og mørk modus"></button>
+<script>(function(){var btn=document.getElementById('theme-toggle');if(!btn)return;function sync(){btn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙'}sync();btn.addEventListener('click',function(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('lerke-theme',n);sync()})})();</script>
 </body>
 </html>
