@@ -652,6 +652,7 @@ html{scroll-behavior:smooth}
                   <div id="change-pin-status" style="font-size:0.78rem;color:var(--muted,#7c8099)"></div>
                 </div>
               </details>
+              <div id="student-email-section"></div>
             </div>
             <div class="auth-row">
               <button class="auth-btn" onclick="portalSignOut()">Logg ut</button>
@@ -730,6 +731,7 @@ const SUPABASE_CONFIG=window.LERKE_SUPABASE||window.LERIO_SUPABASE||{};
 let supabaseClient=null;
 let teacherProfile=null;
 let currentStudentProfile=null;
+let currentStudentEmail=null;
 let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
@@ -883,6 +885,40 @@ function renderStudentPortalState(){
   if(!loggedIn){
     if(loginCodeInput) loginCodeInput.value='';
     if(pinInput) pinInput.value='';
+  }
+  renderStudentEmailSection();
+}
+
+function renderStudentEmailSection(){
+  const el=document.getElementById('student-email-section');
+  if(!el) return;
+  if(!currentStudentProfile){el.innerHTML='';return}
+
+  if(!currentStudentEmail){
+    // No email linked yet — show opt-in form
+    el.innerHTML=`
+      <details style="margin-top:10px">
+        <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted,#7c8099)">Koble til e-post (valgfritt)</summary>
+        <p style="font-size:0.75rem;color:var(--muted,#7c8099);margin:6px 0 8px">Knytt en e-postadresse til elevkontoen. Du kan da også logge inn med e-post og passord i tillegg til kode + PIN.</p>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <input id="link-email-input" type="email" placeholder="E-postadresse" autocomplete="email">
+          <input id="link-email-password" type="password" placeholder="Velg passord (min. 6 tegn)" minlength="6" autocomplete="new-password">
+          <button class="auth-btn green" onclick="studentLinkEmail()">Koble til e-post</button>
+          <div id="link-email-status" style="font-size:0.78rem;color:var(--muted,#7c8099)"></div>
+        </div>
+      </details>`;
+  } else {
+    // Email already linked — show reset-password form only
+    el.innerHTML=`
+      <details style="margin-top:10px">
+        <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted,#7c8099)">E-post tilknyttet</summary>
+        <p style="font-size:0.75rem;color:var(--muted,#7c8099);margin:6px 0 8px">Innlogget med: <strong>${escapeHtml(currentStudentEmail)}</strong><br>Logg inn med kode + PIN for å tilbakestille passordet ditt.</p>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <input id="reset-email-password" type="password" placeholder="Nytt passord (min. 6 tegn)" minlength="6" autocomplete="new-password">
+          <button class="auth-btn" onclick="studentResetEmailPassword()">Sett nytt passord</button>
+          <div id="reset-email-status" style="font-size:0.78rem;color:var(--muted,#7c8099)"></div>
+        </div>
+      </details>`;
   }
 }
 
@@ -1112,6 +1148,12 @@ async function refreshPortalAuthState(){
     if(!studentRes.error){
       currentStudentProfile=Array.isArray(studentRes.data)?studentRes.data[0]:studentRes.data;
     }
+    if(currentStudentProfile){
+      const {data:{user}}=await supabaseClient.auth.getUser();
+      currentStudentEmail=user?.email||null;
+    } else {
+      currentStudentEmail=null;
+    }
   }
 
   setStatus('teacher-auth-status',formatTeacherStatus(),false);
@@ -1168,8 +1210,9 @@ async function portalRequestTeacherAccess(){
 async function ensurePortalStudentSession(){
   if(!supabaseClient) throw new Error('Supabase ikke konfigurert.');
   let {data:{session}}=await supabaseClient.auth.getSession();
-  const isAnonymous=!!(session?.user?.is_anonymous||session?.user?.app_metadata?.provider==='anonymous');
-  if(session&&!isAnonymous){
+  // Sign out only if a teacher is using this session — never mix teacher and student auth.
+  // Email-linked student sessions are kept so updateUser() works on the right user.
+  if(session&&teacherProfile){
     await supabaseClient.auth.signOut();
     session=null;
   }
@@ -1215,6 +1258,40 @@ async function studentChangePinPortal(){
     document.getElementById('change-pin-new').value='';
   } catch(error){
     if(statusEl)statusEl.textContent=error.message||'Kunne ikke bytte PIN.';
+  }
+}
+
+async function studentLinkEmail(){
+  if(!supabaseClient) return;
+  const email=document.getElementById('link-email-input')?.value.trim();
+  const password=document.getElementById('link-email-password')?.value;
+  const statusEl=document.getElementById('link-email-status');
+  if(!email||!password){if(statusEl)statusEl.textContent='Fyll inn e-post og passord.';return}
+  if(password.length<6){if(statusEl)statusEl.textContent='Passordet må være minst 6 tegn.';return}
+  try{
+    const {error}=await supabaseClient.auth.updateUser({email,password});
+    if(error) throw error;
+    currentStudentEmail=email;
+    if(statusEl)statusEl.textContent='E-post koblet til! Sjekk innboksen for bekreftelseslenke.';
+    renderStudentEmailSection();
+  } catch(error){
+    if(statusEl)statusEl.textContent=error.message||'Kunne ikke koble til e-post.';
+  }
+}
+
+async function studentResetEmailPassword(){
+  if(!supabaseClient) return;
+  const password=document.getElementById('reset-email-password')?.value;
+  const statusEl=document.getElementById('reset-email-status');
+  if(!password){if(statusEl)statusEl.textContent='Fyll inn nytt passord.';return}
+  if(password.length<6){if(statusEl)statusEl.textContent='Passordet må være minst 6 tegn.';return}
+  try{
+    const {error}=await supabaseClient.auth.updateUser({password});
+    if(error) throw error;
+    if(statusEl)statusEl.textContent='Passord oppdatert!';
+    document.getElementById('reset-email-password').value='';
+  } catch(error){
+    if(statusEl)statusEl.textContent=error.message||'Kunne ikke oppdatere passord.';
   }
 }
 

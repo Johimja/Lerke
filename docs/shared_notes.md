@@ -33,9 +33,20 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-16 — Session 13: Single-code login, speed podium, email association
+
+**What was shipped:**
+- `apps/bingo/teacher.html`: End-of-round Speed Podium in the bingo celebration overlay — top 3 fastest responders from `speed_leaderboard` data already in the RPC.
+- `supabase/sql/supabase_bingo_v11_student_login_code.sql` (applied ✅): Adds `login_code` (6-char, globally unique) to `student_profiles`. Backfills all existing students. New RPCs: `student_login_with_code(p_login_code, p_pin)` replaces 3-field login; `student_change_pin(p_current_pin, p_new_pin)` for self-service PIN changes.
+- `index.html`: Student login form simplified to 2 fields (login_code + PIN). Teacher student list shows `login_code` prominently. "Bytt PIN" section added to student session card. Fixed `ensurePortalStudentSession` to not sign out email-linked student sessions.
+- `apps/bingo/student.html`: Account meta now shows login_code instead of class+student codes.
+- `index.html`: Email/password association for students — logged-in students can optionally link an email + password to their account. If already linked, the option is hidden and replaced with a password-reset form. Students who forget their email password can log in with login_code + PIN and reset from there. All done via Supabase SDK `updateUser` (no extra SQL).
 
 ---
 
@@ -118,6 +129,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - [x] **UI & Gamification** — glowing join code, auto-collapse, Live Ticker ✅
 - [x] **End-of-round Speed Podium** — displayed in bingo celebration overlay, top 3 by avg response time ✅
 - [x] **Single-code student login** — `login_code` (6-char, globally unique) replaces class code + student code. Login is now: one code + PIN. Students can also change their own PIN. SQL: v11. ✅
+- [x] **Email/password association** — logged-in students can link an email + password to their account. Option hidden once linked. Password reset via login_code + PIN. ✅
 - [ ] **Phase out anonymous join** — login required for all students
 
 ### Tier 2 — Identity & Progression
@@ -152,7 +164,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Frontend | Plain HTML/CSS/JS — no framework |
 | Backend | Supabase (PostgreSQL + Auth + RLS) |
 | Config | `config/supabase-public-config.js` — public anon key only, safe to commit |
-| Auth | Teacher: email/password + manual Supabase approval. Student: class code + student code + PIN |
+| Auth | Teacher: email/password + manual Supabase approval. Student: `login_code` (6-char) + PIN. Optional email/password upgrade via portal. |
 | Live game | Polling via `get_bingo_live_state()` RPC every 1.5s; teacher drives state via `start_bingo_round`, `open_bingo_draw`, `lock_bingo_draw` |
 | Deploy | GitHub Pages — `johimja.com/Lerke` |
 
@@ -166,4 +178,4 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 7. `supabase/sql/supabase_bingo_v6_podium.sql` ✅ applied
 8. `supabase/sql/supabase_bingo_v7_leaderboard.sql` ✅ applied
 9. `supabase/sql/supabase_bingo_v8_reactions_speed.sql` ✅ applied
-10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` — **apply next**
+10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` ✅ applied
