@@ -197,6 +197,7 @@ Three providers selectable in a dropdown:
 ### Tier 3 — Content & Modes
 
 - [x] **Glose generator** — "⚡ Generer gloser" in bingo-generator sidebar. Language pair dropdowns (10 langs), word-translate tab (MyMemory free API), text-extract tab (MyMemory word-by-word or LLM). LLM providers: Anthropic Claude Haiku, OpenAI GPT-4o-mini (teacher's own key in localStorage, routed via edge function), LM Studio local API (direct browser→localhost, no edge function). Mode buttons: "Til Norsk" / "Fra Norsk". ✅
+- [x] **Glose generator in Lerke Bingo teacher.html** — The full "⚡ Generer nye gloser" section (language pair dropdowns, "Oversett ord" tab via MyMemory, "Fra tekst" tab with Simple/LLM mode, LM Studio support) is now embedded inside the Listebank → Ordlister modal in `apps/bingo/teacher.html`. Generated word pairs are added directly to the active word list with duplicate detection. All styles and light/dark mode support included. ✅
 - [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
 - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
