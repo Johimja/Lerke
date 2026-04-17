@@ -376,6 +376,17 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .saved-list-item .list-name{color:#2d2d2d}
 [data-theme="light"] .saved-list-item .list-meta{color:#6d5f72}
 [data-theme="light"] #theme-toggle{background:rgba(255,250,242,.92);border-color:rgba(67,32,92,.2);box-shadow:0 4px 14px rgba(67,32,92,.1)}
+/* ===== COLLAPSIBLE SECTIONS (setup modal) ===== */
+.coll-section{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.coll-section:last-child{margin-bottom:0}
+.coll-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;background:var(--surface2);user-select:none;font-family:'Raleway',sans-serif;font-weight:800;font-size:0.78rem;color:#9fb4e7;text-transform:uppercase;letter-spacing:1.2px;transition:background .15s}
+.coll-header:hover{background:var(--surface)}
+.coll-chevron{font-size:0.6rem;transition:transform .15s;color:var(--muted)}
+.coll-section.collapsed .coll-chevron{transform:rotate(-90deg)}
+.coll-body{padding:12px}
+.coll-section.collapsed .coll-body{display:none}
+[data-theme="light"] .coll-header{background:rgba(255,255,255,.7);color:#43205c}
+[data-theme="light"] .coll-header:hover{background:rgba(255,246,224,.96)}
 /* ===== GLOSE GENERATOR ===== */
 .lang-pair-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .lang-pair-row select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:5px 7px}
@@ -532,13 +543,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="launch-note">Øktvinduet åpner direkte og viser både join-info og trekning i samme flate.</div>
       </div>
       <div class="control-grid">
-        <button class="control-card" type="button" onclick="openSetupModal('glose-setup-modal')">
-          <div class="control-card-title">Lag nye gloser</div>
-          <div class="control-card-copy">Juster retning, runder og selve ordlisten i et eget arbeidsvindu.</div>
-        </button>
         <button class="control-card" type="button" onclick="openSetupModal('glose-lists-modal')">
           <div class="control-card-title">Ordlister</div>
-          <div class="control-card-copy">Lagre, hent, importér og eksportér lister uten å fylle hovedsiden.</div>
+          <div class="control-card-copy">Rediger og se ordlisten, generer nye gloser med AI, og lagre eller hent lagrede lister.</div>
         </button>
         <button class="control-card" type="button" onclick="openSetupModal('live-settings-modal')">
           <div class="control-card-title">Live-innstillinger</div>
@@ -594,60 +601,64 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 
 </div>
 
-<div class="setup-modal no-print" id="glose-setup-modal">
-  <div class="setup-shell">
-    <button class="setup-close" type="button" onclick="closeSetupModal('glose-setup-modal')">✕</button>
-    <div class="setup-kicker">Gloseoppsett</div>
-    <div class="setup-title">Lag nye gloser</div>
-    <div class="setup-copy">Bygg selve gloseøkten her, og gå tilbake til hovedflaten når innholdet er klart.</div>
-    <div class="setup-stack">
-      <div class="setup-card">
-        <div class="field-group">
-          <label>Modus</label>
-          <div class="mode-row">
-            <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
-            <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
-          </div>
-        </div>
-        <div class="field-group">
-          <label>Runder (lærerlister)</label>
-          <div class="rounds-row">
-            <input type="number" id="glose-rounds" value="3" min="1" max="10">
-            <span style="color:var(--muted);font-size:0.82rem">runder</span>
-          </div>
-          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge å lese fra</div>
-        </div>
-      </div>
-      <div class="setup-card">
-        <div class="field-group">
-          <label>Gjeldende ordliste</label>
-          <div class="word-list" id="word-list"></div>
-          <button class="add-btn" onclick="addWord()">+ Legg til ord</button>
-        </div>
-      </div>
-    </div>
-    <div class="setup-footer">
-      <button class="auth-btn secondary" type="button" onclick="closeSetupModal('glose-setup-modal')">Lukk</button>
-    </div>
-  </div>
-</div>
-
 <div class="setup-modal no-print" id="glose-lists-modal">
   <div class="setup-shell">
     <button class="setup-close" type="button" onclick="closeSetupModal('glose-lists-modal')">✕</button>
     <div class="setup-kicker">Listebank</div>
     <div class="setup-title">Ordlister</div>
-    <div class="setup-copy">Hold de lagrede listene adskilt fra selve liveoppsettet.</div>
+    <div class="setup-copy">Rediger ordlisten, generer nye gloser og håndter lagrede lister.</div>
     <div class="setup-stack">
-      <div class="setup-card">
-        <div class="field-group list-manager">
-          <label>Lagrede lister</label>
+
+      <!-- Gjeldende ordliste — expanded by default -->
+      <div class="coll-section" id="coll-wordlist">
+        <div class="coll-header" onclick="toggleColl(this)">
+          📋 Gjeldende ordliste
+          <span class="coll-chevron">▼</span>
+        </div>
+        <div class="coll-body">
+          <div class="word-list" id="word-list"></div>
+          <button class="add-btn" onclick="addWord()">+ Legg til ord</button>
+        </div>
+      </div>
+
+      <!-- Spilloppsett — collapsed by default -->
+      <div class="coll-section collapsed" id="coll-setup">
+        <div class="coll-header" onclick="toggleColl(this)">
+          ⚙️ Spilloppsett
+          <span class="coll-chevron">▼</span>
+        </div>
+        <div class="coll-body">
+          <div class="field-group">
+            <label>Modus</label>
+            <div class="mode-row">
+              <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
+              <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label>Runder (lærerlister)</label>
+            <div class="rounds-row">
+              <input type="number" id="glose-rounds" value="3" min="1" max="10">
+              <span style="color:var(--muted);font-size:0.82rem">runder</span>
+            </div>
+            <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge å lese fra</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lagrede lister — collapsed by default -->
+      <div class="coll-section collapsed" id="coll-saved">
+        <div class="coll-header" onclick="toggleColl(this)">
+          💾 Lagrede lister
+          <span class="coll-chevron">▼</span>
+        </div>
+        <div class="coll-body">
           <div class="list-manager-row">
             <input type="text" id="list-name-input" placeholder="Navn på liste...">
             <button class="list-small-btn green" onclick="saveList()">💾 Lagre</button>
           </div>
           <div class="list-manager-row">
-            <button class="list-small-btn" onclick="toggleSavedLists()" style="flex:1">📂 Lagrede lister</button>
+            <button class="list-small-btn" onclick="toggleSavedLists()" style="flex:1">📂 Vis lagrede lister</button>
           </div>
           <div class="list-manager-row">
             <button class="list-small-btn" onclick="exportList()" style="flex:1;text-align:center">⬇️ Eksporter</button>
@@ -657,89 +668,94 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         </div>
       </div>
 
-      <div class="setup-card">
-        <div class="sidebar-section-title" style="margin-bottom:12px">⚡ Generer nye gloser</div>
-        <div class="field-group" style="margin-bottom:10px">
-          <label>Språkpar</label>
-          <div class="lang-pair-row">
-            <select id="gen-lang-from">
-              <option value="en" selected>🇬🇧 Engelsk</option>
-              <option value="de">🇩🇪 Tysk</option>
-              <option value="fr">🇫🇷 Fransk</option>
-              <option value="es">🇪🇸 Spansk</option>
-              <option value="it">🇮🇹 Italiensk</option>
-              <option value="no">🇳🇴 Norsk</option>
-              <option value="sv">🇸🇪 Svensk</option>
-              <option value="da">🇩🇰 Dansk</option>
-              <option value="pl">🇵🇱 Polsk</option>
-              <option value="ar">🇸🇦 Arabisk</option>
-            </select>
-            <span class="lang-arrow">→</span>
-            <select id="gen-lang-to">
-              <option value="no" selected>🇳🇴 Norsk</option>
-              <option value="en">🇬🇧 Engelsk</option>
-              <option value="de">🇩🇪 Tysk</option>
-              <option value="fr">🇫🇷 Fransk</option>
-              <option value="es">🇪🇸 Spansk</option>
-              <option value="it">🇮🇹 Italiensk</option>
-              <option value="sv">🇸🇪 Svensk</option>
-              <option value="da">🇩🇰 Dansk</option>
-              <option value="pl">🇵🇱 Polsk</option>
-              <option value="ar">🇸🇦 Arabisk</option>
-            </select>
-          </div>
+      <!-- Generer gloser — collapsed by default -->
+      <div class="coll-section collapsed" id="coll-gen">
+        <div class="coll-header" onclick="toggleColl(this)">
+          ⚡ Generer gloser
+          <span class="coll-chevron">▼</span>
         </div>
-        <div class="gen-tabs">
-          <button class="gen-tab active" id="gen-tab-words" onclick="switchGenTab('words')">📝 Oversett ord</button>
-          <button class="gen-tab" id="gen-tab-text" onclick="switchGenTab('text')">📄 Fra tekst</button>
-        </div>
-
-        <div id="gen-panel-words">
-          <textarea class="gen-textarea" id="gen-words-input" placeholder="Skriv ett ord per linje:&#10;school&#10;teacher&#10;because&#10;important"></textarea>
-          <div class="gen-status" id="gen-words-status"></div>
-          <button class="gen-action-btn" id="gen-translate-btn" onclick="translateWords()">🌐 Oversett</button>
-          <div class="gen-preview" id="gen-words-preview"></div>
-          <button class="gen-add-btn" id="gen-words-add-btn" style="display:none" onclick="addGeneratedToList('words')">+ Legg til ordliste</button>
-        </div>
-
-        <div id="gen-panel-text" style="display:none">
-          <textarea class="gen-textarea" id="gen-text-input" placeholder="Lim inn en tekst. Ord trekkes ut og oversettes automatisk." rows="4"></textarea>
-          <div class="gen-count-row">
-            <label>Antall ord</label>
-            <input type="range" id="gen-word-count" min="3" max="30" value="10" oninput="document.getElementById('gen-count-label').textContent=this.value">
-            <span class="gen-count-label" id="gen-count-label">10</span>
-          </div>
-          <div class="gen-mode-row">
-            <button class="gen-mode-btn active" id="gen-mode-simple" onclick="switchExtractMode('simple')">Enkel</button>
-            <button class="gen-mode-btn" id="gen-mode-llm" onclick="switchExtractMode('llm')">✨ LLM</button>
-          </div>
-          <div class="gen-llm-config" id="gen-llm-config" style="display:none">
-            <select id="gen-provider" onchange="onProviderChange()">
-              <option value="anthropic">Anthropic (Claude Haiku)</option>
-              <option value="openai">OpenAI (GPT-4o mini)</option>
-              <option value="lmstudio">💻 LM Studio (lokal)</option>
-            </select>
-            <div id="gen-cloud-key-section">
-              <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
-              <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
-            </div>
-            <div id="gen-lmstudio-section" style="display:none">
-              <div style="display:flex;gap:5px;margin-bottom:5px">
-                <input type="text" id="gen-lmstudio-url" value="http://localhost:1234" placeholder="http://localhost:1234" style="flex:1;font-size:0.78rem;padding:5px 7px">
-                <button class="list-small-btn" onclick="fetchLMStudioModels()" style="white-space:nowrap;font-size:0.7rem">Hent modeller</button>
-              </div>
-              <select id="gen-lmstudio-model" style="font-size:0.78rem;padding:5px 7px;width:100%;margin-bottom:4px">
-                <option value="">-- Trykk "Hent modeller" --</option>
+        <div class="coll-body">
+          <div class="field-group" style="margin-bottom:10px">
+            <label>Språkpar</label>
+            <div class="lang-pair-row">
+              <select id="gen-lang-from">
+                <option value="en" selected>🇬🇧 Engelsk</option>
+                <option value="de">🇩🇪 Tysk</option>
+                <option value="fr">🇫🇷 Fransk</option>
+                <option value="es">🇪🇸 Spansk</option>
+                <option value="it">🇮🇹 Italiensk</option>
+                <option value="no">🇳🇴 Norsk</option>
+                <option value="sv">🇸🇪 Svensk</option>
+                <option value="da">🇩🇰 Dansk</option>
+                <option value="pl">🇵🇱 Polsk</option>
+                <option value="ar">🇸🇦 Arabisk</option>
               </select>
-              <div class="gen-llm-note">Kaller direkte til LM Studio på din maskin. Ingen API-nøkkel trengs.</div>
+              <span class="lang-arrow">→</span>
+              <select id="gen-lang-to">
+                <option value="no" selected>🇳🇴 Norsk</option>
+                <option value="en">🇬🇧 Engelsk</option>
+                <option value="de">🇩🇪 Tysk</option>
+                <option value="fr">🇫🇷 Fransk</option>
+                <option value="es">🇪🇸 Spansk</option>
+                <option value="it">🇮🇹 Italiensk</option>
+                <option value="sv">🇸🇪 Svensk</option>
+                <option value="da">🇩🇰 Dansk</option>
+                <option value="pl">🇵🇱 Polsk</option>
+                <option value="ar">🇸🇦 Arabisk</option>
+              </select>
             </div>
           </div>
-          <div class="gen-status" id="gen-text-status"></div>
-          <button class="gen-action-btn" id="gen-extract-btn" onclick="extractAndTranslate()">🔍 Trekk ut og oversett</button>
-          <div class="gen-preview" id="gen-text-preview"></div>
-          <button class="gen-add-btn" id="gen-text-add-btn" style="display:none" onclick="addGeneratedToList('text')">+ Legg til ordliste</button>
+          <div class="gen-tabs">
+            <button class="gen-tab active" id="gen-tab-words" onclick="switchGenTab('words')">📝 Oversett ord</button>
+            <button class="gen-tab" id="gen-tab-text" onclick="switchGenTab('text')">📄 Fra tekst</button>
+          </div>
+          <div id="gen-panel-words">
+            <textarea class="gen-textarea" id="gen-words-input" placeholder="Skriv ett ord per linje:&#10;school&#10;teacher&#10;because&#10;important"></textarea>
+            <div class="gen-status" id="gen-words-status"></div>
+            <button class="gen-action-btn" id="gen-translate-btn" onclick="translateWords()">🌐 Oversett</button>
+            <div class="gen-preview" id="gen-words-preview"></div>
+            <button class="gen-add-btn" id="gen-words-add-btn" style="display:none" onclick="addGeneratedToList('words')">+ Legg til ordliste</button>
+          </div>
+          <div id="gen-panel-text" style="display:none">
+            <textarea class="gen-textarea" id="gen-text-input" placeholder="Lim inn en tekst. Ord trekkes ut og oversettes automatisk." rows="4"></textarea>
+            <div class="gen-count-row">
+              <label>Antall ord</label>
+              <input type="range" id="gen-word-count" min="3" max="30" value="10" oninput="document.getElementById('gen-count-label').textContent=this.value">
+              <span class="gen-count-label" id="gen-count-label">10</span>
+            </div>
+            <div class="gen-mode-row">
+              <button class="gen-mode-btn active" id="gen-mode-simple" onclick="switchExtractMode('simple')">Enkel</button>
+              <button class="gen-mode-btn" id="gen-mode-llm" onclick="switchExtractMode('llm')">✨ LLM</button>
+            </div>
+            <div class="gen-llm-config" id="gen-llm-config" style="display:none">
+              <select id="gen-provider" onchange="onProviderChange()">
+                <option value="anthropic">Anthropic (Claude Haiku)</option>
+                <option value="openai">OpenAI (GPT-4o mini)</option>
+                <option value="lmstudio">💻 LM Studio (lokal)</option>
+              </select>
+              <div id="gen-cloud-key-section">
+                <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
+                <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
+              </div>
+              <div id="gen-lmstudio-section" style="display:none">
+                <div style="display:flex;gap:5px;margin-bottom:5px">
+                  <input type="text" id="gen-lmstudio-url" value="http://localhost:1234" placeholder="http://localhost:1234" style="flex:1;font-size:0.78rem;padding:5px 7px">
+                  <button class="list-small-btn" onclick="fetchLMStudioModels()" style="white-space:nowrap;font-size:0.7rem">Hent modeller</button>
+                </div>
+                <select id="gen-lmstudio-model" style="font-size:0.78rem;padding:5px 7px;width:100%;margin-bottom:4px">
+                  <option value="">-- Trykk "Hent modeller" --</option>
+                </select>
+                <div class="gen-llm-note">Kaller direkte til LM Studio på din maskin. Ingen API-nøkkel trengs.</div>
+              </div>
+            </div>
+            <div class="gen-status" id="gen-text-status"></div>
+            <button class="gen-action-btn" id="gen-extract-btn" onclick="extractAndTranslate()">🔍 Trekk ut og oversett</button>
+            <div class="gen-preview" id="gen-text-preview"></div>
+            <button class="gen-add-btn" id="gen-text-add-btn" style="display:none" onclick="addGeneratedToList('text')">+ Legg til ordliste</button>
+          </div>
         </div>
       </div>
+
     </div>
     <div class="setup-footer">
       <button class="auth-btn secondary" type="button" onclick="closeSetupModal('glose-lists-modal')">Lukk</button>
@@ -877,6 +893,9 @@ function openSetupModal(id){
 }
 function closeSetupModal(id){
   document.getElementById(id)?.classList.remove('show');
+}
+function toggleColl(headerEl){
+  headerEl.closest('.coll-section').classList.toggle('collapsed');
 }
 function toggleClassAdmin(forceState){
   const panel=document.getElementById('class-admin');
