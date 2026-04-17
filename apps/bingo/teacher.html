@@ -376,6 +376,43 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .saved-list-item .list-name{color:#2d2d2d}
 [data-theme="light"] .saved-list-item .list-meta{color:#6d5f72}
 [data-theme="light"] #theme-toggle{background:rgba(255,250,242,.92);border-color:rgba(67,32,92,.2);box-shadow:0 4px 14px rgba(67,32,92,.1)}
+/* ===== GLOSE GENERATOR ===== */
+.lang-pair-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.lang-pair-row select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:5px 7px}
+.lang-arrow{color:var(--accent);font-size:1.1rem;font-weight:900;flex-shrink:0}
+.gen-tabs{display:flex;gap:4px;margin-bottom:10px}
+.gen-tab{flex:1;padding:6px 4px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.gen-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.gen-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.8rem;padding:6px 8px;resize:vertical;min-height:68px;margin-bottom:6px}
+.gen-textarea:focus{outline:none;border-color:var(--blue)}
+.gen-action-btn{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--blue);border-radius:6px;color:var(--blue);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.74rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;margin-bottom:6px;transition:all .15s}
+.gen-action-btn:hover{background:var(--blue);color:#fff}
+.gen-action-btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+.gen-add-btn{width:100%;padding:8px;background:#4caf7d;border:none;border-radius:6px;color:#000;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.74rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;margin-bottom:4px}
+.gen-add-btn:hover{opacity:.88}
+.gen-preview{background:var(--surface2);border-radius:6px;padding:7px 9px;margin-bottom:7px;max-height:110px;overflow-y:auto;display:none;border:1px solid var(--border)}
+.gen-preview-pair{display:flex;gap:8px;font-size:0.77rem;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.gen-preview-pair:last-child{border-bottom:none}
+.gen-preview-pair span:first-child{color:var(--text);flex:1;font-weight:600}
+.gen-preview-pair span:last-child{color:var(--blue);flex:1}
+.gen-status{font-size:0.72rem;color:var(--muted);margin:3px 0 5px;min-height:14px}
+.gen-count-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.gen-count-row label{font-size:0.72rem;color:var(--muted);white-space:nowrap}
+.gen-count-row input[type=range]{flex:1;accent-color:var(--accent)}
+.gen-count-label{color:var(--accent);font-weight:900;min-width:26px;text-align:right;font-size:0.88rem}
+.gen-mode-row{display:flex;gap:4px;margin-bottom:8px}
+.gen-mode-btn{flex:1;padding:5px 4px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Raleway',sans-serif;font-weight:700;font-size:0.7rem;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.gen-mode-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.gen-llm-config{background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.22);border-radius:6px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px}
+.gen-llm-config select,.gen-llm-config input{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.78rem;padding:5px 7px;width:100%}
+.gen-llm-note{font-size:0.67rem;color:var(--muted);line-height:1.4}
+[data-theme="light"] .lang-pair-row select{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .gen-textarea{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .gen-preview{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.14)}
+[data-theme="light"] .gen-preview-pair{border-bottom-color:rgba(67,32,92,.06)}
+[data-theme="light"] .gen-preview-pair span:first-child{color:#2d2d2d}
+[data-theme="light"] .gen-llm-config{background:rgba(91,141,238,.06);border-color:rgba(91,141,238,.18)}
+[data-theme="light"] .gen-llm-config select,[data-theme="light"] .gen-llm-config input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 </style>
 <script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
 </head>
@@ -617,6 +654,90 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
             <label class="list-small-btn" style="cursor:pointer;flex:1;text-align:center">⬆️ Importer<input type="file" accept=".json" onchange="importList(event)" style="display:none"></label>
           </div>
           <div class="saved-lists" id="saved-lists" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="setup-card">
+        <div class="sidebar-section-title" style="margin-bottom:12px">⚡ Generer nye gloser</div>
+        <div class="field-group" style="margin-bottom:10px">
+          <label>Språkpar</label>
+          <div class="lang-pair-row">
+            <select id="gen-lang-from">
+              <option value="en" selected>🇬🇧 Engelsk</option>
+              <option value="de">🇩🇪 Tysk</option>
+              <option value="fr">🇫🇷 Fransk</option>
+              <option value="es">🇪🇸 Spansk</option>
+              <option value="it">🇮🇹 Italiensk</option>
+              <option value="no">🇳🇴 Norsk</option>
+              <option value="sv">🇸🇪 Svensk</option>
+              <option value="da">🇩🇰 Dansk</option>
+              <option value="pl">🇵🇱 Polsk</option>
+              <option value="ar">🇸🇦 Arabisk</option>
+            </select>
+            <span class="lang-arrow">→</span>
+            <select id="gen-lang-to">
+              <option value="no" selected>🇳🇴 Norsk</option>
+              <option value="en">🇬🇧 Engelsk</option>
+              <option value="de">🇩🇪 Tysk</option>
+              <option value="fr">🇫🇷 Fransk</option>
+              <option value="es">🇪🇸 Spansk</option>
+              <option value="it">🇮🇹 Italiensk</option>
+              <option value="sv">🇸🇪 Svensk</option>
+              <option value="da">🇩🇰 Dansk</option>
+              <option value="pl">🇵🇱 Polsk</option>
+              <option value="ar">🇸🇦 Arabisk</option>
+            </select>
+          </div>
+        </div>
+        <div class="gen-tabs">
+          <button class="gen-tab active" id="gen-tab-words" onclick="switchGenTab('words')">📝 Oversett ord</button>
+          <button class="gen-tab" id="gen-tab-text" onclick="switchGenTab('text')">📄 Fra tekst</button>
+        </div>
+
+        <div id="gen-panel-words">
+          <textarea class="gen-textarea" id="gen-words-input" placeholder="Skriv ett ord per linje:&#10;school&#10;teacher&#10;because&#10;important"></textarea>
+          <div class="gen-status" id="gen-words-status"></div>
+          <button class="gen-action-btn" id="gen-translate-btn" onclick="translateWords()">🌐 Oversett</button>
+          <div class="gen-preview" id="gen-words-preview"></div>
+          <button class="gen-add-btn" id="gen-words-add-btn" style="display:none" onclick="addGeneratedToList('words')">+ Legg til ordliste</button>
+        </div>
+
+        <div id="gen-panel-text" style="display:none">
+          <textarea class="gen-textarea" id="gen-text-input" placeholder="Lim inn en tekst. Ord trekkes ut og oversettes automatisk." rows="4"></textarea>
+          <div class="gen-count-row">
+            <label>Antall ord</label>
+            <input type="range" id="gen-word-count" min="3" max="30" value="10" oninput="document.getElementById('gen-count-label').textContent=this.value">
+            <span class="gen-count-label" id="gen-count-label">10</span>
+          </div>
+          <div class="gen-mode-row">
+            <button class="gen-mode-btn active" id="gen-mode-simple" onclick="switchExtractMode('simple')">Enkel</button>
+            <button class="gen-mode-btn" id="gen-mode-llm" onclick="switchExtractMode('llm')">✨ LLM</button>
+          </div>
+          <div class="gen-llm-config" id="gen-llm-config" style="display:none">
+            <select id="gen-provider" onchange="onProviderChange()">
+              <option value="anthropic">Anthropic (Claude Haiku)</option>
+              <option value="openai">OpenAI (GPT-4o mini)</option>
+              <option value="lmstudio">💻 LM Studio (lokal)</option>
+            </select>
+            <div id="gen-cloud-key-section">
+              <input type="password" id="gen-api-key" placeholder="API-nøkkel" autocomplete="off" oninput="saveGenApiKey()">
+              <div class="gen-llm-note">Nøkkelen lagres kun i din nettleser og sendes aldri til Lerke — kun direkte til AI-leverandøren.</div>
+            </div>
+            <div id="gen-lmstudio-section" style="display:none">
+              <div style="display:flex;gap:5px;margin-bottom:5px">
+                <input type="text" id="gen-lmstudio-url" value="http://localhost:1234" placeholder="http://localhost:1234" style="flex:1;font-size:0.78rem;padding:5px 7px">
+                <button class="list-small-btn" onclick="fetchLMStudioModels()" style="white-space:nowrap;font-size:0.7rem">Hent modeller</button>
+              </div>
+              <select id="gen-lmstudio-model" style="font-size:0.78rem;padding:5px 7px;width:100%;margin-bottom:4px">
+                <option value="">-- Trykk "Hent modeller" --</option>
+              </select>
+              <div class="gen-llm-note">Kaller direkte til LM Studio på din maskin. Ingen API-nøkkel trengs.</div>
+            </div>
+          </div>
+          <div class="gen-status" id="gen-text-status"></div>
+          <button class="gen-action-btn" id="gen-extract-btn" onclick="extractAndTranslate()">🔍 Trekk ut og oversett</button>
+          <div class="gen-preview" id="gen-text-preview"></div>
+          <button class="gen-add-btn" id="gen-text-add-btn" style="display:none" onclick="addGeneratedToList('text')">+ Legg til ordliste</button>
         </div>
       </div>
     </div>
@@ -2286,6 +2407,201 @@ function importList(event){
   };
   reader.readAsText(file);
   event.target.value=''; // reset so same file can be re-imported
+}
+
+// ===== GLOSE GENERATOR =====
+let _genPairsWords=[];
+let _genPairsText=[];
+const MYMEMORY_URL='https://api.mymemory.translated.net/get';
+const GEN_EDGE_FN_URL=(SUPABASE_CONFIG.url||'https://isuzuuvddteejktcowev.supabase.co')+'/functions/v1/generate-glose';
+const STOP_WORDS=new Set(['the','a','an','is','are','was','were','be','been','have','has','had','do','does','did','will','would','could','should','may','might','can','to','of','in','for','on','with','at','by','from','up','into','and','but','or','not','if','then','than','so','as','it','its','this','that','these','those','he','she','they','we','you','i','me','him','her','us','them','my','your','his','our','their','what','which','who','when','where','why','how','all','more','most','other','some','just','also','about','after','before','over','under','between','through','og','er','en','et','det','den','de','som','jeg','du','han','hun','vi','til','på','for','fra','med','av','ikke','om','men','at','så','når','da','der','her','eller','sehr','und','die','der','das','ein','eine','ist','sind','war','werden','haben','wird','kann','man','mit','des','dem','den','wie','was','auf','für','von','zu','im','es','sich','auch','noch','nach','bei','um','vor','ihre','ihrer','ihrem']);
+
+function switchGenTab(tab){
+  document.getElementById('gen-panel-words').style.display=tab==='words'?'':'none';
+  document.getElementById('gen-panel-text').style.display=tab==='text'?'':'none';
+  document.getElementById('gen-tab-words').classList.toggle('active',tab==='words');
+  document.getElementById('gen-tab-text').classList.toggle('active',tab==='text');
+}
+
+function switchExtractMode(mode){
+  const isLLM=mode==='llm';
+  document.getElementById('gen-mode-simple').classList.toggle('active',!isLLM);
+  document.getElementById('gen-mode-llm').classList.toggle('active',isLLM);
+  document.getElementById('gen-llm-config').style.display=isLLM?'':'none';
+  if(isLLM) loadSavedApiKey();
+}
+
+function saveGenApiKey(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const key=document.getElementById('gen-api-key')?.value||'';
+  if(key) localStorage.setItem('lerke_gen_key_'+provider,key);
+}
+
+function loadSavedApiKey(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const saved=localStorage.getItem('lerke_gen_key_'+provider)||'';
+  const inp=document.getElementById('gen-api-key');
+  if(inp&&saved) inp.value=saved;
+}
+
+function onProviderChange(){
+  const provider=document.getElementById('gen-provider')?.value||'anthropic';
+  const isLocal=provider==='lmstudio';
+  document.getElementById('gen-cloud-key-section').style.display=isLocal?'none':'';
+  document.getElementById('gen-lmstudio-section').style.display=isLocal?'':'none';
+  if(!isLocal) loadSavedApiKey();
+}
+
+async function fetchLMStudioModels(){
+  const base=(document.getElementById('gen-lmstudio-url').value||'http://localhost:1234').replace(/\/$/,'');
+  const sel=document.getElementById('gen-lmstudio-model');
+  sel.innerHTML='<option value="">Henter…</option>';
+  try{
+    const res=await fetch(`${base}/v1/models`,{headers:{'Content-Type':'application/json'}});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const models=(data.data||[]).map(m=>m.id).filter(Boolean);
+    if(!models.length) throw new Error('Ingen modeller lastet i LM Studio');
+    sel.innerHTML=models.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  }catch(err){
+    sel.innerHTML='<option value="">Feil: '+escapeHtml(err.message)+'</option>';
+  }
+}
+
+async function callLMStudioDirect(text,fromLang,toLang,count){
+  const base=(document.getElementById('gen-lmstudio-url').value||'http://localhost:1234').replace(/\/$/,'');
+  const model=document.getElementById('gen-lmstudio-model').value||'local-model';
+  if(!model||model.startsWith('--')||model.startsWith('Feil')) throw new Error('Velg en modell fra LM Studio først.');
+  const prompt=`Du er en lærer som lager glosebingo for elever. Trekk ut nøyaktig ${count} nyttige vokabularord fra teksten nedenfor (på ${fromLang}) og oversett dem til ${toLang}. Velg pedagogisk nyttige ord – ikke velg svært vanlige ord. Returner KUN et JSON-array: [["${fromLang}-ord","${toLang}-oversettelse"],...]. Ingen annen tekst.\n\nTekst:\n${text.slice(0,4000)}`;
+  const res=await fetch(`${base}/v1/chat/completions`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model,messages:[{role:'user',content:prompt}],temperature:0.4,max_tokens:1024})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`LM Studio ${res.status}`);}
+  const data=await res.json();
+  const content=data?.choices?.[0]?.message?.content||'';
+  const match=content.match(/\[[\s\S]*\]/);
+  if(!match) throw new Error('Klarte ikke å tolke svar fra LM Studio — prøv igjen');
+  return JSON.parse(match[0]).filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[String(p[0]).trim(),String(p[1]).trim()]).filter(([a,b])=>a&&b);
+}
+
+function setGenStatus(panel,msg){
+  const el=document.getElementById('gen-'+panel+'-status');
+  if(el) el.textContent=msg;
+}
+
+async function myMemoryTranslate(word,fromLang,toLang){
+  try{
+    const r=await fetch(`${MYMEMORY_URL}?q=${encodeURIComponent(word)}&langpair=${fromLang}|${toLang}`);
+    const d=await r.json();
+    if(d.responseStatus===200&&d.responseData?.translatedText){
+      const t=d.responseData.translatedText;
+      if(t.toLowerCase()!==word.toLowerCase()) return t;
+    }
+  }catch(e){/* silently skip */}
+  return null;
+}
+
+async function translateWords(){
+  const words=(document.getElementById('gen-words-input').value||'').split('\n').map(w=>w.trim()).filter(Boolean);
+  const from=document.getElementById('gen-lang-from').value;
+  const to=document.getElementById('gen-lang-to').value;
+  if(!words.length){setGenStatus('words','Skriv inn ord først.');return;}
+  const btn=document.getElementById('gen-translate-btn');
+  btn.disabled=true;
+  _genPairsWords=[];
+  const preview=document.getElementById('gen-words-preview');
+  preview.innerHTML='';preview.style.display='';
+  for(let i=0;i<words.length;i++){
+    setGenStatus('words',`Oversetter ${i+1}/${words.length}…`);
+    const t=await myMemoryTranslate(words[i],from,to);
+    if(t){
+      _genPairsWords.push([words[i],t]);
+      const div=document.createElement('div');
+      div.className='gen-preview-pair';
+      div.innerHTML=`<span>${escapeHtml(words[i])}</span><span>${escapeHtml(t)}</span>`;
+      preview.appendChild(div);
+    }
+    if(i<words.length-1) await new Promise(r=>setTimeout(r,250));
+  }
+  btn.disabled=false;
+  setGenStatus('words',_genPairsWords.length?`${_genPairsWords.length} par klare.`:'Ingen oversettelser funnet.');
+  document.getElementById('gen-words-add-btn').style.display=_genPairsWords.length?'':'none';
+}
+
+async function extractAndTranslate(){
+  const text=(document.getElementById('gen-text-input').value||'').trim();
+  if(!text){setGenStatus('text','Lim inn en tekst først.');return;}
+  const from=document.getElementById('gen-lang-from').value;
+  const to=document.getElementById('gen-lang-to').value;
+  const count=parseInt(document.getElementById('gen-word-count').value)||10;
+  const isLLM=document.getElementById('gen-mode-llm').classList.contains('active');
+  const btn=document.getElementById('gen-extract-btn');
+  btn.disabled=true;
+  _genPairsText=[];
+  const preview=document.getElementById('gen-text-preview');
+  preview.innerHTML='';preview.style.display='';
+  try{
+    if(isLLM){
+      const provider=document.getElementById('gen-provider').value;
+      if(provider==='lmstudio'){
+        setGenStatus('text','💻 Sender til LM Studio…');
+        _genPairsText=await callLMStudioDirect(text,from,to,count);
+      } else {
+        const apiKey=(document.getElementById('gen-api-key').value||'').trim();
+        if(!apiKey) throw new Error('Skriv inn API-nøkkel i LLM-feltet.');
+        setGenStatus('text','✨ Sender til AI…');
+        const res=await fetch(GEN_EDGE_FN_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_CONFIG.anonKey||''},
+          body:JSON.stringify({text,from_lang:from,to_lang:to,word_count:count,provider,api_key:apiKey})
+        });
+        const data=await res.json();
+        if(!res.ok||data.error) throw new Error(data.error||`Serverfeil ${res.status}`);
+        _genPairsText=data.pairs||[];
+      }
+    } else {
+      const words=extractWords(text,count);
+      for(let i=0;i<words.length;i++){
+        setGenStatus('text',`Oversetter ${i+1}/${words.length}…`);
+        const t=await myMemoryTranslate(words[i],from,to);
+        if(t) _genPairsText.push([words[i],t]);
+        if(i<words.length-1) await new Promise(r=>setTimeout(r,250));
+      }
+    }
+    _genPairsText.forEach(([a,b])=>{
+      const div=document.createElement('div');
+      div.className='gen-preview-pair';
+      div.innerHTML=`<span>${escapeHtml(a)}</span><span>${escapeHtml(b)}</span>`;
+      preview.appendChild(div);
+    });
+    setGenStatus('text',_genPairsText.length?`${_genPairsText.length} par klare.`:'Ingen ord funnet — prøv lengre tekst.');
+    document.getElementById('gen-text-add-btn').style.display=_genPairsText.length?'':'none';
+  } catch(err){
+    setGenStatus('text','⚠️ '+(err.message||'Ukjent feil'));
+  }
+  btn.disabled=false;
+}
+
+function extractWords(text,count){
+  const raw=text.match(/\b[a-zA-ZæøåÆØÅäöüÄÖÜß]{4,18}\b/g)||[];
+  const unique=[...new Set(raw.map(w=>w.toLowerCase()))].filter(w=>!STOP_WORDS.has(w));
+  for(let i=unique.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[unique[i],unique[j]]=[unique[j],unique[i]];}
+  return unique.slice(0,Math.min(count,unique.length));
+}
+
+function addGeneratedToList(source){
+  const pairs=source==='words'?_genPairsWords:_genPairsText;
+  if(!pairs.length) return;
+  let added=0;
+  pairs.forEach(([a,b])=>{
+    if(!window._words.some(p=>p[0].toLowerCase()===a.toLowerCase())){
+      window._words.push([a,b]);added++;
+    }
+  });
+  renderWordList();
+  setGenStatus(source,`✅ ${added} par lagt til (${pairs.length-added} duplikater hoppet over).`);
 }
 
 // ===== RECOVERY =====
