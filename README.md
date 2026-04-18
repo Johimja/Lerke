@@ -100,7 +100,6 @@ Older planning notes and project history now live under [docs/archive/reference]
 - Live Bingo uses Supabase for auth, session state, join flow, and participant presence
 - Student accounts use the teacher-managed class + student + PIN backend track
 - `config/supabase-public-config.js` provides `window.LERKE_SUPABASE = { url, anonKey }`
-- `window.LERIO_SUPABASE` is still mirrored for backward compatibility with older deploys
 - `config/supabase-public-config.js` is safe to deploy because it only contains the public project URL and publishable anon key
 - Never put the Supabase `service_role` key in this repo or in frontend code
 - **localStorage** is used for saved word lists in the classic generator (browser-specific, not synced)
