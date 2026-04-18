@@ -39,6 +39,19 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-18 — Automated: lerio → lerke cleanup
+
+**What was done:**
+- Removed `window.LERIO_SUPABASE = window.LERKE_SUPABASE` backward-compat alias from `config/supabase-public-config.js` and `config/supabase-config.example.js`.
+- Removed `||window.LERIO_SUPABASE` fallback from `SUPABASE_CONFIG` in `apps/bingo/student.html`, `apps/bingo/teacher.html`, and `index.html`.
+- Removed stale README note about the alias.
+- `media/leriobingo.jpg` was never present in the repo — nothing to rename.
+- Roadmap item marked complete.
+
+**Next task:** Start Tier 2 — **XP and level system** (correct answer, bingo, speed bonus; level badge in portal). Requires SQL migration and frontend changes.
+
+---
+
 ### 2026-04-16 — Session 15: Day/night mode toggle across all pages
 
 **What was shipped:**
@@ -211,7 +224,7 @@ Three providers selectable in a dropdown:
 
 - [ ] PWA support (installable on phone home screen)
 - [ ] Mobile-first polish on teacher live screens
-- [ ] **Full lerio → lerke cleanup** — CSS var names, rename `media/leriobingo.jpg`
+- [x] **Full lerio → lerke cleanup** — removed `window.LERIO_SUPABASE` backward-compat alias from config files and HTML fallbacks; `leriobingo.jpg` never existed ✅
 
 ---
 
