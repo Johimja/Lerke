@@ -50,7 +50,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - `index.html`: Added XP bar + level badge (`Nivå N`) to student session card. Renders when student is logged in and `total_xp` is present.
 - `apps/bingo/student.html`: Correct answer note now appends `+N XP` when `xp_gained > 0`.
 
-**Pending:** Apply `supabase_bingo_v12_xp_levels.sql` in Supabase SQL editor.
+**Migration applied** ✅ (`v12_xp_levels` via Supabase MCP, 2026-04-19).
 
 **Next task:** Avatar creator in the portal (Tier 2) — pick body/color/accessory, shown in Elevoversikt and podium. Or continue with Session history / hall of fame.
 
@@ -267,4 +267,4 @@ Three providers selectable in a dropdown:
 8. `supabase/sql/supabase_bingo_v7_leaderboard.sql` ✅ applied
 9. `supabase/sql/supabase_bingo_v8_reactions_speed.sql` ✅ applied
 10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` ✅ applied
-11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` — pending apply
+11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` ✅ applied
