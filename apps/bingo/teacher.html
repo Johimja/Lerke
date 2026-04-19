@@ -1358,6 +1358,7 @@ async function refreshTeacherParticipantProgress(options={}){
       if (a.progress !== b.progress) return b.progress - a.progress;
       return a.name.localeCompare(b.name);
     });
+    fetchSessionAvatars(activeLiveSession.id);
     renderTeacherParticipantProgress();
     return teacherParticipantProgress;
   } catch(error){
@@ -1386,7 +1387,8 @@ function renderTeacherParticipantProgress(){
       return `<span class="live-roster-dot ${on?'on':''} ${bingo?'bingo':''}"></span>`;
     }).join('');
     const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${item.progress}/5`;
-    return `<div class="live-roster-item${isNearBingo?' near-bingo':''}"><div class="live-roster-name">${escapeHtml(item.name)}</div><div class="live-roster-meta">${meta}</div><div class="live-roster-dots">${dots}</div></div>`;
+    const av=renderAvatarCircleT(studentAvatarCache[item.name],item.name,24);
+    return `<div class="live-roster-item${isNearBingo?' near-bingo':''}"><div style="display:flex;align-items:center;gap:6px">${av}<div class="live-roster-name">${escapeHtml(item.name)}</div></div><div class="live-roster-meta">${meta}</div><div class="live-roster-dots">${dots}</div></div>`;
   }).join('');
   // Bingo celebration
   const winners=teacherParticipantProgress.filter(p=>p.hasBingo).map(p=>p.name);
@@ -1458,6 +1460,7 @@ function showTeacherBingoCelebration(winners){
       ?podium.map((p,i)=>
         `<div class="podium-place p${i+1}">
           <span class="podium-medal">${medals[i]}</span>
+          ${renderAvatarCircleT(studentAvatarCache[p.name],p.name,32)}
           <span class="podium-name">${escapeHtml(p.name)}</span>
           <span class="podium-draw">${p.draw_index!=null?'Trekk '+p.draw_index:''}</span>
         </div>`).join('')
@@ -1581,6 +1584,25 @@ async function maybeAutoLockTeacherDraw(){
 }
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+const AVATAR_COLORS_T=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
+let studentAvatarCache={};
+let avatarCacheSessionId=null;
+async function fetchSessionAvatars(sessionId){
+  if(!sessionId||sessionId===avatarCacheSessionId) return;
+  try{
+    const {data,error}=await supabaseClient.rpc('get_session_student_avatars',{p_session_id:sessionId});
+    if(!error&&data){studentAvatarCache=data;avatarCacheSessionId=sessionId;}
+  }catch(e){}
+}
+function renderAvatarCircleT(avatarData,name,size){
+  size=size||28;
+  const color=(avatarData&&avatarData.color)||AVATAR_COLORS_T[4];
+  const acc=(avatarData&&avatarData.accessory)||'none';
+  const letter=((name||'?')[0]).toUpperCase();
+  const accMap={none:'',crown:'👑',star:'⭐',lightning:'⚡'};
+  const accHtml=acc!=='none'?`<span style="position:absolute;top:${-Math.round(size*0.18)}px;right:${-Math.round(size*0.12)}px;font-size:${Math.round(size*0.45)}px;line-height:1">${accMap[acc]||''}</span>`:'';
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;width:${size}px;height:${size}px;background:${color};font-size:${Math.round(size*0.44)}px;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;vertical-align:middle">${letter}${accHtml}</span>`;
 }
 function getLiveCountdownSeconds(){
   const input=document.getElementById('live-seconds-input');

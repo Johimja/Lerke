@@ -320,6 +320,14 @@ html{scroll-behavior:smooth}
 .xp-bar-label .xp-level-badge{font-weight:900;color:var(--lerke-green-deep);font-family:'Raleway',sans-serif}
 .xp-bar-track{height:7px;border-radius:4px;background:rgba(0,0,0,.1);overflow:hidden}
 .xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--lerke-green-deep),#8fcf3c);transition:width .4s ease}
+.lerke-avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;user-select:none}
+.avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.avatar-picker-colors{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.avatar-color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s}
+.avatar-color-swatch.selected,.avatar-color-swatch:hover{border-color:var(--lerke-plum);transform:scale(1.15)}
+.avatar-picker-accs{display:flex;gap:6px;flex-wrap:wrap}
+.avatar-acc-btn{padding:4px 8px;border-radius:8px;border:1px solid rgba(67,32,92,.16);background:rgba(255,250,242,.88);font-size:.88rem;cursor:pointer;transition:border-color .15s,background .15s}
+.avatar-acc-btn.selected,.avatar-acc-btn:hover{border-color:var(--lerke-plum);background:rgba(67,32,92,.08)}
 .class-admin{
   display:none;
   width:100%;
@@ -710,8 +718,13 @@ html{scroll-behavior:smooth}
               </div>
             </div>
             <div class="student-session-card" id="student-session-card">
-              <div class="student-session-kicker">Elev innlogget</div>
-              <div class="student-session-name" id="student-session-name">-</div>
+              <div class="avatar-header">
+                <div id="student-avatar-display"></div>
+                <div>
+                  <div class="student-session-kicker">Elev innlogget</div>
+                  <div class="student-session-name" id="student-session-name">-</div>
+                </div>
+              </div>
               <div class="student-session-meta" id="student-session-meta">-</div>
               <div class="xp-bar-wrap" id="student-xp-bar" style="display:none">
                 <div class="xp-bar-label">
@@ -720,6 +733,16 @@ html{scroll-behavior:smooth}
                 </div>
                 <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
               </div>
+              <details style="margin-top:10px" id="avatar-picker-details">
+                <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted,#7c8099)">Endre avatar</summary>
+                <div style="margin-top:8px">
+                  <div style="font-size:.74rem;color:#5f5263;margin-bottom:4px">Farge</div>
+                  <div class="avatar-picker-colors" id="avatar-color-swatches"></div>
+                  <div style="font-size:.74rem;color:#5f5263;margin-bottom:4px;margin-top:6px">Tilbehør</div>
+                  <div class="avatar-picker-accs" id="avatar-acc-btns"></div>
+                  <div id="avatar-save-status" style="font-size:.76rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em"></div>
+                </div>
+              </details>
               <div class="student-session-actions">
                 <button class="auth-btn green" type="button" onclick="launchBingo()">Åpne Bingo</button>
               </div>
@@ -946,6 +969,61 @@ function formatStudentStatus(){
   if(!currentStudentProfile) return 'Ingen elevkonto aktiv.';
   return `Elev innlogget: ${currentStudentProfile.display_name} · ${currentStudentProfile.class_name} (${currentStudentProfile.class_code})`;
 }
+const AVATAR_COLORS=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
+const AVATAR_ACCESSORIES=[{id:'none',label:'Ingen'},{id:'crown',label:'👑'},{id:'star',label:'⭐'},{id:'lightning',label:'⚡'}];
+let pendingAvatar={color:AVATAR_COLORS[4],accessory:'none'};
+
+function renderAvatarCircle(avatarData,name,size){
+  size=size||36;
+  const color=(avatarData&&avatarData.color)||AVATAR_COLORS[4];
+  const acc=(avatarData&&avatarData.accessory)||'none';
+  const letter=((name||'?')[0]).toUpperCase();
+  const accMap={none:'',crown:'👑',star:'⭐',lightning:'⚡'};
+  const accHtml=acc!=='none'?`<span style="position:absolute;top:${-Math.round(size*0.18)}px;right:${-Math.round(size*0.12)}px;font-size:${Math.round(size*0.45)}px;line-height:1">${accMap[acc]||''}</span>`:'';
+  return `<span class="lerke-avatar" style="width:${size}px;height:${size}px;background:${color};font-size:${Math.round(size*0.44)}px">${letter}${accHtml}</span>`;
+}
+
+function renderAvatarPicker(){
+  const colorWrap=document.getElementById('avatar-color-swatches');
+  const accWrap=document.getElementById('avatar-acc-btns');
+  if(!colorWrap||!accWrap) return;
+  colorWrap.innerHTML=AVATAR_COLORS.map(c=>{
+    const sel=pendingAvatar.color===c?'selected':'';
+    return `<span class="avatar-color-swatch ${sel}" style="background:${c}" onclick="selectAvatarColor('${c}')" title="${c}"></span>`;
+  }).join('');
+  accWrap.innerHTML=AVATAR_ACCESSORIES.map(a=>{
+    const sel=pendingAvatar.accessory===a.id?'selected':'';
+    return `<button class="avatar-acc-btn ${sel}" onclick="selectAvatarAcc('${a.id}')">${a.label}</button>`;
+  }).join('');
+}
+
+function selectAvatarColor(color){
+  pendingAvatar={...pendingAvatar,color};
+  renderAvatarPicker();
+  document.getElementById('student-avatar-display').innerHTML=renderAvatarCircle(pendingAvatar,currentStudentProfile&&currentStudentProfile.display_name,36);
+  saveStudentAvatar();
+}
+
+function selectAvatarAcc(acc){
+  pendingAvatar={...pendingAvatar,accessory:acc};
+  renderAvatarPicker();
+  document.getElementById('student-avatar-display').innerHTML=renderAvatarCircle(pendingAvatar,currentStudentProfile&&currentStudentProfile.display_name,36);
+  saveStudentAvatar();
+}
+
+async function saveStudentAvatar(){
+  const status=document.getElementById('avatar-save-status');
+  try{
+    const {error}=await supabaseClient.rpc('save_student_avatar',{p_avatar_data:pendingAvatar});
+    if(error) throw error;
+    if(currentStudentProfile) currentStudentProfile.avatar_data=pendingAvatar;
+    if(status) status.textContent='Lagret!';
+    setTimeout(()=>{if(status)status.textContent='';},1500);
+  }catch(e){
+    if(status) status.textContent='Feil: '+e.message;
+  }
+}
+
 function renderStudentPortalState(){
   const formEl=document.getElementById('student-login-form');
   const sessionEl=document.getElementById('student-session-card');
@@ -961,6 +1039,16 @@ function renderStudentPortalState(){
     metaEl.textContent=loggedIn
       ? `${currentStudentProfile.class_name||'Klasse'}${currentStudentProfile.login_code?` · Kode: ${currentStudentProfile.login_code}`:''}`
       : '-';
+  }
+  const avatarDisplay=document.getElementById('student-avatar-display');
+  if(avatarDisplay){
+    if(loggedIn){
+      if(currentStudentProfile.avatar_data) pendingAvatar={...pendingAvatar,...currentStudentProfile.avatar_data};
+      avatarDisplay.innerHTML=renderAvatarCircle(pendingAvatar,currentStudentProfile.display_name,36);
+      renderAvatarPicker();
+    } else {
+      avatarDisplay.innerHTML='';
+    }
   }
   const xpBarWrap=document.getElementById('student-xp-bar');
   if(xpBarWrap){
