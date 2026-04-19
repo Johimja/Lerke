@@ -39,6 +39,23 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-19 — Automated: XP and level system (v12)
+
+**What was done:**
+- Created `supabase/sql/supabase_bingo_v12_xp_levels.sql`:
+  - Added `total_xp integer not null default 0` to `student_profiles`.
+  - New helper `xp_to_level(p_xp)` → `floor(p_xp/100)+1` (level 1 = 0–99 XP, +1 level per 100 XP).
+  - Replaced `submit_bingo_answer` to award XP to the linked student profile on each correct answer (+10 XP) and on first bingo in a round (+50 XP). XP is only awarded when `student_profile_id` is set (logged-in students). Returns `xp_gained`, `total_xp`, `level` in the response.
+  - Replaced `get_current_student_profile` to include `total_xp` and `level`.
+- `index.html`: Added XP bar + level badge (`Nivå N`) to student session card. Renders when student is logged in and `total_xp` is present.
+- `apps/bingo/student.html`: Correct answer note now appends `+N XP` when `xp_gained > 0`.
+
+**Pending:** Apply `supabase_bingo_v12_xp_levels.sql` in Supabase SQL editor.
+
+**Next task:** Avatar creator in the portal (Tier 2) — pick body/color/accessory, shown in Elevoversikt and podium. Or continue with Session history / hall of fame.
+
+---
+
 ### 2026-04-18 — Automated: lerio → lerke cleanup
 
 **What was done:**
@@ -203,7 +220,7 @@ Three providers selectable in a dropdown:
 ### Tier 2 — Identity & Progression
 
 - [ ] **Avatar creator in the portal** — pick body/color/accessory, shown in Elevoversikt and podium
-- [ ] **XP and level system** — correct answer, bingo, speed bonus; level badge in portal
+- [x] **XP and level system** — correct answer (+10 XP), bingo (+50 XP); level badge + XP bar in portal; SQL v12 (apply in Supabase) ✅
 - [ ] **Session history / hall of fame** — most wins per student, longest win streak
 - [ ] **Comeback wildcard** — one ⚡ gratis kryss after being shut out of N draws
 
@@ -250,3 +267,4 @@ Three providers selectable in a dropdown:
 8. `supabase/sql/supabase_bingo_v7_leaderboard.sql` ✅ applied
 9. `supabase/sql/supabase_bingo_v8_reactions_speed.sql` ✅ applied
 10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` ✅ applied
+11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` — pending apply

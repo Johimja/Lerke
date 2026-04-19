@@ -907,8 +907,11 @@ async function submitStrictAnswer(idx){
     });
     if(error) throw error;
     if(data?.marked_cells) applyMarkedCellsToGrid(data.marked_cells);
-    if(data?.response_outcome==='correct') setJoinNote('Riktig!',false);
-    else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
+    if(data?.response_outcome==='correct'){
+      let msg='Riktig!';
+      if(data.xp_gained>0) msg+=` +${data.xp_gained} XP`;
+      setJoinNote(msg,false);
+    } else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
     if(data?.has_bingo){
       const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
       if(!wasBingoShown(rn)){

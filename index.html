@@ -315,6 +315,11 @@ html{scroll-behavior:smooth}
 .student-session-name{font-family:'Raleway',sans-serif;font-size:1.1rem;font-weight:900;color:var(--lerke-plum);margin-bottom:4px}
 .student-session-meta{font-size:.84rem;color:#5f5263;line-height:1.5}
 .student-session-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.xp-bar-wrap{margin-top:10px}
+.xp-bar-label{display:flex;justify-content:space-between;font-size:.74rem;color:#5f5263;margin-bottom:4px}
+.xp-bar-label .xp-level-badge{font-weight:900;color:var(--lerke-green-deep);font-family:'Raleway',sans-serif}
+.xp-bar-track{height:7px;border-radius:4px;background:rgba(0,0,0,.1);overflow:hidden}
+.xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--lerke-green-deep),#8fcf3c);transition:width .4s ease}
 .class-admin{
   display:none;
   width:100%;
@@ -708,6 +713,13 @@ html{scroll-behavior:smooth}
               <div class="student-session-kicker">Elev innlogget</div>
               <div class="student-session-name" id="student-session-name">-</div>
               <div class="student-session-meta" id="student-session-meta">-</div>
+              <div class="xp-bar-wrap" id="student-xp-bar" style="display:none">
+                <div class="xp-bar-label">
+                  <span class="xp-level-badge" id="xp-level-text">Nivå 1</span>
+                  <span id="xp-count-text">0 XP</span>
+                </div>
+                <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+              </div>
               <div class="student-session-actions">
                 <button class="auth-btn green" type="button" onclick="launchBingo()">Åpne Bingo</button>
               </div>
@@ -949,6 +961,20 @@ function renderStudentPortalState(){
     metaEl.textContent=loggedIn
       ? `${currentStudentProfile.class_name||'Klasse'}${currentStudentProfile.login_code?` · Kode: ${currentStudentProfile.login_code}`:''}`
       : '-';
+  }
+  const xpBarWrap=document.getElementById('student-xp-bar');
+  if(xpBarWrap){
+    if(loggedIn && currentStudentProfile.total_xp != null){
+      const xp=currentStudentProfile.total_xp||0;
+      const level=currentStudentProfile.level||1;
+      const xpInLevel=xp%100;
+      document.getElementById('xp-level-text').textContent=`Nivå ${level}`;
+      document.getElementById('xp-count-text').textContent=`${xp} XP`;
+      document.getElementById('xp-bar-fill').style.width=`${xpInLevel}%`;
+      xpBarWrap.style.display='';
+    } else {
+      xpBarWrap.style.display='none';
+    }
   }
   if(!loggedIn){
     if(loginCodeInput) loginCodeInput.value='';
