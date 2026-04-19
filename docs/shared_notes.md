@@ -39,6 +39,23 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-19 — Automated: Avatar creator (v13)
+
+**What was done:**
+- Created `supabase/sql/supabase_bingo_v13_avatars.sql`:
+  - Added `avatar_data jsonb default null` to `student_profiles`.
+  - New RPC `save_student_avatar(p_avatar_data)` — saves logged-in student's avatar.
+  - New RPC `get_session_student_avatars(p_session_id)` — returns `{display_name: avatar_data}` map for teacher.
+  - Updated `get_current_student_profile` to include `avatar_data`.
+- `index.html`: Avatar display (colored circle with initial + accessory emoji) shown in student session card header alongside name. "Endre avatar" `<details>` picker with 6 color swatches and 4 accessories (none/👑/⭐/⚡). Saves immediately on selection. CSS classes: `.lerke-avatar`, `.avatar-header`, `.avatar-picker-colors`, `.avatar-acc-btn`.
+- `apps/bingo/teacher.html`: `renderAvatarCircleT()` helper, `studentAvatarCache` (keyed by display_name), `fetchSessionAvatars()` called on each roster refresh. Avatar circle shown next to student name in live roster (Elevoversikt). Avatar shown in end-of-round podium above name.
+
+**Migration applied** ✅ (`v13_avatars` via Supabase MCP, 2026-04-19).
+
+**Next task:** Session history / hall of fame — most wins per student, longest win streak. Or phase out anonymous join (Tier 1).
+
+---
+
 ### 2026-04-19 — Automated: XP and level system (v12)
 
 **What was done:**
@@ -219,7 +236,7 @@ Three providers selectable in a dropdown:
 
 ### Tier 2 — Identity & Progression
 
-- [ ] **Avatar creator in the portal** — pick body/color/accessory, shown in Elevoversikt and podium
+- [x] **Avatar creator in the portal** — color + accessory picker, shown in portal card, Elevoversikt, and podium; SQL v13 ✅
 - [x] **XP and level system** — correct answer (+10 XP), bingo (+50 XP); level badge + XP bar in portal; SQL v12 (apply in Supabase) ✅
 - [ ] **Session history / hall of fame** — most wins per student, longest win streak
 - [ ] **Comeback wildcard** — one ⚡ gratis kryss after being shut out of N draws
@@ -268,3 +285,4 @@ Three providers selectable in a dropdown:
 9. `supabase/sql/supabase_bingo_v8_reactions_speed.sql` ✅ applied
 10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` ✅ applied
 11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` ✅ applied
+12. `supabase/sql/supabase_bingo_v13_avatars.sql` ✅ applied
