@@ -39,6 +39,20 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-20 — Automated: Session history / hall of fame (v14)
+
+**What was done:**
+- Created `supabase/sql/supabase_bingo_v14_hall_of_fame.sql`:
+  - New RPC `get_student_stats()` — returns `rounds_played`, `rounds_won`, `longest_win_streak`, `podium_count` (top-3 finishes), `sessions_played` for the logged-in student. Uses gaps-and-islands window function for streak calculation.
+  - New RPC `get_class_hall_of_fame(p_class_id)` — returns all active students in a class sorted by rounds_won desc, includes XP/level/avatar for teacher-facing use.
+- `index.html`: Added collapsible "Min statistikk" `<details>` to student session card. `loadStudentStats()` fetches `get_student_stats()` on login and renders a 2-col grid: bingo rounds won, spill spilt, lengste vinnerrekke, pallplasseringer, win %.
+
+**Migration applied** ✅ (`v14_hall_of_fame` via Supabase MCP, 2026-04-20).
+
+**Next task:** Class hall of fame on teacher screen — show a leaderboard modal with all students' stats. Or Comeback wildcard (Tier 2).
+
+---
+
 ### 2026-04-19 — Automated: Avatar creator (v13)
 
 **What was done:**
@@ -52,7 +66,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 **Migration applied** ✅ (`v13_avatars` via Supabase MCP, 2026-04-19).
 
-**Next task:** Session history / hall of fame — most wins per student, longest win streak. Or phase out anonymous join (Tier 1).
+**Next task:** Class hall of fame on teacher screen — show a leaderboard modal with all students' stats. Or Comeback wildcard (Tier 2).
 
 ---
 
@@ -238,7 +252,7 @@ Three providers selectable in a dropdown:
 
 - [x] **Avatar creator in the portal** — color + accessory picker, shown in portal card, Elevoversikt, and podium; SQL v13 ✅
 - [x] **XP and level system** — correct answer (+10 XP), bingo (+50 XP); level badge + XP bar in portal; SQL v12 (apply in Supabase) ✅
-- [ ] **Session history / hall of fame** — most wins per student, longest win streak
+- [x] **Session history / hall of fame** — most wins per student, longest win streak, podium count, win %, shown in student portal "Min statistikk" section; SQL v14 ✅
 - [ ] **Comeback wildcard** — one ⚡ gratis kryss after being shut out of N draws
 
 ### Tier 3 — Content & Modes
@@ -286,3 +300,4 @@ Three providers selectable in a dropdown:
 10. `supabase/sql/supabase_bingo_v11_student_login_code.sql` ✅ applied
 11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` ✅ applied
 12. `supabase/sql/supabase_bingo_v13_avatars.sql` ✅ applied
+13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied

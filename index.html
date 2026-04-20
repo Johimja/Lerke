@@ -755,6 +755,10 @@ html{scroll-behavior:smooth}
                   <div id="change-pin-status" style="font-size:0.78rem;color:var(--muted,#7c8099)"></div>
                 </div>
               </details>
+              <details style="margin-top:10px" id="student-stats-details">
+                <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted,#7c8099)">Min statistikk</summary>
+                <div id="student-stats-body" style="margin-top:8px;font-size:.82rem;color:var(--muted,#7c8099);text-align:center">Laster…</div>
+              </details>
               <div id="student-email-section"></div>
             </div>
             <div class="auth-row">
@@ -1069,6 +1073,34 @@ function renderStudentPortalState(){
     if(pinInput) pinInput.value='';
   }
   renderStudentEmailSection();
+  if(loggedIn) loadStudentStats();
+  else {const sb=document.getElementById('student-stats-body');if(sb)sb.textContent='Laster…';}
+}
+
+async function loadStudentStats(){
+  const sb=document.getElementById('student-stats-body');
+  if(!sb) return;
+  try{
+    const {data,error}=await supabaseClient.rpc('get_student_stats');
+    if(error) throw error;
+    const s=data||{};
+    const rp=s.rounds_played||0;
+    const rw=s.rounds_won||0;
+    const streak=s.longest_win_streak||0;
+    const pod=s.podium_count||0;
+    const sessions=s.sessions_played||0;
+    const winPct=rp>0?Math.round(rw/rp*100):0;
+    sb.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;text-align:left;margin-top:4px">
+        <div><span style="font-size:1.3rem;font-weight:900;color:var(--lerke-green-deep,#3a7c1f)">${rw}</span><div style="font-size:.72rem">Bingo-runder vunnet</div></div>
+        <div><span style="font-size:1.3rem;font-weight:900;color:var(--lerke-green-deep,#3a7c1f)">${sessions}</span><div style="font-size:.72rem">Spill spilt</div></div>
+        <div><span style="font-size:1.3rem;font-weight:900;color:#b8860b">${streak}</span><div style="font-size:.72rem">Lengste vinnerrekke</div></div>
+        <div><span style="font-size:1.3rem;font-weight:900;color:#b8860b">${pod}</span><div style="font-size:.72rem">Pallplasseringer</div></div>
+        <div style="grid-column:1/-1"><span style="font-size:1rem;font-weight:700">${winPct}%</span> <span style="font-size:.72rem">seierrate (${rp} runder spilt)</span></div>
+      </div>`;
+  } catch(e){
+    sb.textContent='Kunne ikke laste statistikk.';
+  }
 }
 
 function renderStudentEmailSection(){
