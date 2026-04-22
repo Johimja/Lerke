@@ -34,9 +34,26 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 avatar_faceshapes — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-22 — Automated: Canonical face-shape spritesheet fix (Avatar-4)
+
+**What was done:**
+
+- Canonical avatar sheet is now `media/avatar_faceshapes.png` — the 1024×1280, 4 cols × 5 rows, 256×256/tile code-generated white-on-transparent face-shape sheet.
+- Removed the obsolete tracked `media/avatarspreadsheet.png`; ignore/delete the older experimental `avatarspreadsheet12.png`, `avatar_faceshapes2.png`, and `avatar_faceshapes3.png` if they appear locally.
+- `index.html` avatar shop now uses only the 20 real face-shape/head tiles from `avatar_faceshapes.png`. The old mixed 24-item head/outfit/face catalogue was replaced. Legacy saved avatar JSON falls back to `head_basic`.
+- `apps/bingo/teacher.html` now renders the same face-shape sheet in roster, podium, and Hall of Fame.
+- Added and applied `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` to replace the server-side item-cost catalogue for DBs that already applied v17.
+- Added `tests/avatar_faceshapes_config.test.mjs` to guard the sheet path, dimensions, and item catalogue.
+
+**Migration applied** ✅ (`v18_avatar_faceshapes` via Supabase CLI, 2026-04-22). Verified `head_basic=0`, `head_afro=300`, old `outfit_tshirt=null`.
+
+**Next task:** Smoke-test student avatar purchase/equip in the portal.
 
 ---
 
@@ -307,6 +324,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-1 (SQL v17)**: Add `unlocked_avatar_items text[]` to `student_profiles`, `purchase_avatar_item(p_item_key)` RPC (XP deduction + unlock), `get_avatar_item_cost()` helper, update `get_current_student_profile` to return `unlocked_avatar_items`. Migration applied. ✅
 - [x] **Avatar-2 (index.html)**: Replaced old color/accessory picker with spritesheet-based avatar shop. `AVATAR_ITEM_CATALOGUE` defines all 24 items (col/row/xp). `renderSpriteAvatar` builds 3-layer composite (outfit → head → face) via CSS background-position clips. `renderAvatarShop` renders 3-tab UI (Hode/Antrekk/Ansikt) with 4-column grid, preview shows full composite with item applied, buy/equip flow. `purchaseAndEquipItem` calls `purchase_avatar_item` RPC, updates local XP, unlocks item, equips it. Legacy color/accessory format falls back gracefully. ✅
 - [x] **Avatar-3 (teacher.html)**: Updated `renderAvatarCircleT` to render spritesheet composite (outfit → head → face layers). Added `AVATAR_CATALOGUE_T`, `_tSpriteStyle`. Added `.t-avatar-sprite` / `.t-avatar-layer` CSS. Hall of Fame modal now uses `renderAvatarCircleT` instead of inline color/letter circle. Legacy format fallback kept. student.html has no avatar rendering (bingo board only). ✅
+- [x] **Avatar-4 (canonical face-shape sheet)**: Replaced the incorrect mixed `avatarspreadsheet.png` setup with `media/avatar_faceshapes.png` (1024×1280, 4×5). Shop and teacher display now use the 20 actual face-shape tiles only. Added SQL v18 to replace the item-cost catalogue for existing DBs. ✅
 - [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
@@ -351,3 +369,4 @@ Three providers selectable in a dropdown:
 13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied
 14. `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql` ✅ applied
 15. `supabase/sql/supabase_bingo_v17_avatar_shop.sql` ✅ applied
+16. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied

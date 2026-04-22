@@ -322,7 +322,7 @@ html{scroll-behavior:smooth}
 .xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--lerke-green-deep),#8fcf3c);transition:width .4s ease}
 .lerke-avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;user-select:none}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
-.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatarspreadsheet.png');background-repeat:no-repeat}
+.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
 .avatar-shop-tab{flex:1;padding:6px 2px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted,#7c8099);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -983,42 +983,41 @@ function formatStudentStatus(){
   return `Elev innlogget: ${currentStudentProfile.display_name} · ${currentStudentProfile.class_name} (${currentStudentProfile.class_code})`;
 }
 // ── Spritesheet avatar system ─────────────────────────────
-// Sheet: media/avatarspreadsheet.png  1024×1536  4 cols × 6 rows  256×256/cell
+// Sheet: media/avatar_faceshapes.png  1024×1280  4 cols × 5 rows  256×256/cell
 const AVATAR_ITEM_CATALOGUE=[
-  {key:'head_bald',        label:'Skallet',      cat:'head',   col:0,row:0,xp:0},
-  {key:'head_brown_hair',  label:'Brunt hår',    cat:'head',   col:1,row:0,xp:0},
-  {key:'head_blonde_hair', label:'Blondt hår',   cat:'head',   col:2,row:0,xp:100},
-  {key:'head_alien',       label:'Alien',        cat:'head',   col:3,row:0,xp:300},
-  {key:'outfit_tshirt',    label:'T-skjorte',    cat:'outfit', col:0,row:1,xp:0},
-  {key:'outfit_hoodie',    label:'Hettegenser',  cat:'outfit', col:1,row:1,xp:50},
-  {key:'outfit_jacket',    label:'Jakke',        cat:'outfit', col:2,row:1,xp:100},
-  {key:'outfit_armor',     label:'Rustning',     cat:'outfit', col:3,row:1,xp:200},
-  {key:'outfit_suit',      label:'Dress',        cat:'outfit', col:0,row:2,xp:150},
-  {key:'outfit_robes',     label:'Kapper',       cat:'outfit', col:1,row:2,xp:150},
-  {key:'outfit_cyber',     label:'Cyber',        cat:'outfit', col:2,row:2,xp:250},
-  {key:'outfit_hawaiian',  label:'Hawaiiskjorte',cat:'outfit', col:3,row:2,xp:75},
-  {key:'face_normal',      label:'Normal',       cat:'face',   col:0,row:3,xp:0},
-  {key:'face_beard',       label:'Skjegg',       cat:'face',   col:1,row:3,xp:50},
-  {key:'face_glasses',     label:'Briller',      cat:'face',   col:2,row:3,xp:75},
-  {key:'face_scar',        label:'Arr',          cat:'face',   col:3,row:3,xp:100},
-  {key:'face_smile',       label:'Smil',         cat:'face',   col:0,row:4,xp:50},
-  {key:'face_frown',       label:'Sur',          cat:'face',   col:1,row:4,xp:50},
-  {key:'face_eyepatch',    label:'Øyelapp',      cat:'face',   col:2,row:4,xp:125},
-  {key:'face_visor',       label:'Visir',        cat:'face',   col:3,row:4,xp:150},
-  {key:'face_angry',       label:'Sint',         cat:'face',   col:0,row:5,xp:100},
-  {key:'face_sunglasses',  label:'Solbriller',   cat:'face',   col:1,row:5,xp:75},
-  {key:'face_cyborg',      label:'Cyborg',       cat:'face',   col:2,row:5,xp:250},
-  {key:'face_zombie',      label:'Zombie',       cat:'face',   col:3,row:5,xp:300},
+  {key:'head_basic',          label:'Klassisk',       cat:'head', col:0,row:0,xp:0},
+  {key:'head_flat_top',       label:'Flat topp',      cat:'head', col:1,row:0,xp:0},
+  {key:'head_widows_peak',    label:'V-form',         cat:'head', col:2,row:0,xp:50},
+  {key:'head_crew',           label:'Kort hår',       cat:'head', col:3,row:0,xp:50},
+  {key:'head_bun',            label:'Toppknute',      cat:'head', col:0,row:1,xp:75},
+  {key:'head_bob',            label:'Bob',            cat:'head', col:1,row:1,xp:75},
+  {key:'head_long',           label:'Langt hår',      cat:'head', col:2,row:1,xp:100},
+  {key:'head_side_part',      label:'Sideskill',      cat:'head', col:3,row:1,xp:100},
+  {key:'head_wavy',           label:'Bølgete',        cat:'head', col:0,row:2,xp:125},
+  {key:'head_spiky',          label:'Piggsveis',      cat:'head', col:1,row:2,xp:125},
+  {key:'head_afro',           label:'Afro',           cat:'head', col:2,row:2,xp:300},
+  {key:'head_pigtails',       label:'Musefletter',    cat:'head', col:3,row:2,xp:150},
+  {key:'head_full_beard',     label:'Fullskjegg',     cat:'head', col:0,row:3,xp:175},
+  {key:'head_goatee',         label:'Bukkeskjegg',    cat:'head', col:1,row:3,xp:150},
+  {key:'head_mohawk',         label:'Hanekam',        cat:'head', col:2,row:3,xp:225},
+  {key:'head_hat',            label:'Hatt',           cat:'head', col:3,row:3,xp:200},
+  {key:'head_hood',           label:'Hette',          cat:'head', col:0,row:4,xp:250},
+  {key:'head_helmet',         label:'Hjelm',          cat:'head', col:1,row:4,xp:275},
+  {key:'head_cap',            label:'Caps',           cat:'head', col:2,row:4,xp:175},
+  {key:'head_flat_top_beard', label:'Topp + skjegg',  cat:'head', col:3,row:4,xp:300},
 ];
 
-let pendingAvatar={head:'head_bald',outfit:'outfit_tshirt',face:'face_normal'};
+let pendingAvatar={head:'head_basic'};
 let currentShopTab='head';
 
 function _itemByKey(key){return AVATAR_ITEM_CATALOGUE.find(i=>i.key===key);}
+function normalizeAvatarData(avatarData){
+  return {head:_itemByKey(avatarData&&avatarData.head)?avatarData.head:'head_basic'};
+}
 
 function _spriteStyle(col,row,size){
   const bsW=Math.round(1024*(size/256));
-  const bsH=Math.round(1536*(size/256));
+  const bsH=Math.round(1280*(size/256));
   return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
 }
 
@@ -1031,7 +1030,8 @@ function renderSingleSprite(col,row,size){
 function renderAvatarCircle(avatarData,name,size){
   size=size||36;
   if(avatarData&&avatarData.head){
-    const h=_itemByKey(avatarData.head)||_itemByKey('head_bald');
+    const normalized=normalizeAvatarData(avatarData);
+    const h=_itemByKey(normalized.head)||_itemByKey('head_basic');
     return renderSingleSprite(h.col,h.row,size);
   }
   // legacy fallback (old color/accessory format)
@@ -1069,10 +1069,6 @@ function renderAvatarShop(){
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const tabs=[{id:'head',label:'Hode'},{id:'outfit',label:'Antrekk'},{id:'face',label:'Ansikt'}];
-  const tabsHtml=tabs.map(t=>
-    `<div class="avatar-shop-tab${currentShopTab===t.id?' active':''}" onclick="setShopTab('${t.id}')">${t.label}</div>`
-  ).join('');
   const items=AVATAR_ITEM_CATALOGUE.filter(i=>i.cat===currentShopTab);
   const itemsHtml=items.map(item=>{
     const isFree=item.xp===0;
@@ -1092,8 +1088,7 @@ function renderAvatarShop(){
       `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
     `</div>`;
   }).join('');
-  wrap.innerHTML=`<div class="avatar-shop-tabs">${tabsHtml}</div>`+
-    `<div class="avatar-shop-grid">${itemsHtml}</div>`+
+  wrap.innerHTML=`<div class="avatar-shop-grid">${itemsHtml}</div>`+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
 }
 
@@ -1173,8 +1168,8 @@ function renderStudentPortalState(){
   if(avatarDisplay){
     if(loggedIn){
       const ad=currentStudentProfile.avatar_data;
-      if(ad&&(ad.head||ad.outfit||ad.face)){
-        pendingAvatar={head:ad.head||'head_bald',outfit:ad.outfit||'outfit_tshirt',face:ad.face||'face_normal'};
+      if(ad&&ad.head){
+        pendingAvatar=normalizeAvatarData(ad);
       }
       avatarDisplay.innerHTML=renderAvatarCircle(pendingAvatar,currentStudentProfile.display_name,48);
       renderAvatarShop();

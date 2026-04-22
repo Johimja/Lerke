@@ -425,7 +425,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .gen-llm-config{background:rgba(91,141,238,.06);border-color:rgba(91,141,238,.18)}
 [data-theme="light"] .gen-llm-config select,[data-theme="light"] .gen-llm-config input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 .t-avatar-sprite{display:inline-block;position:relative;border-radius:5px;overflow:hidden;flex-shrink:0;vertical-align:middle}
-.t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatarspreadsheet.png');background-repeat:no-repeat}
+.t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_faceshapes.png');background-repeat:no-repeat}
 </style>
 <script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
 </head>
@@ -1648,18 +1648,17 @@ async function maybeAutoLockTeacherDraw(){
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
-// Spritesheet: ../../media/avatarspreadsheet.png  1024×1536  4 cols × 6 rows  256×256/cell
+// Spritesheet: ../../media/avatar_faceshapes.png  1024×1280  4 cols × 5 rows  256×256/cell
 const AVATAR_CATALOGUE_T=[
-  {key:'head_bald',col:0,row:0},{key:'head_brown_hair',col:1,row:0},{key:'head_blonde_hair',col:2,row:0},{key:'head_alien',col:3,row:0},
-  {key:'outfit_tshirt',col:0,row:1},{key:'outfit_hoodie',col:1,row:1},{key:'outfit_jacket',col:2,row:1},{key:'outfit_armor',col:3,row:1},
-  {key:'outfit_suit',col:0,row:2},{key:'outfit_robes',col:1,row:2},{key:'outfit_cyber',col:2,row:2},{key:'outfit_hawaiian',col:3,row:2},
-  {key:'face_normal',col:0,row:3},{key:'face_beard',col:1,row:3},{key:'face_glasses',col:2,row:3},{key:'face_scar',col:3,row:3},
-  {key:'face_smile',col:0,row:4},{key:'face_frown',col:1,row:4},{key:'face_eyepatch',col:2,row:4},{key:'face_visor',col:3,row:4},
-  {key:'face_angry',col:0,row:5},{key:'face_sunglasses',col:1,row:5},{key:'face_cyborg',col:2,row:5},{key:'face_zombie',col:3,row:5},
+  {key:'head_basic',col:0,row:0},{key:'head_flat_top',col:1,row:0},{key:'head_widows_peak',col:2,row:0},{key:'head_crew',col:3,row:0},
+  {key:'head_bun',col:0,row:1},{key:'head_bob',col:1,row:1},{key:'head_long',col:2,row:1},{key:'head_side_part',col:3,row:1},
+  {key:'head_wavy',col:0,row:2},{key:'head_spiky',col:1,row:2},{key:'head_afro',col:2,row:2},{key:'head_pigtails',col:3,row:2},
+  {key:'head_full_beard',col:0,row:3},{key:'head_goatee',col:1,row:3},{key:'head_mohawk',col:2,row:3},{key:'head_hat',col:3,row:3},
+  {key:'head_hood',col:0,row:4},{key:'head_helmet',col:1,row:4},{key:'head_cap',col:2,row:4},{key:'head_flat_top_beard',col:3,row:4},
 ];
 function _tSpriteStyle(col,row,size){
   const s=size/256;
-  return `background-size:${Math.round(1024*s)}px ${Math.round(1536*s)}px;background-position:${-col*size}px ${-row*size}px`;
+  return `background-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;background-position:${-col*size}px ${-row*size}px`;
 }
 let studentAvatarCache={};
 let avatarCacheSessionId=null;

@@ -24,6 +24,11 @@ For the current normal setup path, think in this order:
 3. `supabase_bingo_v2_strict_live_patch.sql`
 4. `supabase_bingo_v3_join_stability_patch.sql`
 
+Later feature patches are applied in numeric order. For the current avatar
+shop, apply `supabase_bingo_v17_avatar_shop.sql` first, then
+`supabase_bingo_v18_avatar_faceshapes.sql` so the live item-cost catalogue
+matches `media/avatar_faceshapes.png`.
+
 ## Archive
 
 Historical patches and draft SQL now live in `supabase/sql/archive/`.

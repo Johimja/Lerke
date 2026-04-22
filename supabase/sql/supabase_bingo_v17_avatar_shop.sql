@@ -1,9 +1,9 @@
 -- =========================================================
 -- V17: Spritesheet avatar shop — XP-unlockable items
 -- =========================================================
--- Spritesheet: /media/avatarspreadsheet.png (1024×1536, 4 cols × 6 rows, 256×256/cell)
--- Categories: head (row 1), outfit (rows 2-3), face (rows 4-6)
--- avatar_data shape changes to: { "head": "head_bald", "outfit": "outfit_tshirt", "face": "face_normal" }
+-- Spritesheet: /media/avatar_faceshapes.png (1024×1280, 4 cols × 5 rows, 256×256/cell)
+-- Category: head / face-shape silhouettes
+-- avatar_data shape changes to: { "head": "head_basic" }
 -- New columns / RPCs:
 --   unlocked_avatar_items text[]  — paid items purchased by this student
 --   get_avatar_item_cost(p_item_key) — immutable helper, returns XP cost or null for invalid key
@@ -30,33 +30,26 @@ security definer
 set search_path = public
 as $$
   select case p_item_key
-    -- Heads (row 1)
-    when 'head_bald'         then 0
-    when 'head_brown_hair'   then 0
-    when 'head_blonde_hair'  then 100
-    when 'head_alien'        then 300
-    -- Outfits (rows 2-3)
-    when 'outfit_tshirt'     then 0
-    when 'outfit_hoodie'     then 50
-    when 'outfit_jacket'     then 100
-    when 'outfit_armor'      then 200
-    when 'outfit_suit'       then 150
-    when 'outfit_robes'      then 150
-    when 'outfit_cyber'      then 250
-    when 'outfit_hawaiian'   then 75
-    -- Faces (rows 4-6)
-    when 'face_normal'       then 0
-    when 'face_beard'        then 50
-    when 'face_glasses'      then 75
-    when 'face_scar'         then 100
-    when 'face_smile'        then 50
-    when 'face_frown'        then 50
-    when 'face_eyepatch'     then 125
-    when 'face_visor'        then 150
-    when 'face_angry'        then 100
-    when 'face_sunglasses'   then 75
-    when 'face_cyborg'       then 250
-    when 'face_zombie'       then 300
+    when 'head_basic'          then 0
+    when 'head_flat_top'       then 0
+    when 'head_widows_peak'    then 50
+    when 'head_crew'           then 50
+    when 'head_bun'            then 75
+    when 'head_bob'            then 75
+    when 'head_long'           then 100
+    when 'head_side_part'      then 100
+    when 'head_wavy'           then 125
+    when 'head_spiky'          then 125
+    when 'head_afro'           then 300
+    when 'head_pigtails'       then 150
+    when 'head_full_beard'     then 175
+    when 'head_goatee'         then 150
+    when 'head_mohawk'         then 225
+    when 'head_hat'            then 200
+    when 'head_hood'           then 250
+    when 'head_helmet'         then 275
+    when 'head_cap'            then 175
+    when 'head_flat_top_beard' then 300
     else null  -- invalid / unknown item
   end;
 $$;
