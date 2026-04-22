@@ -34,9 +34,25 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-22 — Automated: Avatar shop SQL (v17) — Subtask Avatar-1
+
+**What was done:**
+
+- Created `supabase/sql/supabase_bingo_v17_avatar_shop.sql`:
+  - Added `unlocked_avatar_items text[] default '{}'` to `student_profiles`.
+  - New immutable helper `get_avatar_item_cost(p_item_key)` — returns XP cost for each of the 24 spritesheet items (free items return 0, invalid key returns null).
+  - New RPC `purchase_avatar_item(p_item_key)` — resolves student, validates item, checks XP, deducts XP, appends to `unlocked_avatar_items`. Returns `{ok, total_xp, unlocked_avatar_items, xp_spent}` (or `{ok:false, error}` on failure). Already-owned items return success without re-charging.
+  - Updated `get_current_student_profile` to include `unlocked_avatar_items` array.
+- **Migration applied** ✅ (`v17_avatar_shop` via Supabase MCP, 2026-04-22).
+- Item XP costs: heads (Bald/Brown=0, Blonde=100, Alien=300); outfits (T-Shirt=0, Hoodie=50, Hawaiian=75, Jacket=100, Suit/Robes=150, Armor=200, Cyber=250); faces (Normal=0, Beard/Smile/Frown=50, Glasses/Sunglasses=75, Scar/Angry=100, Eyepatch=125, Visor=150, Cyborg=250, Zombie=300).
+
+**Next task:** Avatar-2 — Update `index.html` with the spritesheet avatar shop UI (3-tab picker, XP-gated buy/equip, sprite CSS clips).
 
 ---
 
@@ -252,7 +268,9 @@ Three providers selectable in a dropdown:
 - [x] **Glose generator** — "⚡ Generer gloser" in bingo-generator sidebar. Language pair dropdowns (10 langs), word-translate tab (MyMemory free API), text-extract tab (MyMemory word-by-word or LLM). LLM providers: Anthropic Claude Haiku, OpenAI GPT-4o-mini (teacher's own key in localStorage, routed via edge function), LM Studio local API (direct browser→localhost, no edge function). Mode buttons: "Til Norsk" / "Fra Norsk". ✅
 - [x] **Glose generator in Lerke Bingo teacher.html** — The full "⚡ Generer nye gloser" section (language pair dropdowns, "Oversett ord" tab via MyMemory, "Fra tekst" tab with Simple/LLM mode, LM Studio support) is now embedded inside the Listebank → Ordlister modal in `apps/bingo/teacher.html`. Generated word pairs are added directly to the active word list with duplicate detection. All styles and light/dark mode support included. ✅
 - [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
-- [ ] **Priority: If possible! Use the spritesheet avatarspreadsheet.png in folder /media to create custom Avatar design posibilities for the students, make sure that each individual head, outfit and accessory are correctly separated and added in the customize window. Students use gained XP to unlock the different items available, like Alien head (300xp), deduct this xp from their total, and only apply and affirm change if they can afford it at purchase time. Must be memory peristent to individual user. (split this task into multiple separate subortinate tasks if needed, in this file. Just do one at a time. If you change this task, then edit this file and update with the new task list before finishing.
+- [x] **Avatar-1 (SQL v17)**: Add `unlocked_avatar_items text[]` to `student_profiles`, `purchase_avatar_item(p_item_key)` RPC (XP deduction + unlock), `get_avatar_item_cost()` helper, update `get_current_student_profile` to return `unlocked_avatar_items`. Migration applied. ✅
+- [ ] **Avatar-2 (index.html)**: Replace old color/accessory picker with spritesheet-based avatar shop — 3 tabs (Hode, Antrekk, Ansikt), each item shown as CSS sprite clip with XP cost, "Kjøp" (buy+equip) or "Bruk" (equip) button. `renderAvatarCircle` updated to use spritesheet layering.
+- [ ] **Avatar-3 (teacher.html + student.html)**: Update `renderAvatarCircleT` in teacher.html and any avatar display in student.html to render the new spritesheet avatar format (head/outfit/face keys) instead of old emoji circle.
 - [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
@@ -296,3 +314,4 @@ Three providers selectable in a dropdown:
 12. `supabase/sql/supabase_bingo_v13_avatars.sql` ✅ applied
 13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied
 14. `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql` ✅ applied
+15. `supabase/sql/supabase_bingo_v17_avatar_shop.sql` ✅ applied
