@@ -11,6 +11,7 @@ This is the **living collaborative log** for the Lerke project — shared betwee
 - This file is version-controlled — always in sync with the code
 
 Reading order for a cold start:
+
 1. `docs/recentmemory.txt` — quick project orientation
 2. **This file** — decisions, session history, roadmap
 3. `README.md` — full project docs
@@ -42,6 +43,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-22 — Automated: Comeback wildcard (v16)
 
 **What was done:**
+
 - Created `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql`:
   - New RPC `use_comeback_wildcard(p_session_id, p_cell_index)` — marks any cell on the student's current-round board without requiring a matching draw. No XP awarded. Returns updated `marked_cells`, `has_bingo`, `bingo_count`. Checks for bingo via existing `board_has_bingo()` helper.
 - **Migration applied** ✅ (`v16_comeback_wildcard` via Supabase MCP, 2026-04-22).
@@ -62,6 +64,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-22 — Automated: Class Hall of Fame modal on teacher screen (v15)
 
 **What was done:**
+
 - `apps/bingo/teacher.html`: Added "🏆 Hall of Fame" control card button to both the Glose and Matte sidebar panels.
 - New `<div id="hall-of-fame-modal">` (setup-modal) with student ranking list.
 - `openHallOfFame()`: calls `get_class_hall_of_fame(p_class_id)` with `selectedClassId`, renders all students ranked by wins. Each row shows: avatar circle (color + initial + accessory), display name, Nivå badge, XP, win count (gold), win %, longest streak 🔥, podium count 🏅. Top 3 get medal emojis.
@@ -74,6 +77,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-20 — Automated: Session history / hall of fame (v14)
 
 **What was done:**
+
 - Created `supabase/sql/supabase_bingo_v14_hall_of_fame.sql`:
   - New RPC `get_student_stats()` — returns `rounds_played`, `rounds_won`, `longest_win_streak`, `podium_count` (top-3 finishes), `sessions_played` for the logged-in student. Uses gaps-and-islands window function for streak calculation.
   - New RPC `get_class_hall_of_fame(p_class_id)` — returns all active students in a class sorted by rounds_won desc, includes XP/level/avatar for teacher-facing use.
@@ -88,6 +92,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-19 — Automated: Avatar creator (v13)
 
 **What was done:**
+
 - Created `supabase/sql/supabase_bingo_v13_avatars.sql`:
   - Added `avatar_data jsonb default null` to `student_profiles`.
   - New RPC `save_student_avatar(p_avatar_data)` — saves logged-in student's avatar.
@@ -105,6 +110,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-19 — Automated: XP and level system (v12)
 
 **What was done:**
+
 - Created `supabase/sql/supabase_bingo_v12_xp_levels.sql`:
   - Added `total_xp integer not null default 0` to `student_profiles`.
   - New helper `xp_to_level(p_xp)` → `floor(p_xp/100)+1` (level 1 = 0–99 XP, +1 level per 100 XP).
@@ -122,6 +128,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-18 — Automated: lerio → lerke cleanup
 
 **What was done:**
+
 - Removed `window.LERIO_SUPABASE = window.LERKE_SUPABASE` backward-compat alias from `config/supabase-public-config.js` and `config/supabase-config.example.js`.
 - Removed `||window.LERIO_SUPABASE` fallback from `SUPABASE_CONFIG` in `apps/bingo/student.html`, `apps/bingo/teacher.html`, and `index.html`.
 - Removed stale README note about the alias.
@@ -135,6 +142,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-16 — Session 15: Day/night mode toggle across all pages
 
 **What was shipped:**
+
 - All 4 HTML pages (`index.html`, `apps/bingo/teacher.html`, `apps/bingo/student.html`, `apps/bingo-generator/index.html`) now have a 🌙/☀️ toggle button fixed in the lower-left corner.
 - Theme follows system `prefers-color-scheme` on first visit; manual toggle persists in `localStorage` (`lerke-theme`) and carries across all pages.
 - `index.html`: Dark/night theme uses a deep plum palette (`#15101f`–`#1a1428` backgrounds, `#1e1630` panels, `#e8e2f2` text, subtle purple borders). Accent colours (plum, green, gold) are unchanged. Hardcoded warm-paper backgrounds overridden via `[data-theme="dark"]` selectors.
@@ -147,6 +155,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 ### 2026-04-16 — Session 14: Student email/password login path
 
 **What was shipped:**
+
 - `index.html`: Added "Logg inn med e-post i stedet" toggle link below the student login_code + PIN form. Clicking it swaps to an email+password form (`student-login-email-form`). `portalStudentLoginEmail()` calls `supabaseClient.auth.signInWithPassword`; existing `refreshPortalAuthState` then calls `get_current_student_profile` to hydrate `currentStudentProfile`. If the email isn't linked to any student account, the session is signed out and the user gets a clear error. Toggle link in the email form goes back to code login.
 - This closes the ⚠️ known limitation from Session 13 — email association is now a usable login path.
 
@@ -159,18 +168,22 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 **What was shipped:**
 
 **Speed Podium:**
+
 - `apps/bingo/teacher.html`: End-of-round Speed Podium in the bingo celebration overlay — top 3 fastest responders from `speed_leaderboard` data already in the RPC. Icons ⚡/🔥/💨 with average time display.
 
 **Single-code student login (V11):**
+
 - `supabase/sql/supabase_bingo_v11_student_login_code.sql` (applied ✅): Adds `login_code` (6-char, globally unique) to `student_profiles`. Backfills all existing students. New RPCs: `student_login_with_code(p_login_code, p_pin)` replaces 3-field login; `student_change_pin(p_current_pin, p_new_pin)` for self-service PIN changes.
 - `index.html`: Student login form simplified from **3 fields** (class code + student code + PIN) to **2 fields** (login_code + PIN). Teacher student list shows `login_code` prominently. "Bytt PIN" section added to student session card. Fixed `ensurePortalStudentSession` to not sign out email-linked student sessions.
 - `apps/bingo/student.html`: Account meta now shows login_code instead of class+student codes.
 
 **Email/password association:**
+
 - `index.html`: Logged-in students can optionally link an email + password to their account via the portal. If already linked, the option is hidden and replaced with a password-reset form. Students who forget their email password can log in with login_code + PIN and reset from there. All done via Supabase SDK `updateUser` (no extra SQL).
 - ⚠️ **Known limitation:** The email/password credentials are linked in Supabase Auth, but the portal does **not yet have a login form for students to use email+password**. Currently students can only enter via login_code + PIN. Email was added as a future upgrade path — the portal login flow still needs an "or log in with email" branch to make it usable. Add this before broadly advertising the feature.
 
 **Glose generator (`apps/bingo-generator/index.html`):**
+
 - Added full "⚡ Generer gloser" sidebar section with:
   - **Language dropdowns** — source and target language, 10 languages each (Norsk, Engelsk, Tysk, Spansk, Fransk, Italiensk, Portugisisk, Arabisk, Kinesisk, Japansk).
   - **Word-translate tab** — teacher types/pastes individual words, each gets translated via MyMemory free API (no key needed, no account, CORS-friendly: `api.mymemory.translated.net`). 250ms delay between calls to respect rate limits.
@@ -183,6 +196,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 **LLM providers for glose generation:**
 Three providers selectable in a dropdown:
+
 1. **MyMemory (free)** — no key, rate-limited, word-by-word.
 2. **Anthropic (Claude Haiku)** — API key saved to `localStorage` in teacher's own browser. Routed via Supabase edge function `generate-glose` (deployed ✅ with `verify_jwt: false`). Model: `claude-haiku-4-5-20251001`.
 3. **OpenAI (GPT-4o-mini)** — same as Anthropic, different endpoint. Both cloud keys are **never stored in Lerke's DB** — localStorage only, teacher pays their own bill.
@@ -190,67 +204,12 @@ Three providers selectable in a dropdown:
 
 **LM Studio — settings the teacher must configure:**
 > These settings are in LM Studio → Developer → Local Server → Server Settings:
+>
 > - **Enable CORS** ✅ — must be ON (browser sends cross-origin requests from `https://johimja.com`)
 > - **Server Port** — default 1234. If changed, teacher must update the URL field in the glose generator.
 > - **Serve on Local Network** — OFF is fine for the teacher's own machine. Turn ON if the school network should reach LM Studio from another device (e.g., teacher laptop → classroom display). Note: this does NOT help students reach it from their own devices unless all are on the same LAN and CORS + firewall allow it.
 > - **Require Authentication** — leave OFF unless you know what you're doing (adding auth tokens would require extra UI in the generator).
 > - LM Studio must have a model loaded and in READY state before generation works.
-
----
-
-### 2026-04-16 — Session 12: Teacher live mode crash fixes (full restore)
-
-**Background:** A previous Gemini edit attempt introduced several fatal bugs into `teacher.html`. Several HTML elements were also deleted. The teacher live screen was completely broken.
-
-**Root causes found and fixed:**
-
-1. **`renderLiveMode` crashed when modal was closed** — `refreshTeacherLiveState()` calls `renderLiveMode()` directly, which ran before `openLiveMode()` showed the modal. `getElementById('live-kicker')` returned null → crash.
-   - **Fix:** Guard at top of `renderLiveMode`: return early if `#live-modal` doesn't have class `'show'`.
-
-2. **`resumeActiveSession` read non-existent `rounds_data`** — Gemini added code reading `teacherLiveState.session.rounds_data` which doesn't exist in the `get_bingo_live_state` API response. `liveRounds` was never populated on page reload.
-   - **Fix:** Removed the reference. Reads `game_mode` from `settings` instead to set `liveLabel`.
-
-3. **`drawIndexReachedRoundEnd` returned true when `totalDraws = 0`** — With empty `liveRounds` (recovery mode), `totalDraws = 0`, making `draw_index >= 0` always true. This caused "Fullfør runde" to show prematurely and `complete_bingo_round` to fire on the first button click.
-   - **Fix:** Return `false` when `totalDraws <= 0` (unknown/recovery) — never prematurely end a round.
-
-4. **`openLiveMode` button stuck as "Neste"** — HTML default for `#live-next-draw` is "Neste". In recovery mode `teacherLiveState` was already set before `openLiveMode`, so the pre-populate guard (`!teacherLiveState?.state`) skipped the correction.
-   - **Fix:** Always pre-set button to "Åpne trekk" (strict render corrects it within 250ms).
-
-5. **Missing HTML elements** — `live-round-label` and `live-answer` were deleted from the live modal HTML. Both are referenced extensively in JS render functions → TypeError on every render tick.
-   - **Fix:** Restored both elements between the join-wrap and `live-stage`.
-
-6. **Invisible text** — `live-title` and `live-answer` were `color:var(--muted)` (#7c8099) on a `#141926` background — near-zero contrast.
-   - **Fix:** `live-title` → `#9bacc7`, `live-answer` → `#8c94b3`.
-
-7. **`getTeacherRoundDrawTotal` always returned 0 in recovery** — `liveRounds` is empty on reload.
-   - **Fix:** Falls back to `settings.draws_per_round` (new field stored in session settings on creation).
-
-8. **`draws_per_round` not stored** — New sessions now include `draws_per_round` in the `settings` JSONB so recovery mode can display correct draw totals.
-
-**Result:** Teacher live mode is fully functional. Confirmed working: "ÅPNE TREKK" → countdown → "LÅS TREKK (11)" → history builds → "RUNDE 1 AV 3" visible. ✅
-
----
-
-### 2026-04-15 — Session 11: Authentication, account management, teacher UI polish
-
-**What was shipped:**
-- `apps/bingo/student.html`: "Logg inn med elevkode" link, "Bytt bruker" link, `signOutStudent()` and `escapeHtml()`.
-- `apps/bingo/teacher.html`: Restored large glowing join code, auto-collapse join box on first draw, Live Ticker with 20+ gamified messages, larger countdown timer when join box is collapsed.
-- `supabase/sql/supabase_bingo_v8_reactions_speed.sql`: `draw_reactions` table, `send_bingo_reaction` (fixed wrong column `user_id` → `auth_user_id`), `get_draw_reactions`, `touch_session_heartbeat`, `get_bingo_live_state` updated with `fastest_participant`, `speed_leaderboard`, `host_active`.
-
----
-
-### 2026-04-15 — Session 10: Near-bingo alert + student manual controls removed
-
-**What was shipped:**
-- `apps/bingo/teacher.html`: Near-bingo alert — Elevoversikt highlights students who need 1 more correct answer; `⚡ 1 til!` badge and orange border on their row; alert banner lists their names.
-- `apps/bingo/student.html`: Removed "Tøm" and "Nytt kort" buttons; teacher manages rounds in strict live mode.
-
----
-
-## Open Questions
-
-- None currently open.
 
 ---
 
@@ -293,7 +252,8 @@ Three providers selectable in a dropdown:
 - [x] **Glose generator** — "⚡ Generer gloser" in bingo-generator sidebar. Language pair dropdowns (10 langs), word-translate tab (MyMemory free API), text-extract tab (MyMemory word-by-word or LLM). LLM providers: Anthropic Claude Haiku, OpenAI GPT-4o-mini (teacher's own key in localStorage, routed via edge function), LM Studio local API (direct browser→localhost, no edge function). Mode buttons: "Til Norsk" / "Fra Norsk". ✅
 - [x] **Glose generator in Lerke Bingo teacher.html** — The full "⚡ Generer nye gloser" section (language pair dropdowns, "Oversett ord" tab via MyMemory, "Fra tekst" tab with Simple/LLM mode, LM Studio support) is now embedded inside the Listebank → Ordlister modal in `apps/bingo/teacher.html`. Generated word pairs are added directly to the active word list with duplicate detection. All styles and light/dark mode support included. ✅
 - [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
-- [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
+- [ ] **Priority: If possible! Use the spritesheet avatarspreadsheet.png in folder /media to create custom Avatar design posibilities for the students, make sure that each individual head, outfit and accessory are correctly separated and added in the customize window. Students use gained XP to unlock the different items available, like Alien head (300xp), deduct this xp from their total, and only apply and affirm change if they can afford it at purchase time. Must be memory peristent to individual user. (split this task into multiple separate subortinate tasks if needed, in this file. Just do one at a time. If you change this task, then edit this file and update with the new task list before finishing.
+- [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
 
@@ -321,6 +281,7 @@ Three providers selectable in a dropdown:
 | Deploy | GitHub Pages — `johimja.com/Lerke` |
 
 **SQL patch chain (canonical execution order):**
+
 1. `supabase/sql/supabase_bingo_v1_sql_editor_ready.sql`
 2. `supabase/sql/supabase_student_accounts_v1_core_patch.sql`
 3. `supabase/sql/supabase_bingo_v2_strict_live_patch.sql`
