@@ -1022,21 +1022,17 @@ function _spriteStyle(col,row,size){
   return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
 }
 
-function renderSpriteAvatar(headKey,outfitKey,faceKey,size){
-  const h=_itemByKey(headKey)||_itemByKey('head_bald');
-  const o=_itemByKey(outfitKey)||_itemByKey('outfit_tshirt');
-  const f=_itemByKey(faceKey)||_itemByKey('face_normal');
+function renderSingleSprite(col,row,size){
   return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
-    `<span class="avatar-layer" style="${_spriteStyle(o.col,o.row,size)}"></span>`+
-    `<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`+
-    `<span class="avatar-layer" style="${_spriteStyle(f.col,f.row,size)}"></span>`+
+    `<span class="avatar-layer" style="${_spriteStyle(col,row,size)}"></span>`+
   `</span>`;
 }
 
 function renderAvatarCircle(avatarData,name,size){
   size=size||36;
-  if(avatarData&&(avatarData.head||avatarData.outfit||avatarData.face)){
-    return renderSpriteAvatar(avatarData.head||'head_bald',avatarData.outfit||'outfit_tshirt',avatarData.face||'face_normal',size);
+  if(avatarData&&avatarData.head){
+    const h=_itemByKey(avatarData.head)||_itemByKey('head_bald');
+    return renderSingleSprite(h.col,h.row,size);
   }
   // legacy fallback (old color/accessory format)
   const LEGACY_COLORS=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
@@ -1083,8 +1079,7 @@ function renderAvatarShop(){
     const isOwned=isFree||unlocked.includes(item.key);
     const isEquipped=pendingAvatar[item.cat]===item.key;
     const canAfford=xp>=item.xp;
-    const tempAv={...pendingAvatar,[item.cat]:item.key};
-    const preview=renderSpriteAvatar(tempAv.head,tempAv.outfit,tempAv.face,52);
+    const preview=renderSingleSprite(item.col,item.row,52);
     let btnClass,btnLabel;
     if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
     else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
