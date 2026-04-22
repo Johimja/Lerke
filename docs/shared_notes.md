@@ -39,6 +39,26 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-22 — Automated: Comeback wildcard (v16)
+
+**What was done:**
+- Created `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql`:
+  - New RPC `use_comeback_wildcard(p_session_id, p_cell_index)` — marks any cell on the student's current-round board without requiring a matching draw. No XP awarded. Returns updated `marked_cells`, `has_bingo`, `bingo_count`. Checks for bingo via existing `board_has_bingo()` helper.
+- **Migration applied** ✅ (`v16_comeback_wildcard` via Supabase MCP, 2026-04-22).
+- `apps/bingo/student.html`:
+  - New variables: `WILDCARD_THRESHOLD=3`, `consecutiveMisses`, `wildcardAvailable`, `wildcardActive`, `wildcardRound`, `lastWildcardDrawKey`.
+  - In `applyStrictLiveState`: after each draw resolves (`draw_locked` or `round_complete` phase, new draw key), checks response outcome. Wrong/timeout/no-response increments `consecutiveMisses`; correct resets it. When threshold reached → `wildcardAvailable=true`, shows notification.
+  - New `#wildcard-wrap` / `#wildcard-btn` HTML element between session-panel and card-wrap.
+  - `updateWildcardButton()`: shows/hides button, toggles `.active` class when activated.
+  - `toggleWildcard()`: activates wildcard mode, changes button label to "Velg et felt å merke…".
+  - `useWildcard(idx)`: calls `use_comeback_wildcard` RPC, applies marked cells, checks for bingo, resets all wildcard state.
+  - `toggleCell()`: when `wildcardActive && wildcardAvailable`, routes cell tap to `useWildcard()` instead of normal answer submission.
+  - CSS: pulsing gold border button, `.active` state (gold fill), light-mode overrides.
+
+**Next task:** PWA support / mobile polish. Or Glosebingo content improvements (reuse saved teaching sets).
+
+---
+
 ### 2026-04-22 — Automated: Class Hall of Fame modal on teacher screen (v15)
 
 **What was done:**
@@ -266,7 +286,7 @@ Three providers selectable in a dropdown:
 - [x] **XP and level system** — correct answer (+10 XP), bingo (+50 XP); level badge + XP bar in portal; SQL v12 (apply in Supabase) ✅
 - [x] **Session history / hall of fame** — most wins per student, longest win streak, podium count, win %, shown in student portal "Min statistikk" section; SQL v14 ✅
 - [x] **Class Hall of Fame on teacher screen** — 🏆 modal with all students ranked by wins, avatar, XP/level, win %, streak, podium count; v15 ✅
-- [ ] **Comeback wildcard** — one ⚡ gratis kryss after being shut out of N draws
+- [x] **Comeback wildcard** — one ⚡ gratis kryss after 3 consecutive non-correct draws; SQL v16 ✅
 
 ### Tier 3 — Content & Modes
 
@@ -314,3 +334,4 @@ Three providers selectable in a dropdown:
 11. `supabase/sql/supabase_bingo_v12_xp_levels.sql` ✅ applied
 12. `supabase/sql/supabase_bingo_v13_avatars.sql` ✅ applied
 13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied
+14. `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql` ✅ applied

@@ -189,6 +189,15 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
 .reaction-btn:active{transform:translateY(0);background:#f0f0f0}
 .reaction-btn.sending{opacity:0.6;pointer-events:none}
 
+/* ===== COMEBACK WILDCARD ===== */
+#wildcard-wrap{padding:0 8px 8px 8px;display:none}
+.wildcard-btn{width:100%;background:#1a1200;border:2px solid #f5a623;color:#f5a623;border-radius:10px;padding:11px 14px;font-size:0.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;animation:wc-pulse 1.8s ease-in-out infinite}
+.wildcard-btn.active{background:#f5a623;color:#1a1200;animation:none}
+.wildcard-btn:disabled{opacity:0.4;cursor:default;animation:none}
+@keyframes wc-pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,.45)}55%{box-shadow:0 0 0 7px rgba(245,166,35,0)}}
+[data-theme="light"] .wildcard-btn{background:#fff8e6;border-color:#c8810a;color:#7a4d00}
+[data-theme="light"] .wildcard-btn.active{background:#f5a623;color:#fff}
+
 .connection-lost-overlay{display:none;position:fixed;inset:0;background:rgba(15,17,23,.94);z-index:2000;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 .connection-lost-overlay.show{display:flex}
 .connection-lost-box{max-width:320px;padding:32px;background:#1a1d27;border:1px solid #e05a5a;border-radius:20px;box-shadow:0 0 40px rgba(224,90,90,.2);display:flex;flex-direction:column;align-items:center;gap:12px}
@@ -274,6 +283,9 @@ body.strict-live .join-note{margin:0 0 6px;font-size:0.72rem}
   <div class="session-help" id="session-help">Tøm kortet for neste runde.</div>
 </div>
 
+<div id="wildcard-wrap">
+  <button id="wildcard-btn" class="wildcard-btn" onclick="toggleWildcard()">⚡ Jokermerke – trykk for å aktivere</button>
+</div>
 <div id="card-wrap"></div>
 
 <div class="leaderboard-panel" id="leaderboard-panel" style="display:none">
@@ -345,6 +357,13 @@ let currentBoardRoundNumber=0;
 let currentBoardSignature='';
 let currentResponseKey='';
 let lastOtherBingoShownKey='';
+// Comeback wildcard state
+const WILDCARD_THRESHOLD=3;
+let consecutiveMisses=0;
+let wildcardAvailable=false;
+let wildcardActive=false;
+let wildcardRound=0;
+let lastWildcardDrawKey='';
 function markBingoShown(roundNumber){
   try{sessionStorage.setItem('lerke_bingo_'+liveSessionId+'_'+roundNumber,'1');}catch(e){}
 }
@@ -790,6 +809,82 @@ function applyStrictLiveState(payload){
       }
     }
   }
+  // Comeback wildcard tracking
+  const di=parseInt(state.draw_index,10)||0;
+  const wKey=`${roundNumber}:${di}`;
+  if(roundNumber!==wildcardRound){
+    wildcardRound=roundNumber;
+    consecutiveMisses=0;
+    lastWildcardDrawKey='';
+    // keep wildcardAvailable across round change if unused
+  }
+  if((state.phase==='draw_locked'||state.phase==='round_complete')&&wKey!==lastWildcardDrawKey&&di>0){
+    lastWildcardDrawKey=wKey;
+    if(response&&response.response_outcome==='correct'){
+      consecutiveMisses=0;
+    } else {
+      consecutiveMisses++;
+      if(!wildcardAvailable&&consecutiveMisses>=WILDCARD_THRESHOLD){
+        wildcardAvailable=true;
+        consecutiveMisses=0;
+        setJoinNote('⚡ Du fikk et jokermerke! Trykk knappen under for å bruke det.',false);
+      }
+    }
+  }
+  updateWildcardButton();
+}
+
+function updateWildcardButton(){
+  const wrap=document.getElementById('wildcard-wrap');
+  const btn=document.getElementById('wildcard-btn');
+  if(!wrap||!btn) return;
+  if(wildcardAvailable&&isStrictLiveSession()){
+    wrap.style.display='block';
+    btn.classList.toggle('active',wildcardActive);
+    btn.textContent=wildcardActive?'⚡ Velg et felt å merke…':'⚡ Jokermerke – trykk for å aktivere';
+  } else {
+    wrap.style.display='none';
+    wildcardActive=false;
+  }
+}
+
+function toggleWildcard(){
+  if(!wildcardAvailable) return;
+  wildcardActive=!wildcardActive;
+  updateWildcardButton();
+  if(wildcardActive) setJoinNote('⚡ Trykk på et felt for å bruke jokermerke.',false);
+}
+
+async function useWildcard(idx){
+  if(!supabaseClient||!isStrictLiveSession()) return;
+  wildcardActive=false;
+  wildcardAvailable=false;
+  consecutiveMisses=0;
+  updateWildcardButton();
+  const grid=document.getElementById('bingo-grid');
+  const cellEl=grid?.children[idx];
+  if(cellEl) cellEl.classList.add('marked');
+  try{
+    const {data,error}=await supabaseClient.rpc('use_comeback_wildcard',{
+      p_session_id:liveSessionId,
+      p_cell_index:idx
+    });
+    if(error) throw error;
+    if(data?.marked_cells) applyMarkedCellsToGrid(data.marked_cells);
+    setJoinNote('⚡ Jokermerke brukt!',false);
+    if(data?.has_bingo){
+      const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
+      if(!wasBingoShown(rn)){
+        markBingoShown(rn);
+        showBingoBanner('Du fikk bingo! ⚡');
+      }
+    }
+    await refreshStrictLiveState();
+  }catch(error){
+    wildcardAvailable=true;
+    if(cellEl) cellEl.classList.remove('marked');
+    setJoinNote(error.message||String(error),true);
+  }
 }
 
 function updateStrictPrompt(payload){
@@ -1213,6 +1308,10 @@ function updateSessionPanel(){
 function toggleCell(idx,el){
   if(isStrictLiveSession()){
     if(markedCells.has(idx)) return;
+    if(wildcardActive&&wildcardAvailable){
+      useWildcard(idx);
+      return;
+    }
     if(strictLiveState?.state?.phase!=='draw_open'){
       setJoinNote('Vent på at læreren åpner trekket.',true);
       return;
