@@ -1540,7 +1540,7 @@ function showTeacherBingoCelebration(winners){
       speedEntries.innerHTML=speedBoard.map((s,i)=>
         `<div class="speed-place sp${i+1}">
           <span class="speed-icon">${speedIcons[i]||'🏅'}</span>
-          <span class="speed-name">${escapeHtml(s.display_name)}</span>
+          <span class="speed-name">${escapeHtml(s.name||s.display_name||'?')}</span>
           <span class="speed-time">${parseFloat(s.avg_seconds).toFixed(1)}s snitt</span>
         </div>`).join('');
       speedWrap.style.display='';
