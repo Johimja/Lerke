@@ -40,6 +40,44 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-22 — Planning: Avatar layered props + paid colors (Avatar-5+)
+
+**Decision:**
+
+- Keep the code-first asset workflow. Use deterministic 1024×1280 sheets, 4 cols × 5 rows, 256×256/tile, transparent background, hard white silhouettes, no AI image generation for strict sprite assets.
+- Use PNG sprite sheets for now, not SVG, because the app already renders sprite-sheet clips and canvas/CSS masks can recolor white silhouettes reliably. SVG can be revisited later for individual vector icons, but PNG sheets are safer for pixel-grid alignment.
+- Keep `avatar_faceshapes.png` as the base head silhouette layer. New prop sheets must be drawn to the same tile grid and centered over the same anchor points so each prop fits every matching face-shape tile.
+
+**Proposed layer order:**
+
+1. Base face shape: `avatar_faceshapes.png`
+2. Hair layer: future `avatar_hair.png`
+3. Beard/facial-hair layer: future `avatar_beards.png`
+4. Eye/glasses layer: future `avatar_eyes_glasses.png`
+5. Mouth layer: future `avatar_mouths.png`
+6. Head accessory layer: future `avatar_head_accessories.png`
+
+**Color system idea:**
+
+- Store colors in `avatar_data`, e.g. `{head, hair, beard, eyes, mouth, accessory, skinColor, hairColor, propColor}`.
+- Recolor white PNG layers at render time with canvas or CSS mask. Canvas is preferred once multiple differently colored layers exist because each layer can be tinted separately.
+- Color changes should cost XP each time they are saved. A color purchase overwrites the previous color, so changing again costs XP again.
+- Recommended v19 RPC: `purchase_avatar_color(p_color_slot text, p_color text)` validates the slot and hex color, checks XP, deducts the color-change cost, updates `avatar_data`, and returns updated XP/avatar state.
+- Start with a simple fixed cost, e.g. 25 XP per color save, before adding rarity/palette pricing. Use a hue slider/color picker in UI, but the server only accepts normalized hex colors.
+
+**Ordered next tasks:**
+
+- [ ] **Avatar-5: smoke-test current face-shape shop** — verify login, unlock, XP deduction, equip, persistence after refresh, and teacher roster/podium display using `avatar_faceshapes.png`.
+- [ ] **Avatar-6: asset plan + generator for props** — write a small Python/PIL generator that produces aligned white-on-transparent prop sheets with the same 4×5 tile grid. First target should be one sheet only, likely `avatar_head_accessories.png`, because hats/hoods/crowns are easiest to validate over existing face shapes.
+- [ ] **Avatar-7: renderer refactor for layered assets** — move avatar metadata/rendering into a small shared JS helper or carefully duplicated constants so `index.html` and `teacher.html` do not drift. Render multiple sprite layers in order.
+- [ ] **Avatar-8: head accessories shop** — add prop item metadata, XP costs, purchase/equip logic, persistence in `avatar_data.accessory`, and teacher display support.
+- [ ] **Avatar-9: paid color changes** — add SQL RPC for color-change purchases, UI color slider/picker, per-save XP deduction, and canvas/CSS recoloring. Start with base silhouette color only, then add hair/prop colors after layered props exist.
+- [ ] **Avatar-10: hair sheet** — generate and integrate about 20 hair silhouettes: 5 feminine-coded, 5 masculine-coded, 10 neutral/strange. Treat labels as style names, not gender restrictions.
+- [ ] **Avatar-11: eyes/glasses sheet** — generate and integrate eyes/glasses overlays. Keep them high-contrast and centered; test at small roster/podium sizes.
+- [ ] **Avatar-12: beards and mouths** — generate facial hair and mouth overlays after eyes/glasses, because they depend most on face alignment and small-size readability.
+
+---
+
 ### 2026-04-22 — Automated: Canonical face-shape spritesheet fix (Avatar-4)
 
 **What was done:**
@@ -322,9 +360,15 @@ Three providers selectable in a dropdown:
 - [x] **Glose generator in Lerke Bingo teacher.html** — The full "⚡ Generer nye gloser" section (language pair dropdowns, "Oversett ord" tab via MyMemory, "Fra tekst" tab with Simple/LLM mode, LM Studio support) is now embedded inside the Listebank → Ordlister modal in `apps/bingo/teacher.html`. Generated word pairs are added directly to the active word list with duplicate detection. All styles and light/dark mode support included. ✅
 - [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
 - [x] **Avatar-1 (SQL v17)**: Add `unlocked_avatar_items text[]` to `student_profiles`, `purchase_avatar_item(p_item_key)` RPC (XP deduction + unlock), `get_avatar_item_cost()` helper, update `get_current_student_profile` to return `unlocked_avatar_items`. Migration applied. ✅
-- [x] **Avatar-2 (index.html)**: Replaced old color/accessory picker with spritesheet-based avatar shop. `AVATAR_ITEM_CATALOGUE` defines all 24 items (col/row/xp). `renderSpriteAvatar` builds 3-layer composite (outfit → head → face) via CSS background-position clips. `renderAvatarShop` renders 3-tab UI (Hode/Antrekk/Ansikt) with 4-column grid, preview shows full composite with item applied, buy/equip flow. `purchaseAndEquipItem` calls `purchase_avatar_item` RPC, updates local XP, unlocks item, equips it. Legacy color/accessory format falls back gracefully. ✅
-- [x] **Avatar-3 (teacher.html)**: Updated `renderAvatarCircleT` to render spritesheet composite (outfit → head → face layers). Added `AVATAR_CATALOGUE_T`, `_tSpriteStyle`. Added `.t-avatar-sprite` / `.t-avatar-layer` CSS. Hall of Fame modal now uses `renderAvatarCircleT` instead of inline color/letter circle. Legacy format fallback kept. student.html has no avatar rendering (bingo board only). ✅
+- [x] **Avatar-2 (index.html)**: Replaced old color/accessory picker with spritesheet-based avatar shop and XP-gated buy/equip flow. Initially targeted a mixed sheet, then corrected by Avatar-4 to use the 20-item `avatar_faceshapes.png` catalogue only. ✅
+- [x] **Avatar-3 (teacher.html)**: Updated `renderAvatarCircleT` for spritesheet avatar display in roster, podium, and Hall of Fame. Initially targeted a mixed sheet, then corrected by Avatar-4 to use `avatar_faceshapes.png`. ✅
 - [x] **Avatar-4 (canonical face-shape sheet)**: Replaced the incorrect mixed `avatarspreadsheet.png` setup with `media/avatar_faceshapes.png` (1024×1280, 4×5). Shop and teacher display now use the 20 actual face-shape tiles only. Added SQL v18 to replace the item-cost catalogue for existing DBs. ✅
+- [ ] **Avatar-5: smoke-test current face-shape shop** — verify unlock, XP deduction, equip/save persistence, and teacher display before adding new layers.
+- [ ] **Avatar-6: create aligned prop sheet generator** — code-generate the first white-on-transparent overlay sheet on the same 4×5 grid, starting with head accessories.
+- [ ] **Avatar-7: layered renderer refactor** — support face shape + prop sheets as separate layers and avoid drift between portal and teacher rendering.
+- [ ] **Avatar-8: head accessories shop** — add hats/hoods/crowns/etc. as XP-unlockable overlay items.
+- [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
+- [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
