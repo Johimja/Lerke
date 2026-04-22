@@ -39,6 +39,18 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-22 — Automated: Class Hall of Fame modal on teacher screen (v15)
+
+**What was done:**
+- `apps/bingo/teacher.html`: Added "🏆 Hall of Fame" control card button to both the Glose and Matte sidebar panels.
+- New `<div id="hall-of-fame-modal">` (setup-modal) with student ranking list.
+- `openHallOfFame()`: calls `get_class_hall_of_fame(p_class_id)` with `selectedClassId`, renders all students ranked by wins. Each row shows: avatar circle (color + initial + accessory), display name, Nivå badge, XP, win count (gold), win %, longest streak 🔥, podium count 🏅. Top 3 get medal emojis.
+- No SQL migration needed — uses v14 RPC already applied.
+
+**Next task:** Comeback wildcard — one ⚡ free correct mark after being shut out of N draws. Or PWA support / mobile polish.
+
+---
+
 ### 2026-04-20 — Automated: Session history / hall of fame (v14)
 
 **What was done:**
@@ -253,6 +265,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar creator in the portal** — color + accessory picker, shown in portal card, Elevoversikt, and podium; SQL v13 ✅
 - [x] **XP and level system** — correct answer (+10 XP), bingo (+50 XP); level badge + XP bar in portal; SQL v12 (apply in Supabase) ✅
 - [x] **Session history / hall of fame** — most wins per student, longest win streak, podium count, win %, shown in student portal "Min statistikk" section; SQL v14 ✅
+- [x] **Class Hall of Fame on teacher screen** — 🏆 modal with all students ranked by wins, avatar, XP/level, win %, streak, podium count; v15 ✅
 - [ ] **Comeback wildcard** — one ⚡ gratis kryss after being shut out of N draws
 
 ### Tier 3 — Content & Modes

@@ -551,6 +551,10 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
           <div class="control-card-title">Live-innstillinger</div>
           <div class="control-card-copy">Juster nedtelling før trekk og behold fokus på selve startknappen.</div>
         </button>
+        <button class="control-card" type="button" onclick="openHallOfFame()">
+          <div class="control-card-title">🏆 Hall of Fame</div>
+          <div class="control-card-copy">Se klassens toppliste — flest seire, lengste vinnerrekke og pallplasseringer.</div>
+        </button>
       </div>
     </div>
 
@@ -588,6 +592,10 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <button class="control-card" type="button" onclick="openSetupModal('live-settings-modal')">
           <div class="control-card-title">Live-innstillinger</div>
           <div class="control-card-copy">Juster nedtelling før trekk uten å ha hele skjemaet stående åpent.</div>
+        </button>
+        <button class="control-card" type="button" onclick="openHallOfFame()">
+          <div class="control-card-title">🏆 Hall of Fame</div>
+          <div class="control-card-copy">Se klassens toppliste — flest seire, lengste vinnerrekke og pallplasseringer.</div>
         </button>
       </div>
     </div>
@@ -837,6 +845,19 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   </div>
 </div>
 
+<div class="setup-modal no-print" id="hall-of-fame-modal">
+  <div class="setup-shell" style="max-width:640px">
+    <button class="setup-close" type="button" onclick="closeSetupModal('hall-of-fame-modal')">✕</button>
+    <div class="setup-kicker">Klasse</div>
+    <div class="setup-title">🏆 Hall of Fame</div>
+    <div class="setup-copy" id="hof-class-name">Laster toppliste…</div>
+    <div id="hof-body" style="margin-top:16px"></div>
+    <div class="setup-footer">
+      <button class="auth-btn secondary" type="button" onclick="closeSetupModal('hall-of-fame-modal')">Lukk</button>
+    </div>
+  </div>
+</div>
+
 <script src="../../config/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -893,6 +914,50 @@ function openSetupModal(id){
 }
 function closeSetupModal(id){
   document.getElementById(id)?.classList.remove('show');
+}
+async function openHallOfFame(){
+  if(!supabaseClient||!selectedClassId){
+    alert('Velg en klasse først.');
+    return;
+  }
+  openSetupModal('hall-of-fame-modal');
+  const cls=teacherClasses.find(c=>c.id===selectedClassId);
+  document.getElementById('hof-class-name').textContent=cls?`Klasse: ${cls.name}`:'Laster toppliste…';
+  document.getElementById('hof-body').innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">Laster…</div>';
+  const {data,error}=await supabaseClient.rpc('get_class_hall_of_fame',{p_class_id:selectedClassId});
+  if(error||!data){
+    document.getElementById('hof-body').innerHTML='<div style="color:#e87070;text-align:center;padding:24px">Kunne ikke laste hall of fame.</div>';
+    return;
+  }
+  if(!data.length){
+    document.getElementById('hof-body').innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">Ingen data ennå — spill noen runder først!</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  const rows=data.map((s,i)=>{
+    const av=s.avatar_data;
+    const avColor=av?.color||'#4a6fa5';
+    const avAcc=av?.accessory||'';
+    const initial=(s.display_name||'?')[0].toUpperCase();
+    const avHtml=`<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:${avColor};color:#fff;font-weight:900;font-size:0.85rem;flex-shrink:0">${initial}${avAcc?`<span style="font-size:0.7rem">${avAcc}</span>`:''}</span>`;
+    const rank=i<3?medals[i]:`<span style="color:var(--muted);font-size:0.85rem">#${i+1}</span>`;
+    const lvl=s.level?`<span style="background:#2a3550;border-radius:6px;padding:2px 7px;font-size:0.72rem;color:#7abfff">Nivå ${s.level}</span>`:'';
+    const xp=s.total_xp!=null?`<span style="color:var(--muted);font-size:0.72rem">${s.total_xp} XP</span>`:'';
+    const winPct=s.rounds_played>0?Math.round((s.rounds_won/s.rounds_played)*100):0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#1b2232;margin-bottom:6px">
+      <span style="font-size:1.2rem;width:28px;text-align:center">${rank}</span>
+      ${avHtml}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(s.display_name||'?')}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">${lvl}${xp}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-weight:900;font-size:1.05rem;color:#f0c040">${s.rounds_won} seier${s.rounds_won===1?'':'er'}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">${winPct}% · 🔥${s.longest_win_streak} · 🏅${s.podium_count}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('hof-body').innerHTML=rows;
 }
 function toggleColl(headerEl){
   headerEl.closest('.coll-section').classList.toggle('collapsed');
