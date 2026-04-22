@@ -424,6 +424,8 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .gen-preview-pair span:first-child{color:#2d2d2d}
 [data-theme="light"] .gen-llm-config{background:rgba(91,141,238,.06);border-color:rgba(91,141,238,.18)}
 [data-theme="light"] .gen-llm-config select,[data-theme="light"] .gen-llm-config input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+.t-avatar-sprite{display:inline-block;position:relative;border-radius:5px;overflow:hidden;flex-shrink:0;vertical-align:middle}
+.t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatarspreadsheet.png');background-repeat:no-repeat}
 </style>
 <script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
 </head>
@@ -935,11 +937,7 @@ async function openHallOfFame(){
   }
   const medals=['🥇','🥈','🥉'];
   const rows=data.map((s,i)=>{
-    const av=s.avatar_data;
-    const avColor=av?.color||'#4a6fa5';
-    const avAcc=av?.accessory||'';
-    const initial=(s.display_name||'?')[0].toUpperCase();
-    const avHtml=`<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:${avColor};color:#fff;font-weight:900;font-size:0.85rem;flex-shrink:0">${initial}${avAcc?`<span style="font-size:0.7rem">${avAcc}</span>`:''}</span>`;
+    const avHtml=renderAvatarCircleT(s.avatar_data,s.display_name,32);
     const rank=i<3?medals[i]:`<span style="color:var(--muted);font-size:0.85rem">#${i+1}</span>`;
     const lvl=s.level?`<span style="background:#2a3550;border-radius:6px;padding:2px 7px;font-size:0.72rem;color:#7abfff">Nivå ${s.level}</span>`:'';
     const xp=s.total_xp!=null?`<span style="color:var(--muted);font-size:0.72rem">${s.total_xp} XP</span>`:'';
@@ -1650,7 +1648,19 @@ async function maybeAutoLockTeacherDraw(){
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
-const AVATAR_COLORS_T=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
+// Spritesheet: ../../media/avatarspreadsheet.png  1024×1536  4 cols × 6 rows  256×256/cell
+const AVATAR_CATALOGUE_T=[
+  {key:'head_bald',col:0,row:0},{key:'head_brown_hair',col:1,row:0},{key:'head_blonde_hair',col:2,row:0},{key:'head_alien',col:3,row:0},
+  {key:'outfit_tshirt',col:0,row:1},{key:'outfit_hoodie',col:1,row:1},{key:'outfit_jacket',col:2,row:1},{key:'outfit_armor',col:3,row:1},
+  {key:'outfit_suit',col:0,row:2},{key:'outfit_robes',col:1,row:2},{key:'outfit_cyber',col:2,row:2},{key:'outfit_hawaiian',col:3,row:2},
+  {key:'face_normal',col:0,row:3},{key:'face_beard',col:1,row:3},{key:'face_glasses',col:2,row:3},{key:'face_scar',col:3,row:3},
+  {key:'face_smile',col:0,row:4},{key:'face_frown',col:1,row:4},{key:'face_eyepatch',col:2,row:4},{key:'face_visor',col:3,row:4},
+  {key:'face_angry',col:0,row:5},{key:'face_sunglasses',col:1,row:5},{key:'face_cyborg',col:2,row:5},{key:'face_zombie',col:3,row:5},
+];
+function _tSpriteStyle(col,row,size){
+  const s=size/256;
+  return `background-size:${Math.round(1024*s)}px ${Math.round(1536*s)}px;background-position:${-col*size}px ${-row*size}px`;
+}
 let studentAvatarCache={};
 let avatarCacheSessionId=null;
 async function fetchSessionAvatars(sessionId){
@@ -1662,12 +1672,21 @@ async function fetchSessionAvatars(sessionId){
 }
 function renderAvatarCircleT(avatarData,name,size){
   size=size||28;
-  const color=(avatarData&&avatarData.color)||AVATAR_COLORS_T[4];
-  const acc=(avatarData&&avatarData.accessory)||'none';
+  if(avatarData&&(avatarData.head||avatarData.outfit||avatarData.face)){
+    const h=AVATAR_CATALOGUE_T.find(i=>i.key===(avatarData.head||'head_bald'))||AVATAR_CATALOGUE_T[0];
+    const o=AVATAR_CATALOGUE_T.find(i=>i.key===(avatarData.outfit||'outfit_tshirt'))||AVATAR_CATALOGUE_T[4];
+    const f=AVATAR_CATALOGUE_T.find(i=>i.key===(avatarData.face||'face_normal'))||AVATAR_CATALOGUE_T[12];
+    return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">`+
+      `<span class="t-avatar-layer" style="${_tSpriteStyle(o.col,o.row,size)}"></span>`+
+      `<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`+
+      `<span class="t-avatar-layer" style="${_tSpriteStyle(f.col,f.row,size)}"></span>`+
+    `</span>`;
+  }
+  // legacy fallback
+  const LEGACY=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
+  const color=(avatarData&&avatarData.color)||LEGACY[4];
   const letter=((name||'?')[0]).toUpperCase();
-  const accMap={none:'',crown:'👑',star:'⭐',lightning:'⚡'};
-  const accHtml=acc!=='none'?`<span style="position:absolute;top:${-Math.round(size*0.18)}px;right:${-Math.round(size*0.12)}px;font-size:${Math.round(size*0.45)}px;line-height:1">${accMap[acc]||''}</span>`:'';
-  return `<span style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;width:${size}px;height:${size}px;background:${color};font-size:${Math.round(size*0.44)}px;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;vertical-align:middle">${letter}${accHtml}</span>`;
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;width:${size}px;height:${size}px;background:${color};font-size:${Math.round(size*0.44)}px;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;vertical-align:middle">${letter}</span>`;
 }
 function getLiveCountdownSeconds(){
   const input=document.getElementById('live-seconds-input');

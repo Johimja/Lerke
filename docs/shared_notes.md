@@ -40,6 +40,23 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-22 — Automated: Spritesheet avatar rendering in teacher.html (Avatar-3)
+
+**What was done:**
+
+- `apps/bingo/teacher.html`:
+  - Added `AVATAR_CATALOGUE_T` — 24-item lookup table (key, col, row).
+  - Added `_tSpriteStyle(col, row, size)` — computes CSS `background-size` + `background-position` for a given spritesheet cell at given display size.
+  - Replaced `renderAvatarCircleT` to check for new `{head, outfit, face}` format first, rendering a 3-layer sprite composite (`.t-avatar-sprite` + `.t-avatar-layer`). Falls back to letter+color circle for legacy data.
+  - Added `.t-avatar-sprite` / `.t-avatar-layer` CSS (path: `../../media/avatarspreadsheet.png`).
+  - Hall of Fame modal: replaced 5-line inline avatar construction with a single `renderAvatarCircleT(s.avatar_data, s.display_name, 32)` call.
+  - Removed `AVATAR_COLORS_T` (no longer needed).
+- `student.html`: no avatar rendering present — bingo board cells don't show student avatars, so no changes needed.
+
+**Spritesheet avatar system is now complete across all 3 files.** Next task: Avatar-2 PR merged → continue to Glosebingo content improvements or other Tier 3 items.
+
+---
+
 ### 2026-04-22 — Automated: Spritesheet avatar shop UI (Avatar-2)
 
 **What was done:**
@@ -289,7 +306,7 @@ Three providers selectable in a dropdown:
 - [x] **Student email/password login path** — "Logg inn med e-post i stedet" toggle added to student login form. `portalStudentLoginEmail()` calls `signInWithPassword`; `refreshPortalAuthState` picks up student profile via `get_current_student_profile`. If email isn't linked to a student account, signs out and shows an error. ✅
 - [x] **Avatar-1 (SQL v17)**: Add `unlocked_avatar_items text[]` to `student_profiles`, `purchase_avatar_item(p_item_key)` RPC (XP deduction + unlock), `get_avatar_item_cost()` helper, update `get_current_student_profile` to return `unlocked_avatar_items`. Migration applied. ✅
 - [x] **Avatar-2 (index.html)**: Replaced old color/accessory picker with spritesheet-based avatar shop. `AVATAR_ITEM_CATALOGUE` defines all 24 items (col/row/xp). `renderSpriteAvatar` builds 3-layer composite (outfit → head → face) via CSS background-position clips. `renderAvatarShop` renders 3-tab UI (Hode/Antrekk/Ansikt) with 4-column grid, preview shows full composite with item applied, buy/equip flow. `purchaseAndEquipItem` calls `purchase_avatar_item` RPC, updates local XP, unlocks item, equips it. Legacy color/accessory format falls back gracefully. ✅
-- [ ] **Avatar-3 (teacher.html + student.html)**: Update `renderAvatarCircleT` in teacher.html (roster, podium, Hall of Fame modal) and student.html to render the new spritesheet avatar format (head/outfit/face keys) instead of old emoji circle. Sprite sheet URL: `../../media/avatarspreadsheet.png` from teacher.html.
+- [x] **Avatar-3 (teacher.html)**: Updated `renderAvatarCircleT` to render spritesheet composite (outfit → head → face layers). Added `AVATAR_CATALOGUE_T`, `_tSpriteStyle`. Added `.t-avatar-sprite` / `.t-avatar-layer` CSS. Hall of Fame modal now uses `renderAvatarCircleT` instead of inline color/letter circle. Legacy format fallback kept. student.html has no avatar rendering (bingo board only). ✅
 - [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
