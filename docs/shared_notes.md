@@ -34,9 +34,38 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-22 — Automated: Cloud-saved teaching word lists (v18)
+
+**What was done:**
+
+- Created `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql`:
+  - New table `teacher_word_lists` (teacher_id, name, words jsonb, game_mode, times_used, last_used_at, created_at, updated_at). RLS: teacher owns their own lists. Unique on (teacher_id, name).
+  - `save_teacher_word_list(p_name, p_words, p_game_mode)` — upserts by name for the current auth user.
+  - `get_teacher_word_lists()` — returns all lists for current user sorted by last_used_at desc, then updated_at desc.
+  - `delete_teacher_word_list(p_name)` — deletes by name for current user.
+  - `mark_teacher_word_list_used(p_name)` — increments times_used + sets last_used_at to now().
+  - **Migration applied** ✅ (`v18_teaching_word_lists` via Supabase MCP, 2026-04-22).
+- `apps/bingo/teacher.html`:
+  - `_cloudLists` cache variable (null = unfetched, array = cached result).
+  - `_isTeacherLoggedIn()` — helper that returns true when supabaseClient + approved teacher.
+  - `_listSaveStatus(msg, isErr)` — shows transient status text in `#list-save-status`, auto-clears after 3.5s.
+  - `saveList()` → now async. Always saves to localStorage as backup. When logged in, also calls `save_teacher_word_list` RPC and shows "☁️ lagret til sky" status. Refreshes the visible list panel.
+  - `loadList(name)` → now async. Reads from `_cloudLists` cache first (cloud words), falls back to localStorage. Calls `mark_teacher_word_list_used` (best-effort, non-blocking) to update usage stats.
+  - `deleteList(name)` → now async. Deletes from localStorage + calls `delete_teacher_word_list` RPC when logged in.
+  - `renderSavedLists()` → now async. When logged in: fetches cloud lists (cached after first fetch), shows ☁️ icon, word count, "N× brukt · DD.MM.YYYY". When not logged in: shows localStorage lists with 📋 icon.
+  - `toggleSavedLists()` → now async (awaits `renderSavedLists`).
+  - `_cloudLists=null` added to `signOutTeacher()` and top of `refreshTeacherAuthStatus()` to flush cache on auth changes.
+  - HTML: "💾 Lagre til sky" button label; `#list-save-status` div added below save row; new CSS: `.list-save-status`, `.list-cloud-badge`, `.list-uses`.
+
+**Lists are now device-agnostic for logged-in teachers.** Each list shows how many times it's been used in a game and when it was last loaded.
+
+**Next task:** Custom winning patterns (diagonal only, T-form, full card), or Phase out anonymous join (Tier 1 — login required for all students).
 
 ---
 
@@ -307,7 +336,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-1 (SQL v17)**: Add `unlocked_avatar_items text[]` to `student_profiles`, `purchase_avatar_item(p_item_key)` RPC (XP deduction + unlock), `get_avatar_item_cost()` helper, update `get_current_student_profile` to return `unlocked_avatar_items`. Migration applied. ✅
 - [x] **Avatar-2 (index.html)**: Replaced old color/accessory picker with spritesheet-based avatar shop. `AVATAR_ITEM_CATALOGUE` defines all 24 items (col/row/xp). `renderSpriteAvatar` builds 3-layer composite (outfit → head → face) via CSS background-position clips. `renderAvatarShop` renders 3-tab UI (Hode/Antrekk/Ansikt) with 4-column grid, preview shows full composite with item applied, buy/equip flow. `purchaseAndEquipItem` calls `purchase_avatar_item` RPC, updates local XP, unlocks item, equips it. Legacy color/accessory format falls back gracefully. ✅
 - [x] **Avatar-3 (teacher.html)**: Updated `renderAvatarCircleT` to render spritesheet composite (outfit → head → face layers). Added `AVATAR_CATALOGUE_T`, `_tSpriteStyle`. Added `.t-avatar-sprite` / `.t-avatar-layer` CSS. Hall of Fame modal now uses `renderAvatarCircleT` instead of inline color/letter circle. Legacy format fallback kept. student.html has no avatar rendering (bingo board only). ✅
-- [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
+- [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18, teacher.html hybrid save/load, usage stats) ✅
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
 
@@ -351,3 +380,4 @@ Three providers selectable in a dropdown:
 13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied
 14. `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql` ✅ applied
 15. `supabase/sql/supabase_bingo_v17_avatar_shop.sql` ✅ applied
+16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
