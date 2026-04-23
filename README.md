@@ -16,6 +16,7 @@ The app is still intentionally simple at the frontend level: mostly static HTML/
 There is now also an active next-step backend track for teacher-managed classes and student accounts using `class code + student code + PIN`, while anonymous live guest sessions are still intended to remain supported.
 
 SQL execution guidance now lives in [supabase/sql/README.md](supabase/sql/README.md), so the main README does not have to duplicate which patch chain is current.
+For current SQL context, default to [supabase/sql/supabase_bingo_fresh_install_v18.sql](supabase/sql/supabase_bingo_fresh_install_v18.sql); older migration files are archived for reference only.
 
 ---
 

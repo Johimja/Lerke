@@ -15,6 +15,11 @@ Reading order for a cold start:
 1. `README.md` — current repo overview and active structure
 2. **This file** — decisions, session history, roadmap
 
+SQL context rule:
+
+- Default to `supabase/sql/supabase_bingo_fresh_install_v18.sql` for current database context.
+- Only open `supabase/sql/archive/legacy-migrations/` when you explicitly need historical migration details.
+
 ---
 
 ## Project Identity
