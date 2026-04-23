@@ -638,31 +638,6 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         </div>
       </div>
 
-      <!-- Spilloppsett — collapsed by default -->
-      <div class="coll-section collapsed" id="coll-setup">
-        <div class="coll-header" onclick="toggleColl(this)">
-          ⚙️ Spilloppsett
-          <span class="coll-chevron">▼</span>
-        </div>
-        <div class="coll-body">
-          <div class="field-group">
-            <label>Modus</label>
-            <div class="mode-row">
-              <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
-              <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
-            </div>
-          </div>
-          <div class="field-group" style="margin-bottom:0">
-            <label>Runder (lærerlister)</label>
-            <div class="rounds-row">
-              <input type="number" id="glose-rounds" value="3" min="1" max="10">
-              <span style="color:var(--muted);font-size:0.82rem">runder</span>
-            </div>
-            <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge å lese fra</div>
-          </div>
-        </div>
-      </div>
-
       <!-- Lagrede lister — collapsed by default -->
       <div class="coll-section collapsed" id="coll-saved">
         <div class="coll-header" onclick="toggleColl(this)">
@@ -845,6 +820,23 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
             <span style="color:var(--muted);font-size:0.82rem">sekunder (5–60)</span>
           </div>
           <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Svarvindu per trekk. Minimum 5 sek — 15 sek er anbefalt for glosespill.</div>
+        </div>
+      </div>
+      <div class="setup-card">
+        <div class="field-group">
+          <label>⚙️ Gloseoppsett — Modus</label>
+          <div class="mode-row">
+            <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
+            <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
+          </div>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label>Runder (gloselister)</label>
+          <div class="rounds-row">
+            <input type="number" id="glose-rounds" value="3" min="1" max="10">
+            <span style="color:var(--muted);font-size:0.82rem">runder</span>
+          </div>
+          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge å lese fra</div>
         </div>
       </div>
     </div>
