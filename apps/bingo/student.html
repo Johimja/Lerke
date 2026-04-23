@@ -1023,6 +1023,10 @@ async function submitStrictAnswer(idx){
 
 async function submitReaction(emoji){
   if(!supabaseClient||!isStrictLiveSession()||!emoji) return;
+  const state=strictLiveState?.state;
+  const roundNumber=Math.max(1,parseInt(state?.round_number,10)||1);
+  const drawIndex=Math.max(0,parseInt(state?.draw_index,10)||0);
+  if(state?.phase!=='draw_open'||!drawIndex) return;
   // Rate limiting visual hint (simple local prevent)
   const container=document.getElementById('live-reactions');
   if(container?.classList.contains('sending')) return;
@@ -1030,9 +1034,11 @@ async function submitReaction(emoji){
   setTimeout(()=>container?.classList.remove('sending'),800);
 
   try{
-    const {error}=await supabaseClient.rpc('submit_bingo_reaction',{
+    const {error}=await supabaseClient.rpc('send_bingo_reaction',{
       p_session_id:liveSessionId,
-      p_reaction_type:emoji
+      p_draw_index:drawIndex,
+      p_round_number:roundNumber,
+      p_emoji:emoji
     });
     if(error) throw error;
   }catch(e){

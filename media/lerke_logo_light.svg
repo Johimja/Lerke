@@ -20,8 +20,8 @@
   <path d="M193 150 Q168 138 158 118 Q156 113 159 111 Q178 120 190 140 Q193 146 193 150Z" fill="#A8D800" style="fill:rgb(168, 216, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
 
   <!-- LERKE text -->
-  <text x="252" y="195" font-size="96" font-weight="700" letter-spacing="2" style="fill:rgb(226, 232, 240);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Century Gothic&quot;, Futura, &quot;Trebuchet MS&quot;, sans-serif;font-size:96px;font-weight:700;text-anchor:start;dominant-baseline:auto">Lerke</text>
+  <text x="252" y="195" font-size="96" font-weight="700" letter-spacing="2" style="fill:rgb(45, 26, 74);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Century Gothic&quot;, Futura, &quot;Trebuchet MS&quot;, sans-serif;font-size:96px;font-weight:700;text-anchor:start;dominant-baseline:auto">Lerke</text>
 
   <!-- Tagline -->
-  <text x="254" y="226" font-size="20" font-weight="400" letter-spacing="3" style="fill:rgb(180, 190, 204);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Century Gothic&quot;, Futura, &quot;Trebuchet MS&quot;, sans-serif;font-size:20px;font-weight:400;text-anchor:start;dominant-baseline:auto">Læringsportalen for deg</text>
+  <text x="254" y="226" font-size="20" font-weight="400" letter-spacing="3" style="fill:rgb(45, 26, 74);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Century Gothic&quot;, Futura, &quot;Trebuchet MS&quot;, sans-serif;font-size:20px;font-weight:400;text-anchor:start;dominant-baseline:auto">Læringsportalen for deg</text>
 </svg>
