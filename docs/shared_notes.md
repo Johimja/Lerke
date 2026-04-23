@@ -34,7 +34,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 avatar_faceshapes — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
 
@@ -121,6 +121,33 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 **Migration applied** ✅ (`v18_avatar_faceshapes` via Supabase CLI, 2026-04-22). Verified `head_basic=0`, `head_afro=300`, old `outfit_tshirt=null`.
 
 **Next task:** Smoke-test student avatar purchase/equip in the portal.
+
+---
+
+### 2026-04-22 — Automated: Cloud-saved teaching word lists (v18)
+
+**What was done:**
+
+- Created `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql`:
+  - New table `teacher_word_lists` (teacher_id, name, words jsonb, game_mode, times_used, last_used_at, created_at, updated_at). RLS: teacher owns their own lists. Unique on (teacher_id, name).
+  - `save_teacher_word_list(p_name, p_words, p_game_mode)` — upserts by name for the current auth user.
+  - `get_teacher_word_lists()` — returns all lists for current user sorted by last_used_at desc, then updated_at desc.
+  - `delete_teacher_word_list(p_name)` — deletes by name for current user.
+  - `mark_teacher_word_list_used(p_name)` — increments times_used + sets last_used_at to now().
+  - **Migration applied** ✅ (`v18_teaching_word_lists` via Supabase MCP, 2026-04-22).
+- `apps/bingo/teacher.html`:
+  - `_cloudLists` cache variable (null = unfetched, array = cached result).
+  - `_isTeacherLoggedIn()` — helper that returns true when supabaseClient + approved teacher.
+  - `_listSaveStatus(msg, isErr)` — shows transient status text in `#list-save-status`, auto-clears after 3.5s.
+  - `saveList()` → now async. Always saves to localStorage as backup. When logged in, also calls `save_teacher_word_list` RPC and shows "☁️ lagret til sky" status. Refreshes the visible list panel.
+  - `loadList(name)` → now async. Reads from `_cloudLists` cache first (cloud words), falls back to localStorage. Calls `mark_teacher_word_list_used` (best-effort, non-blocking) to update usage stats.
+  - `deleteList(name)` → now async. Deletes from localStorage + calls `delete_teacher_word_list` RPC when logged in.
+  - `renderSavedLists()` → now async. When logged in: fetches cloud lists (cached after first fetch), shows ☁️ icon, word count, "N× brukt · DD.MM.YYYY". When not logged in: shows localStorage lists with 📋 icon.
+  - `toggleSavedLists()` → now async (awaits `renderSavedLists`).
+  - `_cloudLists=null` added to `signOutTeacher()` and top of `refreshTeacherAuthStatus()` to flush cache on auth changes.
+  - HTML: "💾 Lagre til sky" button label; `#list-save-status` div added below save row; new CSS: `.list-save-status`, `.list-cloud-badge`, `.list-uses`.
+
+**Lists are now device-agnostic for logged-in teachers.** Each list shows how many times it's been used in a game and when it was last loaded.
 
 ---
 
@@ -398,7 +425,7 @@ Three providers selectable in a dropdown:
 - [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
-- [ ] - [ ] **Glosebingo content improvements** — reuse saved teaching sets across sessions
+- [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
 - [ ] **Team mode** — student pairs share a board
 
@@ -442,4 +469,5 @@ Three providers selectable in a dropdown:
 13. `supabase/sql/supabase_bingo_v14_hall_of_fame.sql` ✅ applied
 14. `supabase/sql/supabase_bingo_v16_comeback_wildcard.sql` ✅ applied
 15. `supabase/sql/supabase_bingo_v17_avatar_shop.sql` ✅ applied
-16. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
+16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
+17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied

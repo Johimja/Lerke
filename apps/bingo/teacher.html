@@ -148,6 +148,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .saved-list-item .list-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px}
 .saved-list-item .list-del:hover{color:var(--accent2)}
 .no-saved{color:var(--muted);font-size:0.78rem;text-align:center;padding:8px}
+.list-save-status{font-size:0.72rem;color:var(--green);min-height:14px;margin-bottom:3px;transition:opacity .3s}
+.list-cloud-badge{font-size:0.62rem;color:var(--blue);vertical-align:middle;margin-left:3px}
+.saved-list-item .list-uses{color:var(--muted);font-size:0.68rem;margin-right:4px;white-space:nowrap}
 .live-btn{width:100%;padding:10px;background:#182033;border:1px solid #2f4a7a;border-radius:8px;font-family:'Raleway',sans-serif;font-weight:700;font-size:0.82rem;color:#a8c3ff;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:6px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .live-btn:hover{background:#213052;border-color:#5b8dee;color:#dce7ff}
 .setup-modal{display:none;position:fixed;inset:0;background:rgba(5,8,14,.88);z-index:1080;padding:clamp(12px,2vw,24px)}
@@ -666,8 +669,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="coll-body">
           <div class="list-manager-row">
             <input type="text" id="list-name-input" placeholder="Navn på liste...">
-            <button class="list-small-btn green" onclick="saveList()">💾 Lagre</button>
+            <button class="list-small-btn green" onclick="saveList()">💾 Lagre til sky</button>
           </div>
+          <div id="list-save-status" class="list-save-status"></div>
           <div class="list-manager-row">
             <button class="list-small-btn" onclick="toggleSavedLists()" style="flex:1">📂 Vis lagrede lister</button>
           </div>
@@ -1208,6 +1212,7 @@ async function refreshTeacherAuthStatus(){
   }
   const {data:{session}}=await supabaseClient.auth.getSession();
   teacherProfile=null;
+  _cloudLists=null;
   if(!session?.user){
     statusEl.textContent='Ikke innlogget';
     if(noteEl) noteEl.textContent='Lag konto eller logg inn, og be deretter om lærertilgang.';
@@ -1300,6 +1305,7 @@ async function signOutTeacher(){
   activeLiveSession=null;
   teacherLiveState=null;
   teacherProfile=null;
+  _cloudLists=null;
   toggleLocalAuthBar(true);
   await refreshTeacherAuthStatus();
   setLiveSyncStatus('Logget ut. Live sync er ikke aktiv.',false);
@@ -2440,62 +2446,138 @@ function initQR(){
 
 // ===== LIST MANAGER =====
 const LS_KEY='bingo_wordlists';
+let _cloudLists=null; // null = not yet fetched; array = cached cloud lists
 
 function getSavedLists(){
   try{ return JSON.parse(localStorage.getItem(LS_KEY))||{}; }
   catch(e){ return {}; }
 }
 
-function saveList(){
+function _isTeacherLoggedIn(){
+  return !!(supabaseClient && teacherProfile?.is_approved);
+}
+
+function _listSaveStatus(msg, isErr){
+  const el=document.getElementById('list-save-status');
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=isErr?'var(--accent2)':'var(--green)';
+  if(msg) setTimeout(()=>{ el.textContent=''; }, 3500);
+}
+
+async function saveList(){
   const name=document.getElementById('list-name-input').value.trim();
   if(!name){alert('Gi listen et navn først!');return}
   const pairs=window._words.filter(p=>p[0].trim()&&p[1].trim());
   if(!pairs.length){alert('Ingen ord å lagre!');return}
+
+  // Always keep localStorage backup
   const lists=getSavedLists();
   lists[name]={words:pairs,saved:new Date().toLocaleDateString('no-NO')};
   localStorage.setItem(LS_KEY,JSON.stringify(lists));
+
+  if(_isTeacherLoggedIn()){
+    try{
+      const isGlose=document.querySelector('.panel.active')?.id==='panel-glose';
+      const {error}=await supabaseClient.rpc('save_teacher_word_list',{
+        p_name:name, p_words:pairs, p_game_mode:isGlose?'glose':'matte'
+      });
+      if(error) throw error;
+      _cloudLists=null;
+      _listSaveStatus(`"${name}" lagret til sky (${pairs.length} ord) ☁️`);
+    } catch(e){
+      _listSaveStatus(`Lagret lokalt (${pairs.length} ord) — skylagring feilet`,true);
+    }
+  } else {
+    _listSaveStatus(`"${name}" lagret lokalt (${pairs.length} ord)`);
+  }
+
   document.getElementById('list-name-input').value='';
-  renderSavedLists();
-  alert(`"${name}" lagret med ${pairs.length} ord!`);
+  const container=document.getElementById('saved-lists');
+  if(container.style.display!=='none') await renderSavedLists();
 }
 
-function loadList(name){
-  const lists=getSavedLists();
-  if(!lists[name]) return;
-  window._words=lists[name].words.map(w=>[...w]);
+async function loadList(name){
+  let words=null;
+  if(_isTeacherLoggedIn() && _cloudLists){
+    const row=_cloudLists.find(r=>r.name===name);
+    if(row) words=row.words;
+  }
+  if(!words){
+    const lists=getSavedLists();
+    if(lists[name]) words=lists[name].words;
+  }
+  if(!words) return;
+  window._words=words.map(w=>[...w]);
   renderWordList();
   document.getElementById('list-name-input').value=name;
+  // Mark as used in cloud (best-effort, don't await)
+  if(_isTeacherLoggedIn()){
+    supabaseClient.rpc('mark_teacher_word_list_used',{p_name:name})
+      .then(()=>{ _cloudLists=null; })
+      .catch(()=>{});
+  }
 }
 
-function deleteList(name){
+async function deleteList(name){
   if(!confirm(`Slett "${name}"?`)) return;
   const lists=getSavedLists();
   delete lists[name];
   localStorage.setItem(LS_KEY,JSON.stringify(lists));
-  renderSavedLists();
+  if(_isTeacherLoggedIn()){
+    try{ await supabaseClient.rpc('delete_teacher_word_list',{p_name:name}); _cloudLists=null; }
+    catch(e){}
+  }
+  await renderSavedLists();
 }
 
-function renderSavedLists(){
+async function renderSavedLists(){
   const container=document.getElementById('saved-lists');
-  const lists=getSavedLists();
-  const keys=Object.keys(lists);
-  if(!keys.length){
+  let items=[];
+
+  if(_isTeacherLoggedIn()){
+    if(!_cloudLists){
+      container.innerHTML='<div class="no-saved">Laster lister fra sky…</div>';
+      try{
+        const {data,error}=await supabaseClient.rpc('get_teacher_word_lists');
+        _cloudLists=(error||!Array.isArray(data))?[]:data;
+      } catch(e){ _cloudLists=[]; }
+    }
+    items=(_cloudLists||[]).map(row=>{
+      const usedStr=row.times_used>0
+        ?`${row.times_used}× brukt${row.last_used_at?' · '+new Date(row.last_used_at).toLocaleDateString('no-NO'):''}`
+        :'aldri brukt';
+      return {name:row.name, wordCount:Array.isArray(row.words)?row.words.length:0, meta:usedStr, cloud:true};
+    });
+  } else {
+    const lists=getSavedLists();
+    items=Object.keys(lists).map(name=>({
+      name, wordCount:lists[name].words.length,
+      meta:`lagret ${lists[name].saved}`, cloud:false
+    }));
+  }
+
+  if(!items.length){
     container.innerHTML='<div class="no-saved">Ingen lagrede lister ennå</div>';
     return;
   }
-  container.innerHTML=keys.map(name=>`
-    <div class="saved-list-item">
-      <span class="list-name" onclick="loadList('${name.replace(/'/g,"\'")}')">📋 ${name}</span>
-      <span class="list-meta">${lists[name].words.length} ord · ${lists[name].saved}</span>
-      <button class="list-del" onclick="deleteList('${name.replace(/'/g,"\'")}')">🗑</button>
-    </div>`).join('');
+  container.innerHTML=items.map(item=>{
+    const esc=item.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="saved-list-item">
+      <span class="list-name" onclick="loadList('${esc}')">
+        ${item.cloud?'☁️':'📋'} ${item.name}
+      </span>
+      <span class="list-meta">${item.wordCount} ord · <span class="list-uses">${item.meta}</span></span>
+      <button class="list-del" onclick="deleteList('${esc}')">🗑</button>
+    </div>`;
+  }).join('');
 }
 
-function toggleSavedLists(){
+async function toggleSavedLists(){
   const container=document.getElementById('saved-lists');
   const isVisible=container.style.display!=='none';
   container.style.display=isVisible?'none':'flex';
-  if(!isVisible) renderSavedLists();
+  if(!isVisible) await renderSavedLists();
 }
 
 function exportList(){
