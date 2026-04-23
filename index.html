@@ -323,6 +323,7 @@ html{scroll-behavior:smooth}
 .lerke-avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;user-select:none}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
 .avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
+.avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_head_accessories.png');background-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
 .avatar-shop-tab{flex:1;padding:6px 2px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted,#7c8099);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -1006,13 +1007,41 @@ const AVATAR_ITEM_CATALOGUE=[
   {key:'head_cap',            label:'Caps',           cat:'head', col:2,row:4,xp:175},
   {key:'head_flat_top_beard', label:'Topp + skjegg',  cat:'head', col:3,row:4,xp:300},
 ];
+// Sheet: media/avatar_head_accessories.png  1024×1280  4 cols × 5 rows  256×256/cell
+// All accessories are free in this layer (xp costs added in Avatar-8 SQL migration)
+const ACCESSORY_CATALOGUE=[
+  {key:'acc_none',       label:'Ingen',          cat:'acc', col:0,row:0,xp:0},
+  {key:'acc_crown',      label:'Krone',           cat:'acc', col:1,row:0,xp:0},
+  {key:'acc_tophat',     label:'Flosshatt',       cat:'acc', col:2,row:0,xp:0},
+  {key:'acc_cap',        label:'Caps',            cat:'acc', col:3,row:0,xp:0},
+  {key:'acc_graduation', label:'Akademialue',     cat:'acc', col:0,row:1,xp:0},
+  {key:'acc_party_hat',  label:'Festlue',         cat:'acc', col:1,row:1,xp:0},
+  {key:'acc_viking',     label:'Vikinglehjelm',   cat:'acc', col:2,row:1,xp:0},
+  {key:'acc_cowboy',     label:'Cowboyhatt',      cat:'acc', col:3,row:1,xp:0},
+  {key:'acc_headband',   label:'Pannebånd',       cat:'acc', col:0,row:2,xp:0},
+  {key:'acc_beanie',     label:'Lue',             cat:'acc', col:1,row:2,xp:0},
+  {key:'acc_sombrero',   label:'Sombrero',        cat:'acc', col:2,row:2,xp:0},
+  {key:'acc_laurel',     label:'Laurbærkrans',    cat:'acc', col:3,row:2,xp:0},
+  {key:'acc_bow',        label:'Sløyfe',          cat:'acc', col:0,row:3,xp:0},
+  {key:'acc_bandana',    label:'Bandana',         cat:'acc', col:1,row:3,xp:0},
+  {key:'acc_witch_hat',  label:'Heksehatt',       cat:'acc', col:2,row:3,xp:0},
+  {key:'acc_tiara',      label:'Tiara',           cat:'acc', col:3,row:3,xp:0},
+  {key:'acc_chef_hat',   label:'Kokkehatt',       cat:'acc', col:0,row:4,xp:0},
+  {key:'acc_antlers',    label:'Gevir',           cat:'acc', col:1,row:4,xp:0},
+  {key:'acc_earmuffs',   label:'Ørevarmere',      cat:'acc', col:2,row:4,xp:0},
+  {key:'acc_bunny_ears', label:'Kaninører',       cat:'acc', col:3,row:4,xp:0},
+];
 
-let pendingAvatar={head:'head_basic'};
+let pendingAvatar={head:'head_basic',acc:'acc_none'};
 let currentShopTab='head';
 
-function _itemByKey(key){return AVATAR_ITEM_CATALOGUE.find(i=>i.key===key);}
+function _itemByKey(key){
+  return AVATAR_ITEM_CATALOGUE.find(i=>i.key===key)||ACCESSORY_CATALOGUE.find(i=>i.key===key);
+}
 function normalizeAvatarData(avatarData){
-  return {head:_itemByKey(avatarData&&avatarData.head)?avatarData.head:'head_basic'};
+  const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
+  const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
+  return {head,acc};
 }
 
 function _spriteStyle(col,row,size){
@@ -1026,13 +1055,21 @@ function renderSingleSprite(col,row,size){
     `<span class="avatar-layer" style="${_spriteStyle(col,row,size)}"></span>`+
   `</span>`;
 }
+function renderSingleAccSprite(col,row,size){
+  return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
+    `<span class="avatar-acc-layer" style="${_spriteStyle(col,row,size)}"></span>`+
+  `</span>`;
+}
 
 function renderAvatarCircle(avatarData,name,size){
   size=size||36;
   if(avatarData&&avatarData.head){
     const normalized=normalizeAvatarData(avatarData);
-    const h=_itemByKey(normalized.head)||_itemByKey('head_basic');
-    return renderSingleSprite(h.col,h.row,size);
+    const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
+    const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
+    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
+    return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
   // legacy fallback (old color/accessory format)
   const LEGACY_COLORS=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
@@ -1069,13 +1106,17 @@ function renderAvatarShop(){
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const items=AVATAR_ITEM_CATALOGUE.filter(i=>i.cat===currentShopTab);
-  const itemsHtml=items.map(item=>{
+  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
+  const tabsHtml=`<div class="avatar-shop-tabs">`+
+    `<div class="avatar-shop-tab${currentShopTab==='head'?' active':''}" onclick="setShopTab('head')">Hode</div>`+
+    `<div class="avatar-shop-tab${currentShopTab==='acc'?' active':''}" onclick="setShopTab('acc')">Tilbehør</div>`+
+  `</div>`;
+  const itemsHtml=catalogue.map(item=>{
     const isFree=item.xp===0;
     const isOwned=isFree||unlocked.includes(item.key);
     const isEquipped=pendingAvatar[item.cat]===item.key;
     const canAfford=xp>=item.xp;
-    const preview=renderSingleSprite(item.col,item.row,52);
+    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
     let btnClass,btnLabel;
     if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
     else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
@@ -1088,7 +1129,8 @@ function renderAvatarShop(){
       `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
     `</div>`;
   }).join('');
-  wrap.innerHTML=`<div class="avatar-shop-grid">${itemsHtml}</div>`+
+  wrap.innerHTML=tabsHtml+
+    `<div class="avatar-shop-grid">${itemsHtml}</div>`+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
 }
 
