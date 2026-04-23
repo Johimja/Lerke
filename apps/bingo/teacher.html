@@ -6,7 +6,7 @@
 <title>Lerke Bingo</title>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--surface:#1a1ccc;--surface2:#222777;--accent:#f5a555;--accent2:#e05aaa;--green:#4caeee;--blue:#5b8dee;--text:#e8e999;--muted:#7c8111;--border:#2e3333}
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--accent:#f5a623;--accent2:#e05a5a;--green:#4caf7d;--blue:#5b8dee;--text:#e8eaf0;--muted:#7c8099;--border:#2e3248}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;min-height:100vh;padding:clamp(8px,1.5vw,16px);overflow-x:hidden}
 h1{font-family:'Raleway',sans-serif;font-weight:900;font-size:clamp(1.4rem,4vw,2.2rem);letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -365,6 +365,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .live-round-btn{background:rgba(255,250,242,.9);border-color:rgba(67,32,92,.2);color:#43205c}
 [data-theme="light"] .live-round-btn:hover{border-color:rgba(67,32,92,.46)}
 [data-theme="light"] .mode-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .mode-btn.active{background:#43205c;border-color:#43205c;color:#fff}
 [data-theme="light"] .word-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 [data-theme="light"] .add-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.18);color:#6d5f72}
 [data-theme="light"] .table-toggle{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
@@ -424,6 +425,11 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .gen-preview-pair span:first-child{color:#2d2d2d}
 [data-theme="light"] .gen-llm-config{background:rgba(91,141,238,.06);border-color:rgba(91,141,238,.18)}
 [data-theme="light"] .gen-llm-config select,[data-theme="light"] .gen-llm-config input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
+[data-theme="light"] .gen-mode-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .gen-mode-btn.active{background:#43205c;border-color:#43205c;color:#fff}
+[data-theme="light"] .gen-tab{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .gen-tab.active{background:#43205c;border-color:#43205c;color:#fff}
+[data-theme="light"] h1{background:linear-gradient(135deg,#c05a00,#8a1c1c);-webkit-background-clip:text;background-clip:text}
 .t-avatar-sprite{display:inline-block;position:relative;border-radius:5px;overflow:hidden;flex-shrink:0;vertical-align:middle}
 .t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_faceshapes.png');background-repeat:no-repeat}
 .t-avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_head_accessories.png');background-repeat:no-repeat}
