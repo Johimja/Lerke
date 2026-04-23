@@ -28,28 +28,3 @@ Later feature patches are applied in numeric order. For the current avatar
 shop, apply `supabase_bingo_v17_avatar_shop.sql` first, then
 `supabase_bingo_v18_avatar_faceshapes.sql` so the live item-cost catalogue
 matches `media/avatar_faceshapes.png`.
-
-## Archive
-
-Historical patches and draft SQL now live in `supabase/sql/archive/`.
-
-Structure:
-
-- `archive/Drafts/`
-  - early planning SQL and migration drafts
-- `archive/Patches/`
-  - one-off historical patch files that have since been baked into the canonical files above
-
-Reference-only files currently archived there include:
-
-- `supabase_bingo_v1_migration_draft.sql`
-- `supabase_student_accounts_v1_draft.sql`
-- `supabase_bingo_v1_student_account_join_patch.sql`
-- `supabase_student_accounts_v1_rls_fix_patch.sql`
-- `supabase_student_accounts_v1_crypto_fix_patch.sql`
-- `supabase_bingo_v1_teacher_request_patch.sql`
-- `supabase_bingo_v1_create_session_patch.sql`
-- `supabase_bingo_v1_manual_join_patch.sql`
-- `supabase_bingo_v1_client_token_fix_patch.sql`
-
-These are reference material only, not recommended execution files.
