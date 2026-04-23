@@ -112,7 +112,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
 .table-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:8px}
 .table-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:6px 4px;font-family:'Raleway',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none}
-.table-toggle.active{background:var(--green);border-color:var(--green);color:#000}
+.table-toggle.active{background:#7ee0a8;border-color:#7ee0a8;color:#07140d;box-shadow:0 0 0 1px rgba(126,224,168,.18),0 8px 22px rgba(44,160,102,.28)}
 .text-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.85rem;padding:7px 10px}
 .text-input:focus{outline:none;border-color:var(--blue)}
 .generate-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent),#e09010);border:none;border-radius:8px;font-family:'Raleway',sans-serif;font-weight:900;font-size:0.9rem;color:#000;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:6px;transition:opacity .15s}
@@ -372,6 +372,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .word-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 [data-theme="light"] .add-btn{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.18);color:#6d5f72}
 [data-theme="light"] .table-toggle{background:rgba(255,255,255,.7);border-color:rgba(67,32,92,.16);color:#6d5f72}
+[data-theme="light"] .table-toggle.active{background:var(--green);border-color:var(--green);color:#000;box-shadow:0 6px 18px rgba(76,175,125,.18)}
 [data-theme="light"] .text-input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 [data-theme="light"] .rounds-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
 [data-theme="light"] .list-manager-row input{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
@@ -597,13 +598,9 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <div class="launch-note">Øktvinduet åpner direkte og viser både join-info og trekning i samme flate.</div>
       </div>
       <div class="control-grid">
-        <button class="control-card" type="button" onclick="openSetupModal('matte-setup-modal')">
-          <div class="control-card-title">Sett opp gangetabeller</div>
-          <div class="control-card-copy">Velg modus, tabeller og antall runder i et eget oppsettspanel.</div>
-        </button>
         <button class="control-card" type="button" onclick="openSetupModal('live-settings-modal')">
           <div class="control-card-title">Live-innstillinger</div>
-          <div class="control-card-copy">Juster nedtelling før trekk uten å ha hele skjemaet stående åpent.</div>
+          <div class="control-card-copy">Velg spillform, tabeller og nedtelling fra ett samlet oppsettspanel.</div>
         </button>
         <button class="control-card" type="button" onclick="openHallOfFame()">
           <div class="control-card-title">🏆 Hall of Fame</div>
@@ -759,62 +756,12 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   </div>
 </div>
 
-<div class="setup-modal no-print" id="matte-setup-modal">
-  <div class="setup-shell">
-    <button class="setup-close" type="button" onclick="closeSetupModal('matte-setup-modal')">✕</button>
-    <div class="setup-kicker">Matteoppsett</div>
-    <div class="setup-title">Sett opp gangetabellene</div>
-    <div class="setup-copy">Velg spillform, tabeller og runder før du går tilbake og klargjør liveøkten.</div>
-    <div class="setup-stack">
-      <div class="setup-card">
-        <div class="field-group">
-          <label>Modus</label>
-          <div class="mode-row">
-            <button class="mode-btn active" id="matte-mode-ans" onclick="setMatteMode('ans')">Svar → Stykke<br><small>Kortet viser svaret</small></button>
-            <button class="mode-btn" id="matte-mode-eq" onclick="setMatteMode('eq')">Stykke → Svar<br><small>Kortet viser stykket</small></button>
-          </div>
-        </div>
-        <div class="field-group">
-          <label>Velg tabeller</label>
-          <div class="table-grid" id="table-toggles">
-            <button class="table-toggle" id="t1" onclick="this.classList.toggle('active')">1</button>
-            <button class="table-toggle" id="t2" onclick="this.classList.toggle('active')">2</button>
-            <button class="table-toggle" id="t3" onclick="this.classList.toggle('active')">3</button>
-            <button class="table-toggle" id="t4" onclick="this.classList.toggle('active')">4</button>
-            <button class="table-toggle" id="t5" onclick="this.classList.toggle('active')">5</button>
-            <button class="table-toggle active" id="t6" onclick="this.classList.toggle('active')">6</button>
-            <button class="table-toggle active" id="t7" onclick="this.classList.toggle('active')">7</button>
-            <button class="table-toggle active" id="t8" onclick="this.classList.toggle('active')">8</button>
-            <button class="table-toggle" id="t9" onclick="this.classList.toggle('active')">9</button>
-            <button class="table-toggle" id="t10" onclick="this.classList.toggle('active')">10</button>
-            <button class="table-toggle" id="t11" onclick="this.classList.toggle('active')">11</button>
-            <button class="table-toggle" id="t12" onclick="this.classList.toggle('active')">12</button>
-          </div>
-          <input class="text-input" id="custom-tables" type="text" placeholder="Ekstra tabeller, f.eks. 13, 16">
-          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Skriv inn egne tabeller med komma eller mellomrom.</div>
-        </div>
-        <div class="field-group">
-          <label>Runder (lærerlister)</label>
-          <div class="rounds-row">
-            <input type="number" id="matte-rounds" value="3" min="1" max="10">
-            <span style="color:var(--muted);font-size:0.82rem">runder</span>
-          </div>
-          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge</div>
-        </div>
-      </div>
-    </div>
-    <div class="setup-footer">
-      <button class="auth-btn secondary" type="button" onclick="closeSetupModal('matte-setup-modal')">Lukk</button>
-    </div>
-  </div>
-</div>
-
 <div class="setup-modal no-print" id="live-settings-modal">
   <div class="setup-shell">
     <button class="setup-close" type="button" onclick="closeSetupModal('live-settings-modal')">✕</button>
     <div class="setup-kicker">Livevisning</div>
     <div class="setup-title">Live-innstillinger</div>
-    <div class="setup-copy">Små tekniske justeringer for visningen under trekningen.</div>
+    <div class="setup-copy">Still inn det som trengs for aktiv bingotype uten å hoppe mellom flere ulike paneler.</div>
     <div class="setup-stack">
       <div class="setup-card">
         <div class="field-group">
@@ -826,12 +773,12 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
           <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Svarvindu per trekk. Minimum 5 sek — 15 sek er anbefalt for glosespill.</div>
         </div>
       </div>
-      <div class="setup-card">
+      <div class="setup-card" id="live-glose-settings">
         <div class="field-group">
           <label>⚙️ Gloseoppsett — Modus</label>
           <div class="mode-row">
-            <button class="mode-btn active" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
-            <button class="mode-btn" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
+            <button class="mode-btn active" type="button" id="mode-no" onclick="setGloseMode('no')">Til Norsk<br><small>Kort: norske ord · lærer leser fremmedord</small></button>
+            <button class="mode-btn" type="button" id="mode-en" onclick="setGloseMode('en')">Fra Norsk<br><small>Kort: fremmedord · lærer leser norsk</small></button>
           </div>
         </div>
         <div class="field-group" style="margin-bottom:0">
@@ -841,6 +788,42 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
             <span style="color:var(--muted);font-size:0.82rem">runder</span>
           </div>
           <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge å lese fra</div>
+        </div>
+      </div>
+      <div class="setup-card" id="live-matte-settings" style="display:none">
+        <div class="field-group">
+          <label>⚙️ Matteoppsett — Modus</label>
+          <div class="mode-row">
+            <button class="mode-btn active" type="button" id="matte-mode-ans" onclick="setMatteMode('ans')">Svar → Stykke<br><small>Kortet viser svaret</small></button>
+            <button class="mode-btn" type="button" id="matte-mode-eq" onclick="setMatteMode('eq')">Stykke → Svar<br><small>Kortet viser stykket</small></button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Velg tabeller</label>
+          <div class="table-grid" id="table-toggles">
+            <button class="table-toggle" type="button" id="t1" onclick="toggleMatteTable(1)">1</button>
+            <button class="table-toggle" type="button" id="t2" onclick="toggleMatteTable(2)">2</button>
+            <button class="table-toggle" type="button" id="t3" onclick="toggleMatteTable(3)">3</button>
+            <button class="table-toggle" type="button" id="t4" onclick="toggleMatteTable(4)">4</button>
+            <button class="table-toggle" type="button" id="t5" onclick="toggleMatteTable(5)">5</button>
+            <button class="table-toggle" type="button" id="t6" onclick="toggleMatteTable(6)">6</button>
+            <button class="table-toggle" type="button" id="t7" onclick="toggleMatteTable(7)">7</button>
+            <button class="table-toggle" type="button" id="t8" onclick="toggleMatteTable(8)">8</button>
+            <button class="table-toggle" type="button" id="t9" onclick="toggleMatteTable(9)">9</button>
+            <button class="table-toggle" type="button" id="t10" onclick="toggleMatteTable(10)">10</button>
+            <button class="table-toggle" type="button" id="t11" onclick="toggleMatteTable(11)">11</button>
+            <button class="table-toggle" type="button" id="t12" onclick="toggleMatteTable(12)">12</button>
+          </div>
+          <input class="text-input" id="custom-tables" type="text" placeholder="Ekstra tabeller, f.eks. 13, 16">
+          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Skriv inn egne tabeller med komma eller mellomrom.</div>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label>Runder (lærerlister)</label>
+          <div class="rounds-row">
+            <input type="number" id="matte-rounds" value="3" min="1" max="10">
+            <span style="color:var(--muted);font-size:0.82rem">runder</span>
+          </div>
+          <div style="color:var(--muted);font-size:0.72rem;margin-top:4px">Hver runde = ny tilfeldig rekkefølge</div>
         </div>
       </div>
     </div>
@@ -871,6 +854,7 @@ const APP_VERSION='2026.04.15.1';
 const DEFAULT_MATTE_TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
 const defaultWords=[['Answer','Svar'],['Because','Fordi'],['School','Skole'],['Where','Hvor'],['Could','Kunne'],['Should','Burde'],['Important','Viktig'],['Opposite','Motsatt'],['Knowledge','Kunnskap'],['Possible','Mulig'],['Probably','Sannsynligvis'],['Strength','Styrke'],['Beautiful','Vakker / Fin'],['Ordinary','Vanlig'],['Again','Igjen'],['Early','Tidlig'],['Freedom','Frihet'],['History','Historie'],['Language','Språk'],['Society','Samfunn'],['Change','Endring'],['Power','Makt'],['Between','Mellom'],['Almost','Nesten'],['Together','Sammen']];
 let gloseMode='no';
+let selectedMatteTables=new Set([6,7,8]);
 let liveRounds=[];
 let liveRoundIndex=0;
 let liveHistory=[];
@@ -913,6 +897,7 @@ function switchTab(tab){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['glose','matte'][i]===tab));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+tab).classList.add('active');
+  syncLiveSettingsView();
 }
 function openSetupModal(id){
   document.getElementById(id)?.classList.add('show');
@@ -1890,7 +1875,24 @@ function updateAllLiveSeconds(val) {
 }
 
 // ===== MATTE SETUP =====
-function getSelectedTables(){return DEFAULT_MATTE_TABLES.filter(i=>document.getElementById(`t${i}`)?.classList.contains('active'))}
+function syncLiveSettingsView(){
+  const isGlose=document.querySelector('.panel.active')?.id==='panel-glose';
+  const gloseCard=document.getElementById('live-glose-settings');
+  const matteCard=document.getElementById('live-matte-settings');
+  if(gloseCard) gloseCard.style.display=isGlose?'block':'none';
+  if(matteCard) matteCard.style.display=isGlose?'none':'block';
+}
+function syncMatteTableButtons(){
+  DEFAULT_MATTE_TABLES.forEach(i=>{
+    document.getElementById(`t${i}`)?.classList.toggle('active',selectedMatteTables.has(i));
+  });
+}
+function toggleMatteTable(table){
+  if(selectedMatteTables.has(table)) selectedMatteTables.delete(table);
+  else selectedMatteTables.add(table);
+  syncMatteTableButtons();
+}
+function getSelectedTables(){return DEFAULT_MATTE_TABLES.filter(i=>selectedMatteTables.has(i))}
 function getCustomTables(){return parseTableValues(document.getElementById('custom-tables')?.value||'')}
 function getEffectiveMatteTables(){
   const tables=[...getSelectedTables(),...getCustomTables()];
@@ -1908,6 +1910,9 @@ function setMatteMode(mode){
   document.getElementById('matte-mode-ans').classList.toggle('active',mode==='ans');
   document.getElementById('matte-mode-eq').classList.toggle('active',mode==='eq');
 }
+
+syncLiveSettingsView();
+syncMatteTableButtons();
 
 // (Deleted generation/print functions as they moved to apps/bingo-generator/index.html)
 

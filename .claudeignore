@@ -1,0 +1,13 @@
+.git/
+.vs/
+.vscode/
+.idea/
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+tmp/
+temp/
+supabase/.temp/
+.claude/settings.local.json

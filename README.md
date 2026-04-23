@@ -58,7 +58,7 @@ lerke/
   - log in through the student account portal with class code + student code + PIN
 - Shared live session state is backed by Supabase.
 
-Older planning notes and project history now live under [docs/archive/reference](docs/archive/reference).
+Shared project history and handoff notes currently live in [docs/shared_notes.md](docs/shared_notes.md).
 
 ---
 
@@ -71,8 +71,8 @@ Older planning notes and project history now live under [docs/archive/reference]
 3. Log in and use **Be om tilgang** to create a pending teacher profile
 4. Approve the teacher in Supabase for now, then log in again
 5. For the live version, choose **Glosebingo** or **Mattebingo**
-6. Add/edit your word list or select multiplication tables
-7. Set up the content and tap **Klargjør live-økt** to create the live session
+6. Open **Ordlister** for vocabulary content, or **Live-innstillinger** for the active game mode setup
+7. Set up the content and tap **Start live-økt** to create the live session
 8. Show students the QR code or join code
 9. For printed/classic Bingo, use **Bingo Generator**
 
@@ -92,7 +92,7 @@ Older planning notes and project history now live under [docs/archive/reference]
 - **CONTEXT EFFICIENCY:** For AI agents working on this repo: Do not overfill the context window. Use surgical tools like grep/glob/read_file with line limits. Avoid reading entire large files unless absolutely necessary.
 - Frontend is mostly plain HTML/CSS/JavaScript with no framework
 - `index.html` now carries the shared portal login flows for teachers and students
-- `apps/bingo/teacher.html` is the live-only teacher surface for Bingo setup, lobby, and draw flow
+- `apps/bingo/teacher.html` is the live-only teacher surface for Bingo setup, `Ordlister`, `Live-innstillinger`, lobby, and draw flow
 - `apps/bingo/student.html` is the student join page for live Bingo
 - `apps/bingo-generator/index.html` contains the classic generator/print flow
 - shared frontend config files now live in `config/`

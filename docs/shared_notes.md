@@ -2,9 +2,9 @@
 
 ## How to use this file
 
-This is the **living collaborative log** for the Lerke project — shared between Atle (Johimja) and Claude.
+This is the **living collaborative log** for the Lerke project — shared between Atle (Johimja) and AI coding sessions over time.
 
-- **Read this at the start of every session** (after `docs/recentmemory.txt`)
+- **Use this as shared context when needed**
 - **Add a session entry** when starting or ending a work session
 - **Check off roadmap items** as they're completed
 - **CONTEXT EFFICIENCY:** Do not overfill the context window. Use grep/glob, read only relevant parts of files.
@@ -12,16 +12,15 @@ This is the **living collaborative log** for the Lerke project — shared betwee
 
 Reading order for a cold start:
 
-1. `docs/recentmemory.txt` — quick project orientation
+1. `README.md` — current repo overview and active structure
 2. **This file** — decisions, session history, roadmap
-3. `README.md` — full project docs
 
 ---
 
 ## Project Identity
 
 **Lerke** is a classroom game portal built for Steinerskolen i Kristiansand, Norway.
-Built by Atle Stray (Johimja) with Claude (Anthropic), hosted on GitHub Pages at `johimja.com/Lerke`.
+Built by Atle Stray (Johimja) with AI coding assistance, hosted on GitHub Pages at `johimja.com/Lerke`.
 Plain HTML/CSS/JS frontend, Supabase backend (auth + realtime + PostgreSQL).
 
 Current live tool: **Lerke Bingo** (teacher-led live bingo with student join).
