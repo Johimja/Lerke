@@ -1757,18 +1757,21 @@ function buildGloseRoundsData(pairs,rounds){
 }
 function buildMatteRoundsData(tables,rounds){
   const safeRounds=Math.max(1,rounds||1);
-  const multiplierMax=getMatteMultiplierMax(tables);
-  const allFacts=[];
-  tables.forEach(t=>{for(let n=1;n<=multiplierMax;n++)allFacts.push({eq:`${t} × ${n}`,ans:t*n})});
   const cardIsAnswer=matteMode==='ans';
+  const answerGroups=buildMatteAnswerGroups(tables);
   const result=[];
   for(let r=0;r<safeRounds;r++){
-    result.push(shuffle([...allFacts]).map(fact=>({
-      prompt:cardIsAnswer?fact.eq:String(fact.ans),
-      answer:cardIsAnswer?String(fact.ans):fact.eq,
-      teacher_answer:cardIsAnswer?`= ${fact.ans}`:`← ${fact.eq}`,
-      detail:cardIsAnswer?'Les opp gangestykket · Elevene finner svaret':'Les opp svaret · Elevene finner gangestykket'
-    })));
+    result.push(shuffle([...answerGroups]).map(group=>{
+      const equations=shuffle(group.equations);
+      const promptEquation=equations[0];
+      return {
+        prompt:cardIsAnswer?promptEquation:String(group.ans),
+        answer:cardIsAnswer?String(group.ans):promptEquation,
+        correct_answers:cardIsAnswer?[String(group.ans)]:equations,
+        teacher_answer:cardIsAnswer?`= ${group.ans}`:`← ${equations.join(' / ')}`,
+        detail:cardIsAnswer?'Les opp gangestykket · Elevene finner svaret':'Les opp svaret · Elevene finner gangestykket'
+      };
+    }));
   }
   return {roundsData:result,labelStr:tables.join(', ')+'-gangen'};
 }
@@ -1900,7 +1903,35 @@ function getEffectiveMatteTables(){
   return uniqueTables.length?uniqueTables:[...DEFAULT_MATTE_TABLES];
 }
 function getMatteMultiplierMax(tables){
-  return Math.max(...tables);
+  return Math.max(12,...tables);
+}
+function buildMatteFacts(tables){
+  const uniqueTables=[...new Set((tables||[]).map(Number).filter(n=>Number.isInteger(n)&&n>0))];
+  const seen=new Set();
+  const facts=[];
+  function addFact(a,b){
+    const key=`${a}x${b}`;
+    if(seen.has(key)) return;
+    seen.add(key);
+    facts.push({eq:`${a} × ${b}`,ans:a*b});
+  }
+  uniqueTables.forEach(t=>{
+    const multiplierMax=getMatteMultiplierMax([t]);
+    for(let n=1;n<=multiplierMax;n++){
+      addFact(t,n);
+      addFact(n,t);
+    }
+  });
+  return facts;
+}
+function buildMatteAnswerGroups(tables){
+  const groups=new Map();
+  buildMatteFacts(tables).forEach(fact=>{
+    const key=String(fact.ans);
+    if(!groups.has(key)) groups.set(key,{ans:fact.ans,equations:[]});
+    groups.get(key).equations.push(fact.eq);
+  });
+  return [...groups.values()].sort((a,b)=>a.ans-b.ans);
 }
 
 // ===== MATTE MODE =====
@@ -1936,7 +1967,7 @@ function buildElevURL(){
     url=`${base}?type=glose&mode=${mode}&data=${encodeURIComponent(data)}`;
   } else {
     const tables=getEffectiveMatteTables();
-    url=`${base}?type=matte&tables=${tables.join(',')}`;
+    url=`${base}?type=matte&matteMode=${encodeURIComponent(matteMode)}&tables=${tables.join(',')}`;
   }
   if(sessionName) url+=`&name=${encodeURIComponent(sessionName)}`;
   if(rounds>1) url+=`&rounds=${rounds}`;

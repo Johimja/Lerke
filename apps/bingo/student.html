@@ -328,6 +328,7 @@ const APP_VERSION='2026.04.15.1';
 const params=new URLSearchParams(window.location.search);
 const initialType=params.get('type'); // 'glose' or 'matte'
 const initialMode=params.get('mode')||'no'; // glose: 'no' or 'en'
+const initialMatteMode=params.get('matteMode')||'ans'; // 'ans' or 'eq'
 const dataParam=params.get('data'); // glose pairs encoded
 const tablesParam=params.get('tables'); // matte tables comma separated
 let currentSessionName=params.get('name')||''; // optional session/class name
@@ -379,7 +380,26 @@ function parseTableValues(raw){
     .filter(n=>Number.isInteger(n)&&n>0))];
 }
 function getMatteMultiplierMax(tables){
-  return Math.max(...tables);
+  return Math.max(12,...tables);
+}
+function buildMatteFacts(tables){
+  const uniqueTables=[...new Set((tables||[]).map(Number).filter(n=>Number.isInteger(n)&&n>0))];
+  const seen=new Set();
+  const facts=[];
+  function addFact(a,b){
+    const key=`${a}x${b}`;
+    if(seen.has(key)) return;
+    seen.add(key);
+    facts.push({eq:`${a} × ${b}`,ans:a*b});
+  }
+  uniqueTables.forEach(t=>{
+    const multiplierMax=getMatteMultiplierMax([t]);
+    for(let n=1;n<=multiplierMax;n++){
+      addFact(t,n);
+      addFact(n,t);
+    }
+  });
+  return facts;
 }
 function hasSupabaseConfig(){
   return !!(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase?.createClient);
@@ -576,8 +596,8 @@ function applySessionSettings(sessionRow){
     const tables=Array.isArray(settings.tables)?settings.tables.map(Number).filter(Number.isInteger):[];
     const effectiveTables=tables.length?tables:[...DEFAULT_MATTE_TABLES];
     currentType='matte';
-    cardData={type:'matte',tables:effectiveTables};
-    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker svaret');
+    cardData={type:'matte',tables:effectiveTables,mode:settings.matte_mode||'ans'};
+    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker '+(cardData.mode==='eq'?'stykket':'svaret'));
     return;
   }
   throw new Error('Ukjent spilltype for denne økten.');
@@ -1147,8 +1167,8 @@ async function init(){
   } else if(currentType==='matte'){
     const tables=parseTableValues(tablesParam);
     const effectiveTables=tables.length?tables:[...DEFAULT_MATTE_TABLES];
-    cardData={type:'matte',tables:effectiveTables};
-    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker svaret');
+    cardData={type:'matte',tables:effectiveTables,mode:initialMatteMode};
+    setSubtitle(effectiveTables.join(', ')+'-gangen · Marker '+(cardData.mode==='eq'?'stykket':'svaret'));
   }
 
   if(totalRounds>1){
@@ -1176,27 +1196,25 @@ function buildGloseCard(){
 
 function buildMatteCard(){
   const {tables}=cardData;
-  const multiplierMax=getMatteMultiplierMax(tables);
-  const allFacts=[];
-  tables.forEach(t=>{for(let n=1;n<=multiplierMax;n++)allFacts.push({eq:`${t}×${n}`,ans:t*n})});
-  const uniqueAns=[...new Set(allFacts.map(f=>f.ans))];
+  const allFacts=buildMatteFacts(tables);
+  const cardIsAnswer=cardData.mode!=='eq';
+  const items=cardIsAnswer?[...new Set(allFacts.map(f=>f.ans))]:allFacts.map(f=>f.eq);
   const SIZE=5,CELLS=25;
   if(isStrictLiveSession()){
-    let strictPool=[...uniqueAns];
-    while(strictPool.length<CELLS) strictPool=[...strictPool,...uniqueAns];
+    let strictPool=[...items];
+    while(strictPool.length<CELLS) strictPool=[...strictPool,...items];
     const strictSel=shuffle(strictPool).slice(0,CELLS);
     return strictSel.map(v=>({label:String(v),isFree:false}));
   }
-  if(uniqueAns.length<CELLS-1){
-    // not enough unique — repeat
-    let pool=[...uniqueAns];
-    while(pool.length<CELLS-1) pool=[...pool,...uniqueAns];
+  if(items.length<CELLS-1){
+    let pool=[...items];
+    while(pool.length<CELLS-1) pool=[...pool,...items];
     const sel=shuffle(pool).slice(0,CELLS-1);
     const gratisIdx=Math.floor(Math.random()*CELLS);
     sel.splice(gratisIdx,0,'GRATIS');
     return sel.map((v,i)=>({label:String(v),isFree:v==='GRATIS'}));
   }
-  const sel=shuffle(uniqueAns).slice(0,CELLS-1);
+  const sel=shuffle(items).slice(0,CELLS-1);
   const gratisIdx=Math.floor(Math.random()*CELLS);
   sel.splice(gratisIdx,0,'GRATIS');
   return sel.map(v=>({label:String(v),isFree:v==='GRATIS'}));

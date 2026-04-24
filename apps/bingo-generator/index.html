@@ -543,6 +543,38 @@ function getEffectiveMatteTables(){
   return res.length?res:[...DEFAULT_MATTE_TABLES];
 }
 
+function getMatteMultiplierMax(tables){
+  return Math.max(12,...tables);
+}
+function buildMatteFacts(tables){
+  const uniqueTables=[...new Set((tables||[]).map(Number).filter(n=>Number.isInteger(n)&&n>0))];
+  const seen=new Set();
+  const facts=[];
+  function addFact(a,b){
+    const key=`${a}x${b}`;
+    if(seen.has(key)) return;
+    seen.add(key);
+    facts.push({eq:`${a} × ${b}`,ans:a*b});
+  }
+  uniqueTables.forEach(t=>{
+    const multiplierMax=getMatteMultiplierMax([t]);
+    for(let n=1;n<=multiplierMax;n++){
+      addFact(t,n);
+      addFact(n,t);
+    }
+  });
+  return facts;
+}
+function buildMatteAnswerGroups(tables){
+  const groups=new Map();
+  buildMatteFacts(tables).forEach(fact=>{
+    const key=String(fact.ans);
+    if(!groups.has(key)) groups.set(key,{ans:fact.ans,equations:[]});
+    groups.get(key).equations.push(fact.eq);
+  });
+  return [...groups.values()].sort((a,b)=>a.ans-b.ans);
+}
+
 function setMatteMode(mode){
   matteMode=mode;
   document.getElementById('matte-mode-ans').classList.toggle('active',mode==='ans');
@@ -553,15 +585,15 @@ async function generateMatte(){
   const tables=getEffectiveMatteTables();
   const count=parseInt(document.getElementById('matte-count').value)||6;
   const rounds=parseInt(document.getElementById('matte-rounds').value)||3;
-  const allFacts=[];
-  tables.forEach(t=>{for(let n=1;n<=Math.max(...tables);n++)allFacts.push({eq:`${t} × ${n}`,ans:t*n})});
+  const allFacts=buildMatteFacts(tables);
+  const answerGroups=buildMatteAnswerGroups(tables);
 
   const container=document.getElementById('matte-cards');
   container.innerHTML='';
   const darkPat=[]; for(let r=0;r<5;r++)for(let col=0;col<5;col++)darkPat.push((r+col)%2===1);
 
   for(let c=0;c<count;c++){
-    const items=matteMode==='ans' ? [...new Set(allFacts.map(f=>f.ans))] : allFacts.map(f=>f.eq);
+    const items=matteMode==='ans' ? answerGroups.map(g=>g.ans) : allFacts.map(f=>f.eq);
     const sel=fillPool(items,24);
     sel.splice(Math.floor(Math.random()*25),0,'GRATIS');
     const card=document.createElement('div');
@@ -580,10 +612,12 @@ async function generateMatte(){
 
   let html=`<div class="print-section-title">LÆRERARK — GANGEBINGO</div>`;
   for(let r=0;r<rounds;r++){
-    const list=shuffle([...allFacts]);
+    const list=shuffle([...answerGroups]);
     html+=`<div class="call-round"><h3>RUNDE ${r+1}</h3><div class="call-grid">`;
-    list.forEach((f,idx)=>{
-      html+=`<div class="call-item"><div class="num">${idx+1}.</div><div class="word">${matteMode==='ans'?f.eq:f.ans}</div><div class="trans">${matteMode==='ans'?'= '+f.ans:'← '+f.eq}</div></div>`;
+    list.forEach((group,idx)=>{
+      const equations=shuffle(group.equations);
+      const promptEquation=equations[0];
+      html+=`<div class="call-item"><div class="num">${idx+1}.</div><div class="word">${matteMode==='ans'?promptEquation:group.ans}</div><div class="trans">${matteMode==='ans'?'= '+group.ans:'← '+equations.join(' / ')}</div></div>`;
     });
     html+=`</div></div>`;
   }

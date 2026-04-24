@@ -781,7 +781,16 @@ begin
   end if;
 
   v_expected_answer := coalesce(v_state.current_draw->>'answer', '');
-  v_correct := coalesce(p_selected_value, '') = v_expected_answer;
+  if jsonb_typeof(coalesce(v_state.current_draw->'correct_answers', 'null'::jsonb)) = 'array' then
+    select exists (
+      select 1
+      from jsonb_array_elements_text(v_state.current_draw->'correct_answers') as allowed(value)
+      where allowed.value = coalesce(p_selected_value, '')
+    )
+    into v_correct;
+  else
+    v_correct := coalesce(p_selected_value, '') = v_expected_answer;
+  end if;
 
   insert into public.participant_draw_responses (
     session_id,
