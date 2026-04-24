@@ -26,9 +26,20 @@ function extractFunction(source, name) {
 
 const submitStrictAnswer = extractFunction(studentHtml, 'submitStrictAnswer');
 const toggleCell = extractFunction(studentHtml, 'toggleCell');
+const initSupabaseJoin = extractFunction(studentHtml, 'initSupabaseJoin');
 
 assert.match(studentHtml, /let strictAnswerInFlight=false;/, 'strict mode must track an in-flight answer');
 assert.match(studentHtml, /function normalizeMarkedCellIndices/, 'marked cells must be normalized from Supabase JSON');
+assert.match(
+  studentHtml,
+  /async function syncJoinedSessionSettings/,
+  'direct session URL joins must load session settings before choosing strict/local mode'
+);
+assert.match(
+  initSupabaseJoin,
+  /await syncJoinedSessionSettings\(\);[\s\S]*if\(isStrictLiveSession\(\)\)/,
+  'session settings must be applied before initSupabaseJoin checks strict live mode'
+);
 assert.match(toggleCell, /strictAnswerInFlight/, 'strict cell clicks must be blocked while an answer is in flight');
 assert.doesNotMatch(
   submitStrictAnswer,

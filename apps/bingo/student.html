@@ -621,6 +621,15 @@ async function fetchJoinableSession(code){
   if(error) throw error;
   return Array.isArray(data)?data[0]:data;
 }
+async function syncJoinedSessionSettings(){
+  if(!joinCode) return null;
+  const sessionRow=await fetchJoinableSession(joinCode);
+  if(!sessionRow?.id) throw new Error('Fant ikke økten.');
+  liveSessionId=sessionRow.id;
+  joinCode=sessionRow.join_code||joinCode;
+  applySessionSettings(sessionRow);
+  return sessionRow;
+}
 async function joinLiveSessionByCode(code){
   const normalized=(code||'').trim().toUpperCase();
   if(!normalized){
@@ -669,6 +678,7 @@ async function initSupabaseJoin(){
       nextUrl.searchParams.set('session',liveSessionId);
       window.history.replaceState({},'',nextUrl.toString());
     }
+    await syncJoinedSessionSettings();
     setJoinNote(`Koblet til liveøkten som ${participantRecord.display_name}.`,false);
     updateIdentityPanel();
     if(touchTimer) window.clearInterval(touchTimer);

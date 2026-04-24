@@ -55,6 +55,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
   - Teacher roster now separates visible marked-answer count from near-bingo line progress. The display can show `2/5` after two correct marks, while still using best-line progress for near-bingo alerts.
 - `apps/bingo/student.html`:
   - Strict live matte mode now respects `matte_mode='eq'`, so students see equations on their boards when the teacher selects "Stykke → Svar".
+  - Direct student session URLs now re-load the live session settings after joining, before choosing strict/local behavior. This prevents QR/direct joins from falling back to local bingo marking while the teacher session is strict live.
   - Strict answer clicks no longer apply an optimistic green checkmark. The board only updates from server-confirmed `marked_cells`.
   - Only one answer can be in flight per draw. Wrong answers restore the board to confirmed marks, show the existing "Feil. Prøv igjen neste trekk." message, and the wrong cell remains usable on later draws.
 - `apps/bingo-generator/index.html`:
@@ -66,7 +67,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - Tests:
   - Added `tests/matte_bingo_math.test.mjs`.
   - Added `tests/teacher_live_ui.test.mjs`.
-  - Added `tests/student_strict_answer_ui.test.mjs`.
+  - Added `tests/student_strict_answer_ui.test.mjs`, including a regression check that direct URL joins sync session settings before strict live mode is evaluated.
 
 **Verification run:**
 
