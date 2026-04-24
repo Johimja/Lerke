@@ -879,6 +879,7 @@ let teacherParticipantProgress=[];
 let teacherAnswerRevealKey='';
 let teacherAnswerVisible=false;
 let teacherBingoCelebrationKey='';
+let liveJoinAutoCollapsedKey='';
 const BINGO_JINGLES=[
   '../../media/bingow1.mp3',
   '../../media/bingow2.mp3',
@@ -1356,8 +1357,21 @@ async function refreshTeacherLiveState(options={}){
     throw error;
   }
 }
+function normalizeMarkedCells(markedCells){
+  let raw=[];
+  if(Array.isArray(markedCells)) raw=markedCells;
+  else if(typeof markedCells==='string'){
+    try{raw=JSON.parse(markedCells);}catch(e){raw=[];}
+  }
+  return (Array.isArray(raw)?raw:[])
+    .map(v=>parseInt(v,10))
+    .filter(v=>Number.isInteger(v));
+}
+function getMarkedCellCount(markedCells){
+  return normalizeMarkedCells(markedCells).length;
+}
 function getBestLineProgress(markedCells){
-  const marked=new Set((Array.isArray(markedCells)?markedCells:[]).map(v=>parseInt(v,10)).filter(v=>Number.isInteger(v)));
+  const marked=new Set(normalizeMarkedCells(markedCells));
   const lines=[
     [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
     [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
@@ -1394,11 +1408,14 @@ async function refreshTeacherParticipantProgress(options={}){
     const boardMap=new Map((boards||[]).map(board=>[board.participant_id,board]));
     teacherParticipantProgress=(participants||[]).map((participant,index)=>{
       const board=boardMap.get(participant.id);
-      const progress=board?.has_bingo ? 5 : getBestLineProgress(board?.marked_cells||[]);
+      const markedCells=board?.marked_cells||[];
+      const markCount=getMarkedCellCount(markedCells);
+      const progress=board?.has_bingo ? 5 : getBestLineProgress(markedCells);
       return {
         id:participant.id,
         name:participant.display_name||`Elev ${index+1}`,
         status:participant.status||'active',
+        markCount,
         progress,
         hasBingo:!!board?.has_bingo
       };
@@ -1435,11 +1452,11 @@ function renderTeacherParticipantProgress(){
   container.innerHTML=alertHtml+teacherParticipantProgress.map(item=>{
     const isNearBingo=item.progress===4&&!item.hasBingo;
     const dots=Array.from({length:5},(_,idx)=>{
-      const on=idx<item.progress;
+      const on=idx<Math.min(item.markCount,5);
       const bingo=item.hasBingo&&idx<5;
       return `<span class="live-roster-dot ${on?'on':''} ${bingo?'bingo':''}"></span>`;
     }).join('');
-    const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${item.progress}/5`;
+    const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${Math.min(item.markCount,5)}/5`;
     const av=renderAvatarCircleT(studentAvatarCache[item.name],item.name,24);
     return `<div class="live-roster-item${isNearBingo?' near-bingo':''}"><div style="display:flex;align-items:center;gap:6px">${av}<div class="live-roster-name">${escapeHtml(item.name)}</div></div><div class="live-roster-meta">${meta}</div><div class="live-roster-dots">${dots}</div></div>`;
   }).join('');
@@ -2204,8 +2221,13 @@ function closeLiveMode(){
   stopTeacherLivePolling();
   teacherAnswerRevealKey='';
   teacherAnswerVisible=false;
+  liveJoinAutoCollapsedKey='';
   document.getElementById('live-modal').classList.remove('show');
   checkRecoverableSession();
+}
+function setTextIfChanged(id,text){
+  const el=document.getElementById(id);
+  if(el&&el.textContent!==String(text)) el.textContent=String(text);
 }
 function renderLiveMode(){
   // Never render into modal elements that aren't in the DOM yet
@@ -2218,8 +2240,8 @@ function renderLiveMode(){
   const round=liveRounds[liveRoundIndex]||[];
   const drawn=liveHistory.length;
   const total=round.length;
-  document.getElementById('live-kicker').textContent=liveLabel;
-  document.getElementById('live-round-label').textContent=`Runde ${liveRoundIndex+1} av ${liveRounds.length}`;
+  setTextIfChanged('live-kicker',liveLabel);
+  setTextIfChanged('live-round-label',`Runde ${liveRoundIndex+1} av ${liveRounds.length}`);
   document.getElementById('live-join-code').textContent=activeLiveSession?.joinCode||'------';
   renderLiveJoinQr();
   document.getElementById('live-progress-label').textContent=`${drawn} / ${total}`;
@@ -2306,13 +2328,7 @@ function renderStrictTeacherLiveMode(){
   const remainingSeconds=Math.max(0,Math.min(configuredSeconds,Math.ceil((closesAt-Date.now())/1000)));
   const history=buildTeacherHistory(roundNumber,drawIndex);
   
-  // Auto collapse join info if we have already drawn something or are currently drawing
-  if (drawIndex > 0 || state.phase === 'draw_open' || state.phase === 'draw_locked') {
-    const wrap = document.getElementById('live-join-wrap');
-    if (wrap && !wrap.classList.contains('collapsed')) {
-      toggleLiveJoin();
-    }
-  }
+  if(drawIndex > 0 || state.phase === 'draw_open' || state.phase === 'draw_locked') autoCollapseJoinOnFirstDraw();
 
   const currentEl=document.getElementById('live-current');
   const currentPrompt=currentDraw?.prompt||'Venter på at læreren åpner neste trekk';
@@ -2336,8 +2352,8 @@ function renderStrictTeacherLiveMode(){
     primaryLabel=roundNumber<roundCount?'Start neste runde':'Alle runder ferdige';
     primaryDisabled=roundNumber>=roundCount;
   }
-  document.getElementById('live-kicker').textContent=teacherLiveState?.session?.title||liveLabel||'Live trekning';
-  document.getElementById('live-round-label').textContent=`Runde ${roundNumber} av ${roundCount}`;
+  setTextIfChanged('live-kicker',teacherLiveState?.session?.title||liveLabel||'Live trekning');
+  setTextIfChanged('live-round-label',`Runde ${roundNumber} av ${roundCount}`);
   document.getElementById('live-join-code').textContent=activeLiveSession?.joinCode||teacherLiveState?.session?.join_code||'------';
   renderLiveJoinQr();
   document.getElementById('live-progress-label').textContent=`${drawIndex} / ${totalDraws||0}`;
@@ -2937,13 +2953,19 @@ let lastTickerIndex = -1;
 
 function toggleLiveJoin() {
   const wrap = document.getElementById('live-join-wrap');
+  if (!wrap) return;
+  setLiveJoinCollapsed(!wrap.classList.contains('collapsed'));
+}
+
+function setLiveJoinCollapsed(collapsed) {
+  const wrap = document.getElementById('live-join-wrap');
   const btn = document.getElementById('live-join-toggle-btn');
   const tickerWrap = document.getElementById('live-ticker-wrap');
   if (!wrap) return;
-  const isCollapsed = wrap.classList.toggle('collapsed');
-  if (btn) btn.textContent = isCollapsed ? 'Vis bli med-info' : 'Skjul bli med-info';
-  if (tickerWrap) tickerWrap.style.display = isCollapsed ? 'block' : 'none';
-  if (isCollapsed) updateLiveTicker();
+  wrap.classList.toggle('collapsed',!!collapsed);
+  if (btn) btn.textContent = collapsed ? 'Vis bli med-info' : 'Skjul bli med-info';
+  if (tickerWrap) tickerWrap.style.display = collapsed ? 'block' : 'none';
+  if (collapsed) updateLiveTicker();
 }
 
 function updateLiveTicker(forcedMsg) {
@@ -2963,10 +2985,13 @@ function updateLiveTicker(forcedMsg) {
 }
 
 function autoCollapseJoinOnFirstDraw() {
-  const wrap = document.getElementById('live-join-wrap');
-  if (wrap && !wrap.classList.contains('collapsed')) {
-    toggleLiveJoin();
-  }
+  const state=teacherLiveState?.state||{};
+  const key=activeLiveSession?.id
+    ? `${activeLiveSession.id}:${state.round_number||1}`
+    : `local:${liveRoundIndex+1}`;
+  if(liveJoinAutoCollapsedKey===key) return;
+  liveJoinAutoCollapsedKey=key;
+  setLiveJoinCollapsed(true);
 }
 
 // ===== INIT =====
