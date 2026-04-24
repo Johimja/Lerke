@@ -38,9 +38,24 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-24 — Automated: Student login code display and projected-screen privacy fix
+
+**What was done:**
+
+- `apps/bingo/teacher.html`:
+  - Student list no longer shows any login codes by default. Added a "👁 Vis koder" / "🙈 Skjul koder" toggle button in the student list header. When revealed, codes show as the V11 `login_code` (6-char globally unique code) in monospace gold next to each student's name. A red inline warning ("⚠ Skjul før du viser skjermen til klassen!") is shown while codes are visible.
+  - "Ny PIN" credential box now shows `Innloggingskode` (login_code, falling back to student_code for old records) and PIN in bold, replacing the old class code + student code display. A red warning banner ("⚠️ Ikke vis dette til klassen — snu skjermen eller steng skjermvisning først.") is shown at the top of the box. The box scrolls into view automatically when a new PIN is generated.
+  - Status message after PIN reset now shows the student's display name instead of exposing the code in the status bar.
+- SQL:
+  - Created and applied `supabase/sql/archive/Patches/supabase_bingo_v19b_reset_pin_login_code_patch.sql` — updates `reset_student_pin` to return `login_code` in its JSON response alongside `student_code` and `pin`.
+
+**Operational note:** V19b SQL patch applied to Supabase via CLI ✅.
 
 ---
 
