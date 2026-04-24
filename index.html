@@ -388,6 +388,20 @@ html{scroll-behavior:smooth}
 .student-cred-value{font-family:'Raleway',sans-serif;font-weight:700;font-size:.9rem;color:#fff;line-height:1.7;margin-bottom:8px}
 .student-cred-value span.code{font-family:monospace;color:#f8d694;font-size:1rem;letter-spacing:.05em}
 .student-cred-value span.pin{font-family:monospace;color:#a0f0a0;font-size:1rem}
+.credential-print-panel{display:none;margin:10px 0 12px;padding:12px;border-radius:14px;border:1px dashed rgba(67,32,92,.25);background:rgba(255,250,242,.76)}
+.credential-print-panel.show{display:block}
+.credential-print-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.credential-print-title{font-family:'Raleway',sans-serif;font-weight:900;color:var(--lerke-plum);font-size:.85rem;text-transform:uppercase;letter-spacing:.9px}
+.credential-print-note{font-size:.74rem;color:#6d5f72;line-height:1.45;margin-top:2px}
+.credential-print-actions{display:flex;gap:6px;flex-wrap:wrap}
+.credential-print-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.credential-print-slip{background:#fff;border:1px solid rgba(67,32,92,.18);border-radius:8px;padding:10px;color:#201327;break-inside:avoid;page-break-inside:avoid}
+.credential-print-slip-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:.82rem;color:#43205c;margin-bottom:6px}
+.credential-print-line{font-size:.78rem;line-height:1.45}
+.credential-print-line strong{font-family:'Raleway',sans-serif;font-weight:900}
+.credential-print-code{font-family:monospace;font-weight:900;letter-spacing:.08em;color:#43205c}
+.credential-print-pin{font-family:monospace;font-weight:900;letter-spacing:.08em;color:#176b38}
+.credential-print-empty{font-size:.78rem;color:#7d7083;line-height:1.45}
 .class-admin-empty{font-size:.82rem;color:#7d7083;line-height:1.45;padding:8px 2px}
 .class-admin-note{font-size:.76rem;color:#6d5f72;margin-top:8px;line-height:1.45}
 .class-admin-status{margin-top:10px;font-size:.78rem;color:var(--lerke-plum-2);line-height:1.5}
@@ -448,6 +462,19 @@ html{scroll-behavior:smooth}
   .workspace-shell{padding:14px}
   .overview-grid{grid-template-columns:1fr}
 }
+@media print{
+  body *{visibility:hidden!important}
+  #credential-print-panel,#credential-print-panel *{visibility:visible!important}
+  #credential-print-panel{display:block!important;position:absolute;left:0;top:0;width:100%;margin:0;padding:0;background:#fff;border:none;box-shadow:none}
+  #credential-print-panel .credential-print-head{display:block;margin:0 0 10px}
+  #credential-print-panel .credential-print-actions,#credential-print-panel .credential-print-note,#credential-print-panel .credential-print-empty{display:none!important}
+  #credential-print-panel .credential-print-title{color:#000;font-size:12pt;margin-bottom:8px}
+  #credential-print-panel .credential-print-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8mm}
+  #credential-print-panel .credential-print-slip{border:1px dashed #333;border-radius:0;padding:7mm;background:#fff;color:#000}
+  #credential-print-panel .credential-print-slip-title{color:#000;font-size:12pt}
+  #credential-print-panel .credential-print-line{font-size:10pt;color:#000}
+  #credential-print-panel .credential-print-code,#credential-print-panel .credential-print-pin{color:#000}
+}
 /* ===== THEME TOGGLE BUTTON ===== */
 #theme-toggle{position:fixed;bottom:20px;left:20px;z-index:9999;width:42px;height:42px;border-radius:50%;border:1px solid rgba(67,32,92,.18);background:rgba(255,250,242,.92);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(67,32,92,.12);transition:transform .15s,box-shadow .15s,background .22s,border-color .22s;color:var(--lerke-plum)}
 #theme-toggle:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(67,32,92,.2)}
@@ -496,6 +523,9 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .class-item-meta{color:#c9d1d9}
 [data-theme="dark"] .student-item{background:rgba(13,17,23,.68);border-color:rgba(240,246,252,.08)}
 [data-theme="dark"] .student-session-meta{color:#c9d1d9}
+[data-theme="dark"] .credential-print-panel{background:rgba(13,17,23,.68);border-color:rgba(240,246,252,.16)}
+[data-theme="dark"] .credential-print-title{color:#f0f6fc}
+[data-theme="dark"] .credential-print-note,[data-theme="dark"] .credential-print-empty{color:#c9d1d9}
 [data-theme="dark"] .game-card{background:linear-gradient(rgba(28,33,40,.95),rgba(28,33,40,.95)),url('media/wallpaper.png') repeat;border-color:rgba(240,246,252,.08)}
 [data-theme="dark"] .game-card:hover{border-color:rgba(210,168,255,.3)}
 [data-theme="dark"] .section-copy{color:#c9d1d9}
@@ -700,6 +730,19 @@ html{scroll-behavior:smooth}
                   <div class="credential-title">Innloggingsinfo</div>
                   <div class="credential-value" id="student-credential-value">-</div>
                 </div>
+                <div class="credential-print-panel" id="credential-print-panel">
+                  <div class="credential-print-head">
+                    <div>
+                      <div class="credential-print-title">Utskriftslapper</div>
+                      <div class="credential-print-note">Inneholder bare nye eller nylig tilbakestilte PIN-koder. Skriv ut, klipp opp og tøm køen etterpå.</div>
+                    </div>
+                    <div class="credential-print-actions">
+                      <button class="class-admin-btn primary" type="button" onclick="printCredentialSlips()">Skriv ut</button>
+                      <button class="class-admin-btn" type="button" onclick="clearCredentialPrintQueue()">Tøm</button>
+                    </div>
+                  </div>
+                  <div class="credential-print-grid" id="credential-print-grid"></div>
+                </div>
                 <div class="student-list" id="student-list">
                   <div class="class-admin-empty">Velg en klasse for å se elevene.</div>
                 </div>
@@ -861,6 +904,7 @@ let currentStudentEmail=null;
 let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
+let credentialPrintQueue=[];
 let currentWorkspaceView='overview';
 
 function toggleInfo(id,btn,originalText){
@@ -1338,6 +1382,45 @@ function showLatestCredentials(details){
   value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Innloggingskode: <strong>${escapeHtml(code)}</strong><br>PIN: <strong>${escapeHtml(details.pin||'-')}</strong>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+function addCredentialSlip(details){
+  if(!details?.pin) return;
+  const code=details.login_code||details.student_code||'-';
+  credentialPrintQueue.push({
+    id:`${Date.now()}-${credentialPrintQueue.length}`,
+    display_name:details.display_name||'Elev',
+    login_code:code,
+    pin:details.pin
+  });
+  renderCredentialPrintQueue();
+}
+function renderCredentialPrintQueue(){
+  const panel=document.getElementById('credential-print-panel');
+  const grid=document.getElementById('credential-print-grid');
+  if(!panel||!grid) return;
+  panel.classList.toggle('show',credentialPrintQueue.length>0);
+  if(!credentialPrintQueue.length){
+    grid.innerHTML='<div class="credential-print-empty">Ingen nye innloggingslapper i køen.</div>';
+    return;
+  }
+  grid.innerHTML=credentialPrintQueue.map(slip=>`
+    <div class="credential-print-slip">
+      <div class="credential-print-slip-title">${escapeHtml(slip.display_name)}</div>
+      <div class="credential-print-line">Gå til <strong>Lerke</strong> og velg elevinnlogging.</div>
+      <div class="credential-print-line">Kode: <span class="credential-print-code">${escapeHtml(slip.login_code)}</span></div>
+      <div class="credential-print-line">PIN: <span class="credential-print-pin">${escapeHtml(slip.pin)}</span></div>
+    </div>
+  `).join('');
+}
+function printCredentialSlips(){
+  if(!credentialPrintQueue.length){alert('Ingen innloggingslapper å skrive ut.');return}
+  renderCredentialPrintQueue();
+  window.print();
+}
+function clearCredentialPrintQueue(){
+  if(!credentialPrintQueue.length) return;
+  credentialPrintQueue=[];
+  renderCredentialPrintQueue();
+}
 function hideStudentCred(studentId){
   const panel=document.getElementById(`scred-${studentId}`);
   if(panel) panel.style.display='none';
@@ -1487,6 +1570,7 @@ async function createStudentFromPortal(){
   document.getElementById('student-last-name-input').value='';
   selectedClassId=classId;
   showLatestCredentials(details);
+  addCredentialSlip(details);
   setClassAdminStatus(`Elev opprettet: ${details?.display_name||displayName}`,false);
   await loadTeacherClasses();
   await loadStudentsForSelectedClass();
@@ -1501,6 +1585,7 @@ async function resetStudentPinFromPortal(studentId){
   const code=details?.login_code||details?.student_code||'?';
   const name=student?.display_name||'elev';
   _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span><br>PIN: <span class="pin">${escapeHtml(details?.pin||'?')}</span>`);
+  addCredentialSlip({...details,display_name:name});
   setClassAdminStatus(`Ny PIN generert for ${name}.`,false);
 }
 

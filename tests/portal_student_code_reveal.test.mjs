@@ -27,6 +27,12 @@ function extractFunction(source, name) {
 const renderStudentPortalState = extractFunction(indexHtml, 'renderStudentPortalState');
 const renderStudents = extractFunction(indexHtml, 'renderStudents');
 const revealStudentCode = extractFunction(indexHtml, 'revealStudentCode');
+const addCredentialSlip = extractFunction(indexHtml, 'addCredentialSlip');
+const renderCredentialPrintQueue = extractFunction(indexHtml, 'renderCredentialPrintQueue');
+const printCredentialSlips = extractFunction(indexHtml, 'printCredentialSlips');
+const clearCredentialPrintQueue = extractFunction(indexHtml, 'clearCredentialPrintQueue');
+const createStudentFromPortal = extractFunction(indexHtml, 'createStudentFromPortal');
+const resetStudentPinFromPortal = extractFunction(indexHtml, 'resetStudentPinFromPortal');
 
 assert.doesNotMatch(
   renderStudentPortalState,
@@ -62,4 +68,64 @@ assert.doesNotMatch(
   revealStudentCode,
   /PIN|pin/i,
   'code reveal must not expose or mention PIN'
+);
+
+assert.match(
+  indexHtml,
+  /let credentialPrintQueue=\[\];/,
+  'printable credential slips should live only in a temporary browser queue'
+);
+
+assert.match(
+  indexHtml,
+  /id="credential-print-panel"/,
+  'teacher portal should include a credential print queue panel'
+);
+
+assert.match(
+  indexHtml,
+  /@media print[\s\S]*credential-print-slip/,
+  'credential slips should have dedicated print styles'
+);
+
+assert.match(
+  addCredentialSlip,
+  /details\.pin/,
+  'print queue entries should only be built from fresh create/reset responses that include a PIN'
+);
+
+assert.match(
+  renderCredentialPrintQueue,
+  /credential-print-slip/,
+  'print queue renderer should produce cuttable slip elements'
+);
+
+assert.match(
+  printCredentialSlips,
+  /window\.print\(\)/,
+  'print action should use the browser print dialog'
+);
+
+assert.match(
+  clearCredentialPrintQueue,
+  /credentialPrintQueue=\[\]/,
+  'clear action should discard queued readable PINs'
+);
+
+assert.match(
+  createStudentFromPortal,
+  /addCredentialSlip\(details\)/,
+  'newly created students should be added to the print queue'
+);
+
+assert.match(
+  resetStudentPinFromPortal,
+  /addCredentialSlip\(/,
+  'newly reset PINs should be added to the print queue'
+);
+
+assert.doesNotMatch(
+  revealStudentCode,
+  /addCredentialSlip/,
+  'code-only reveal must not add anything to the PIN print queue'
 );

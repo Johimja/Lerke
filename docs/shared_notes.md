@@ -53,11 +53,13 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
   - The teacher class/student list shows only each student's display name by default.
   - Added a deliberate `Vis kode` action per student that reveals only `Innloggingskode` (`login_code`, with `student_code` fallback for legacy rows). It does not show or mention PIN.
   - `Ny PIN` remains the only flow that generates and displays a new PIN, alongside the login code, with the existing warning panel.
+  - Added an in-browser `Utskriftslapper` queue for newly created students and newly reset PINs. The queue renders cuttable login slips with display name, login code, and the fresh PIN, uses print-only CSS so only slips print, and can be cleared immediately after printing.
   - Removed now-unused `student-item-meta` styling.
 - `apps/bingo/teacher.html`:
   - Removed leftover light-theme CSS selectors for the deleted `Klasser og elever` / student-management UI. A scan found no remaining class/student-management code there; Hall of Fame still fetches classes independently when opened.
 - Tests:
   - Added `tests/portal_student_code_reveal.test.mjs` to guard that the student portal card does not expose `login_code`, that `Vis kode` exists, and that code reveal does not expose PIN.
+  - Extended the same test to guard the temporary print queue: create/reset responses add slips, `Vis kode` does not, and clearing the queue discards readable PINs.
   - Updated `tests/avatar_faceshapes_config.test.mjs` to read the archived v18 faceshape SQL path used by the current repo layout.
 
 **Verification run:**
