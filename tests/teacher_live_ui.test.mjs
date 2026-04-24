@@ -47,6 +47,8 @@ assert.equal(progress.getBestLineProgress([0, 1]), 2, 'connected marks in a line
 
 assert.match(teacherHtml, /const progress=board\?\.has_bingo \? 5 : getBestLineProgress\(markedCells\)/, 'roster must calculate connected-line progress');
 assert.match(teacherHtml, /const meta=item\.hasBingo\?'Bingo':isNearBingo\?'[^']*':`\$\{item\.progress\}\/5`/, 'roster meta must display connected-line progress');
+assert.match(teacherHtml, /const on=idx<item\.progress;/, 'roster dots must display connected-line progress, not total marked cells');
+assert.doesNotMatch(teacherHtml, /const on=idx<Math\.min\(item\.markCount,5\)/, 'roster dots must not cap total marked cells as line progress');
 assert.match(teacherHtml, /let liveJoinAutoCollapsedKey=''/, 'auto-collapse must be keyed so manual reopening survives polling');
 assert.match(teacherHtml, /setLiveJoinCollapsed\(true\)/, 'auto-collapse should use idempotent collapse instead of toggling repeatedly');
 assert.doesNotMatch(

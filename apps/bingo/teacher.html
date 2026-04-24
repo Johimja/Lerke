@@ -1452,7 +1452,7 @@ function renderTeacherParticipantProgress(){
   container.innerHTML=alertHtml+teacherParticipantProgress.map(item=>{
     const isNearBingo=item.progress===4&&!item.hasBingo;
     const dots=Array.from({length:5},(_,idx)=>{
-      const on=idx<Math.min(item.markCount,5);
+      const on=idx<item.progress;
       const bingo=item.hasBingo&&idx<5;
       return `<span class="live-roster-dot ${on?'on':''} ${bingo?'bingo':''}"></span>`;
     }).join('');
