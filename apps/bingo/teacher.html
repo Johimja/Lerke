@@ -66,10 +66,11 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .credential-title{font-size:0.72rem;color:#f8d694;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
 .credential-value{font-family:'Raleway',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;line-height:1.45}
 .credential-warning{font-size:0.75rem;color:#ff8a65;background:#2a1a10;border:1px solid #5a3020;border-radius:6px;padding:6px 9px;margin-bottom:8px;line-height:1.4}
-.codes-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.codes-toggle-btn{font-size:0.72rem;background:none;border:1px solid #3a4460;border-radius:5px;color:#aeb7d5;padding:3px 8px;cursor:pointer}
-.codes-toggle-btn:hover{background:#1e2540;color:#e8eaf6}
-.codes-visible-warning{font-size:0.72rem;color:#ff8a65;margin-left:6px}
+.student-cred-inline{margin-top:8px;background:#12101e;border:1px solid #3a2a50;border-radius:8px;padding:10px 12px;width:100%}
+.student-cred-inline .credential-warning{margin-bottom:6px}
+.student-cred-value{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.9rem;color:#fff;line-height:1.6;margin-bottom:8px}
+.student-cred-value span.code{font-family:monospace;color:#f8d694;font-size:1rem;letter-spacing:0.05em}
+.student-cred-value span.pin{font-family:monospace;color:#a0f0a0;font-size:1rem}
 .class-admin-empty{font-size:0.82rem;color:#8c94b3;line-height:1.45;padding:8px 2px}
 .class-admin-note{font-size:0.76rem;color:#aeb7d5;margin-top:8px}
 .class-admin-status{margin-top:10px;font-size:0.78rem;color:#5b8dee}
@@ -897,7 +898,6 @@ let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
 let classAdminCollapsed=true;
-let studentCodesVisible=false;
 window._words=defaultWords.map(w=>[...w]);
 
 // ===== TABS =====
@@ -1007,6 +1007,25 @@ function toggleLocalAuthBar(show){
   authBar.classList.toggle('hidden',!show);
   portalHint.classList.toggle('show',!show);
 }
+function hideStudentCred(studentId){
+  const panel=document.getElementById(`scred-${studentId}`);
+  if(panel) panel.style.display='none';
+}
+function _showStudentCredPanel(studentId,html){
+  document.querySelectorAll('.student-cred-inline').forEach(el=>el.style.display='none');
+  const panel=document.getElementById(`scred-${studentId}`);
+  const val=document.getElementById(`scred-val-${studentId}`);
+  if(!panel||!val) return;
+  val.innerHTML=html;
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function revealStudentCode(studentId){
+  const student=currentClassStudents.find(s=>s.id===studentId);
+  if(!student) return;
+  const code=student.login_code||student.student_code||'?';
+  _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span>`);
+}
 function showLatestCredentials(details){
   const box=document.getElementById('student-credential-box');
   const value=document.getElementById('student-credential-value');
@@ -1015,10 +1034,6 @@ function showLatestCredentials(details){
   const code=details.login_code||details.student_code||'-';
   value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Innloggingskode: <strong>${escapeHtml(code)}</strong><br>PIN: <strong>${escapeHtml(details.pin||'-')}</strong>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-function toggleStudentCodes(){
-  studentCodesVisible=!studentCodesVisible;
-  renderStudents(currentClassStudents);
 }
 function renderClassPicker(){
   const select=document.getElementById('student-class-select');
@@ -1047,15 +1062,10 @@ function renderStudents(students){
     list.innerHTML='<div class="class-admin-empty">Ingen elever i denne klassen ennå.</div>';
     return;
   }
-  const toggleLabel=studentCodesVisible?'🙈 Skjul koder':'👁 Vis koder';
-  const visWarning=studentCodesVisible?'<span class="codes-visible-warning">⚠ Skjul før du viser skjermen til klassen!</span>':'';
-  const header=`<div class="codes-toggle-row"><span style="font-size:0.76rem;color:#8c94b3">${students.length} elev${students.length===1?'':'er'}</span><span>${visWarning}<button class="codes-toggle-btn" onclick="toggleStudentCodes()">${toggleLabel}</button></span></div>`;
-  list.innerHTML=header+students.map(student=>{
+  list.innerHTML=students.map(student=>{
     const fullName=[student.first_name,student.last_name].filter(Boolean).join(' ');
-    const codeLine=studentCodesVisible?`<span style="font-family:monospace;color:#f8d694">${escapeHtml(student.login_code||student.student_code||'')}</span>`:'';
-    const metaParts=[fullName?escapeHtml(fullName):'',codeLine].filter(Boolean);
-    const meta=metaParts.length?`<div class="student-item-meta">${metaParts.join(' · ')}</div>`:'';
-    return `<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div>${meta}</div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromUI('${student.id}')">Ny PIN</button></div></div>`;
+    const meta=fullName?`<div class="student-item-meta">${escapeHtml(fullName)}</div>`:'';
+    return `<div class="student-item" id="stu-${student.id}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div>${meta}</div><div class="student-item-actions"><button class="class-admin-btn" style="font-size:0.8rem;padding:4px 8px" onclick="revealStudentCode('${student.id}')">👁 Kode</button><button class="class-admin-btn" onclick="resetStudentPinFromUI('${student.id}')">Ny PIN</button></div></div><div class="student-cred-inline" id="scred-${student.id}" style="display:none"><div class="credential-warning">⚠️ Ikke vis til klassen — snu skjermen eller steng skjermvisning.</div><div class="student-cred-value" id="scred-val-${student.id}"></div><button class="class-admin-btn" style="font-size:0.75rem;padding:3px 10px" onclick="hideStudentCred('${student.id}')">Skjul ×</button></div></div>`;
   }).join('');
 }
 function updateClassAdminVisibility(){
@@ -1163,8 +1173,10 @@ async function resetStudentPinFromUI(studentId){
   if(error){setClassAdminStatus(`Kunne ikke lage ny PIN: ${error.message}`,true);return}
   const details=Array.isArray(data)?data[0]:data;
   const student=currentClassStudents.find(item=>item.id===studentId);
-  showLatestCredentials({...details,display_name:student?.display_name||details?.display_name||'Elev'});
-  setClassAdminStatus(`Ny PIN generert for ${details?.display_name||student?.display_name||'elev'}`,false);
+  const code=details?.login_code||details?.student_code||'?';
+  const name=student?.display_name||details?.display_name||'Elev';
+  _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span><br>PIN: <span class="pin">${escapeHtml(details?.pin||'?')}</span>`);
+  setClassAdminStatus(`Ny PIN generert for ${name}`,false);
 }
 async function fetchAndRenderReactions(){
   const feed=document.getElementById('reaction-feed');
