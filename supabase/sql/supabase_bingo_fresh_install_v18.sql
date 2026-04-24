@@ -1558,6 +1558,7 @@ security definer
 set search_path = public
 as $$
   select case p_item_key
+    -- Head face-shapes (20 items)
     when 'head_basic'          then 0
     when 'head_flat_top'       then 0
     when 'head_widows_peak'    then 50
@@ -1578,10 +1579,51 @@ as $$
     when 'head_helmet'         then 275
     when 'head_cap'            then 175
     when 'head_flat_top_beard' then 300
+    -- Head accessories (20 items) — v19
+    when 'acc_none'        then 0
+    when 'acc_headband'    then 50
+    when 'acc_beanie'      then 50
+    when 'acc_cap'         then 50
+    when 'acc_party_hat'   then 75
+    when 'acc_earmuffs'    then 75
+    when 'acc_bow'         then 75
+    when 'acc_tophat'      then 100
+    when 'acc_bandana'     then 100
+    when 'acc_chef_hat'    then 100
+    when 'acc_cowboy'      then 125
+    when 'acc_sombrero'    then 125
+    when 'acc_antlers'     then 125
+    when 'acc_graduation'  then 150
+    when 'acc_witch_hat'   then 150
+    when 'acc_bunny_ears'  then 150
+    when 'acc_laurel'      then 175
+    when 'acc_viking'      then 200
+    when 'acc_tiara'       then 225
+    when 'acc_crown'       then 250
     else null
   end;
 $$;
 
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v18_avatar_faceshapes.sql
+
+-- =========================================================
+-- >>> FILE: supabase_bingo_v19_avatar_accessories.sql
+-- Lerke Bingo v19 — Head Accessory XP Costs (Avatar-8)
+-- =========================================================
+-- get_avatar_item_cost above already includes acc_* keys.
+-- Grandfather any currently-equipped accessories into
+-- unlocked_avatar_items so existing students keep them.
+-- =========================================================
+
+update public.student_profiles
+set unlocked_avatar_items = array_append(
+  coalesce(unlocked_avatar_items, '{}'),
+  avatar_data->>'acc'
+)
+where avatar_data->>'acc' is not null
+  and avatar_data->>'acc' <> ''
+  and avatar_data->>'acc' <> 'acc_none'
+  and not (avatar_data->>'acc' = any(coalesce(unlocked_avatar_items, '{}')));
+-- <<< END FILE: supabase_bingo_v19_avatar_accessories.sql
 
