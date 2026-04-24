@@ -53,6 +53,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
   - Equation generation now uses each selected table up to `max(12, table)`, and includes reversed equations. Selecting `1, 2, 3` can produce `3 × 12`, `12 × 3`, `10 × 3`, etc. Adding custom `18` allows `18 × 17` and `17 × 18`, but not `3 × 17`.
   - Fixed the teacher live join panel repeatedly collapsing on every poll/render. It now auto-collapses once per session/round, and manual reopening stays open.
   - Teacher roster keeps `x/5` and the five progress dots as connected-line progress, matching near-bingo logic. The earlier `0/5` report was caused by the student sync issue, not by the line-progress calculation itself.
+  - Teacher bingo celebration de-duplication now includes the live session id and winner names, so a previous session's round 1 bingo cannot suppress celebration/jingle in a new math session.
 - `apps/bingo/student.html`:
   - Strict live matte mode now respects `matte_mode='eq'`, so students see equations on their boards when the teacher selects "Stykke → Svar".
   - Direct student session URLs now re-load the live session settings after joining, before choosing strict/local behavior. This prevents QR/direct joins from falling back to local bingo marking while the teacher session is strict live.

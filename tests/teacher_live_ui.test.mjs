@@ -49,6 +49,8 @@ assert.match(teacherHtml, /const progress=board\?\.has_bingo \? 5 : getBestLineP
 assert.match(teacherHtml, /const meta=item\.hasBingo\?'Bingo':isNearBingo\?'[^']*':`\$\{item\.progress\}\/5`/, 'roster meta must display connected-line progress');
 assert.match(teacherHtml, /const on=idx<item\.progress;/, 'roster dots must display connected-line progress, not total marked cells');
 assert.doesNotMatch(teacherHtml, /const on=idx<Math\.min\(item\.markCount,5\)/, 'roster dots must not cap total marked cells as line progress');
+assert.match(teacherHtml, /activeLiveSession\?\.id\|\|'local'/, 'celebration key must include the live session so a previous session cannot suppress a new winner');
+assert.doesNotMatch(teacherHtml, /const celebKey=`\$\{state\.round_number\|\|1\}:\$\{winners\.length\}`/, 'celebration key must not use only round and winner count');
 assert.match(teacherHtml, /let liveJoinAutoCollapsedKey=''/, 'auto-collapse must be keyed so manual reopening survives polling');
 assert.match(teacherHtml, /setLiveJoinCollapsed\(true\)/, 'auto-collapse should use idempotent collapse instead of toggling repeatedly');
 assert.doesNotMatch(

@@ -1463,7 +1463,8 @@ function renderTeacherParticipantProgress(){
   // Bingo celebration
   const winners=teacherParticipantProgress.filter(p=>p.hasBingo).map(p=>p.name);
   const state=teacherLiveState?.state||{};
-  const celebKey=`${state.round_number||1}:${winners.length}`;
+  const sessionKey=activeLiveSession?.id||'local';
+  const celebKey=`${sessionKey}:${state.round_number||1}:${winners.join('|')}`;
   if(winners.length>0&&celebKey!==teacherBingoCelebrationKey){
     teacherBingoCelebrationKey=celebKey;
     showTeacherBingoCelebration(winners);
@@ -2313,7 +2314,7 @@ function drawIndexReachedRoundEnd(state,totalDraws){
 function renderStrictTeacherLiveMode(){
   const state=teacherLiveState?.state||{};
   // Reset celebration key when a new round starts so the next bingo can fire
-  const currentRoundKey=`${state.round_number||1}:`;
+  const currentRoundKey=`${activeLiveSession?.id||'local'}:${state.round_number||1}:`;
   if(!teacherBingoCelebrationKey.startsWith(currentRoundKey)){
     teacherBingoCelebrationKey='';
   }
