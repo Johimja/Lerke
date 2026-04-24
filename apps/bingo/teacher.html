@@ -1456,7 +1456,7 @@ function renderTeacherParticipantProgress(){
       const bingo=item.hasBingo&&idx<5;
       return `<span class="live-roster-dot ${on?'on':''} ${bingo?'bingo':''}"></span>`;
     }).join('');
-    const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${Math.min(item.markCount,5)}/5`;
+    const meta=item.hasBingo?'Bingo':isNearBingo?'⚡ 1 til!':`${item.progress}/5`;
     const av=renderAvatarCircleT(studentAvatarCache[item.name],item.name,24);
     return `<div class="live-roster-item${isNearBingo?' near-bingo':''}"><div style="display:flex;align-items:center;gap:6px">${av}<div class="live-roster-name">${escapeHtml(item.name)}</div></div><div class="live-roster-meta">${meta}</div><div class="live-roster-dots">${dots}</div></div>`;
   }).join('');

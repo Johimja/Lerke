@@ -52,7 +52,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
   - Matte live rounds now generate equation groups by answer. In equation-card mode, a teacher prompt like `24` carries all valid equation answers in `correct_answers`, e.g. `2 × 12`, `12 × 2`, `3 × 8`, `8 × 3`, `4 × 6`, `6 × 4` when those tables are selected.
   - Equation generation now uses each selected table up to `max(12, table)`, and includes reversed equations. Selecting `1, 2, 3` can produce `3 × 12`, `12 × 3`, `10 × 3`, etc. Adding custom `18` allows `18 × 17` and `17 × 18`, but not `3 × 17`.
   - Fixed the teacher live join panel repeatedly collapsing on every poll/render. It now auto-collapses once per session/round, and manual reopening stays open.
-  - Teacher roster now separates visible marked-answer count from near-bingo line progress. The display can show `2/5` after two correct marks, while still using best-line progress for near-bingo alerts.
+  - Teacher roster keeps `x/5` as connected-line progress, matching near-bingo logic. The earlier `0/5` report was caused by the student sync issue, not by the line-progress calculation itself.
 - `apps/bingo/student.html`:
   - Strict live matte mode now respects `matte_mode='eq'`, so students see equations on their boards when the teacher selects "Stykke → Svar".
   - Direct student session URLs now re-load the live session settings after joining, before choosing strict/local behavior. This prevents QR/direct joins from falling back to local bingo marking while the teacher session is strict live.
