@@ -31,49 +31,6 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .auth-portal-copy{font-size:0.78rem;color:#aeb7d5;line-height:1.5}
 .auth-portal-copy strong{color:#fff}
 .live-sync-status{margin-top:6px;font-size:0.76rem;color:var(--blue)}
-.class-admin{display:none;margin:16px 0 18px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
-.class-admin.show{display:block}
-.class-admin-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.class-admin-title{font-family:'Raleway',sans-serif;font-weight:900;font-size:1rem;color:var(--text)}
-.class-admin-sub{font-size:0.78rem;color:var(--muted)}
-.class-admin-toggle{padding:10px 12px;border-radius:8px;border:1px solid #33405f;background:#20283d;color:#dbe4ff;font-family:'Raleway',sans-serif;font-weight:800;font-size:0.72rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
-.class-admin-toggle:hover{border-color:#7abfff;color:#fff}
-.class-admin-body{display:block}
-.class-admin.collapsed .class-admin-head{margin-bottom:0}
-.class-admin.collapsed .class-admin-body{display:none}
-.class-admin-grid{display:grid;grid-template-columns:minmax(260px,.85fr) minmax(0,1.15fr);gap:14px}
-.class-admin-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px}
-.class-admin-card h3{font-family:'Raleway',sans-serif;font-size:0.78rem;color:#9fb4e7;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
-.class-form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.class-form-row input,.class-form-row select{flex:1;min-width:120px;background:#1a1d27;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:0.84rem;padding:9px 10px}
-.class-form-row input:focus,.class-form-row select:focus{outline:none;border-color:var(--blue)}
-.class-admin-btn{padding:10px 12px;border-radius:8px;border:1px solid #33405f;background:#20283d;color:#dbe4ff;font-family:'Raleway',sans-serif;font-weight:800;font-size:0.75rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
-.class-admin-btn:hover{border-color:#7abfff;color:#fff}
-.class-admin-btn.primary{background:linear-gradient(135deg,var(--accent),#e09010);border:none;color:#000}
-.class-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
-.class-item{background:#151b29;border:1px solid #2a334c;border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s, background .15s}
-.class-item:hover{border-color:#5b8dee}
-.class-item.active{border-color:#f5a623;background:#1f2638}
-.class-item-name{font-weight:700;color:#fff}
-.class-item-meta{font-size:0.76rem;color:#aeb7d5;margin-top:4px}
-.student-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto}
-.student-item{background:#151b29;border:1px solid #2a334c;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.student-item-main{min-width:0}
-.student-item-name{font-weight:700;color:#fff}
-.student-item-meta{font-size:0.76rem;color:#aeb7d5;margin-top:4px;line-height:1.4}
-.student-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.credential-box{margin-top:10px;background:#111521;border:1px solid #2a334c;border-radius:10px;padding:12px}
-.credential-title{font-size:0.72rem;color:#f8d694;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
-.credential-value{font-family:'Raleway',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;line-height:1.45}
-.credential-warning{font-size:0.75rem;color:#ff8a65;background:#2a1a10;border:1px solid #5a3020;border-radius:6px;padding:6px 9px;margin-bottom:8px;line-height:1.4}
-.student-cred-inline{margin-top:8px;background:#12101e;border:1px solid #3a2a50;border-radius:8px;padding:10px 12px;width:100%}
-.student-cred-inline .credential-warning{margin-bottom:6px}
-.student-cred-value{font-family:'Raleway',sans-serif;font-weight:700;font-size:0.9rem;color:#fff;line-height:1.6;margin-bottom:8px}
-.student-cred-value span.code{font-family:monospace;color:#f8d694;font-size:1rem;letter-spacing:0.05em}
-.student-cred-value span.pin{font-family:monospace;color:#a0f0a0;font-size:1rem}
-.class-admin-empty{font-size:0.82rem;color:#8c94b3;line-height:1.45;padding:8px 2px}
-.class-admin-note{font-size:0.76rem;color:#aeb7d5;margin-top:8px}
-.class-admin-status{margin-top:10px;font-size:0.78rem;color:#5b8dee}
 .menu-strip{margin-bottom:12px}
 .menu-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:6px}
 .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
@@ -279,7 +236,6 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .lobby-audio-toggle:hover{border-color:#7abfff;color:#fff}
 .lobby-link{font-size:.78rem;color:#7abfff;word-break:break-all;margin-top:12px}
 @media(max-width:900px){
-  .class-admin-grid{grid-template-columns:1fr}
   .live-shell{grid-template-columns:1fr}
   .live-main{min-height:52vh}
   .live-title{max-width:100%;padding-right:40px}
@@ -344,10 +300,6 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] .auth-portal-hint{background:rgba(255,250,242,.92);border-color:rgba(67,32,92,.16)}
 [data-theme="light"] .auth-portal-copy{color:#6d5f72}
 [data-theme="light"] .auth-portal-copy strong{color:#2d2d2d}
-[data-theme="light"] .class-admin-toggle{background:rgba(255,250,242,.9);border-color:rgba(67,32,92,.2);color:#43205c}
-[data-theme="light"] .class-admin-toggle:hover{border-color:rgba(67,32,92,.5);color:#43205c}
-[data-theme="light"] .class-form-row input,[data-theme="light"] .class-form-row select{background:rgba(255,255,255,.82);border-color:rgba(67,32,92,.16);color:#2d2d2d}
-[data-theme="light"] .class-admin-btn{background:rgba(255,250,242,.9);border-color:rgba(67,32,92,.2);color:#43205c}
 [data-theme="light"] .class-admin-btn:hover{border-color:rgba(67,32,92,.48)}
 [data-theme="light"] .class-item{background:rgba(255,255,255,.68);border-color:rgba(67,32,92,.14)}
 [data-theme="light"] .class-item:hover{border-color:rgba(67,32,92,.36)}
@@ -480,62 +432,6 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
   <div class="auth-note no-print" id="auth-note">Lærere kan nå logge inn fra hovedportalen først. Denne siden bruker samme økt, men har fortsatt lokal reserveinnlogging ved behov.</div>
   <div class="live-sync-status no-print" id="live-sync-status">Livesynk er ikke aktiv.</div>
 </header>
-
-<section class="class-admin no-print" id="class-admin">
-  <div class="class-admin-head">
-    <div>
-      <div class="class-admin-title">Klasser og elever</div>
-      <div class="class-admin-sub">Opprett klasser, legg til elever, og se elevkode + PIN for enkel elevinnlogging.</div>
-    </div>
-    <button class="class-admin-toggle" type="button" id="class-admin-toggle" onclick="toggleClassAdmin()">Skjul</button>
-  </div>
-  <div class="class-admin-body">
-  <div class="class-admin-grid">
-    <div class="class-admin-card">
-      <h3>Klasser</h3>
-      <div class="class-form-row">
-        <input id="class-name-input" type="text" placeholder="Klassenavn, f.eks. 7A">
-        <input id="class-grade-input" type="text" placeholder="Trinn, f.eks. 7. trinn">
-      </div>
-      <div class="class-form-row">
-        <input id="class-year-input" type="text" placeholder="Skoleår, f.eks. 2026/2027">
-        <button class="class-admin-btn primary" onclick="createClassFromUI()">Opprett klasse</button>
-      </div>
-      <div class="class-admin-note">Klassekoden genereres automatisk og brukes i elevinnloggingen.</div>
-      <div class="class-list" id="class-list">
-        <div class="class-admin-empty">Ingen klasser ennå.</div>
-      </div>
-    </div>
-    <div class="class-admin-card">
-      <h3>Elever i valgt klasse</h3>
-      <div class="class-form-row">
-        <select id="student-class-select" onchange="selectClass(this.value)">
-          <option value="">Velg klasse</option>
-        </select>
-      </div>
-      <div class="class-form-row">
-        <input id="student-display-name-input" type="text" placeholder="Visningsnavn, f.eks. Ola Nordmann">
-      </div>
-      <div class="class-form-row">
-        <input id="student-first-name-input" type="text" placeholder="Fornavn (valgfritt)">
-        <input id="student-last-name-input" type="text" placeholder="Etternavn (valgfritt)">
-      </div>
-      <div class="class-form-row">
-        <button class="class-admin-btn primary" onclick="createStudentFromUI()">Legg til elev</button>
-      </div>
-      <div class="credential-box" id="student-credential-box" style="display:none">
-        <div class="credential-warning">⚠️ Ikke vis dette til klassen — snu skjermen eller steng skjermvisning først.</div>
-        <div class="credential-title">Innloggingsinfo</div>
-        <div class="credential-value" id="student-credential-value">-</div>
-      </div>
-      <div class="student-list" id="student-list">
-        <div class="class-admin-empty">Velg en klasse for å se elevene.</div>
-      </div>
-      <div class="class-admin-status" id="class-admin-status" style="display:none"></div>
-    </div>
-  </div>
-  </div>
-</section>
 
 <div class="menu-strip no-print">
   <div class="menu-label">Velg bingotype</div>
@@ -845,7 +741,12 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
     <button class="setup-close" type="button" onclick="closeSetupModal('hall-of-fame-modal')">✕</button>
     <div class="setup-kicker">Klasse</div>
     <div class="setup-title">🏆 Hall of Fame</div>
-    <div class="setup-copy" id="hof-class-name">Laster toppliste…</div>
+    <div id="hof-class-picker" style="margin-bottom:12px;display:none">
+      <select id="hof-class-select" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.9rem" onchange="loadHallOfFameForClass(this.value)">
+        <option value="">Velg klasse…</option>
+      </select>
+    </div>
+    <div class="setup-copy" id="hof-class-name"></div>
     <div id="hof-body" style="margin-top:16px"></div>
     <div class="setup-footer">
       <button class="auth-btn secondary" type="button" onclick="closeSetupModal('hall-of-fame-modal')">Lukk</button>
@@ -894,10 +795,7 @@ const BINGO_JINGLES=[
   '../../media/bingow4.mp3'
 ];
 let currentBingoJingle=null;
-let teacherClasses=[];
-let selectedClassId='';
-let currentClassStudents=[];
-let classAdminCollapsed=true;
+
 window._words=defaultWords.map(w=>[...w]);
 
 // ===== TABS =====
@@ -914,15 +812,36 @@ function closeSetupModal(id){
   document.getElementById(id)?.classList.remove('show');
 }
 async function openHallOfFame(){
-  if(!supabaseClient||!selectedClassId){
-    alert('Velg en klasse først.');
+  if(!supabaseClient){alert('Supabase er ikke konfigurert.');return}
+  openSetupModal('hall-of-fame-modal');
+  document.getElementById('hof-class-name').textContent='';
+  document.getElementById('hof-body').innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">Laster…</div>';
+  const {data:classes,error:clsErr}=await supabaseClient
+    .from('classes').select('id,name').order('created_at',{ascending:true});
+  if(clsErr||!classes?.length){
+    document.getElementById('hof-body').innerHTML='<div style="color:#e87070;text-align:center;padding:24px">Ingen klasser funnet.</div>';
     return;
   }
-  openSetupModal('hall-of-fame-modal');
-  const cls=teacherClasses.find(c=>c.id===selectedClassId);
-  document.getElementById('hof-class-name').textContent=cls?`Klasse: ${cls.name}`:'Laster toppliste…';
+  if(classes.length===1){
+    document.getElementById('hof-class-picker').style.display='none';
+    await loadHallOfFameForClass(classes[0].id,classes[0].name);
+  } else {
+    const picker=document.getElementById('hof-class-picker');
+    const sel=document.getElementById('hof-class-select');
+    sel.innerHTML='<option value="">Velg klasse…</option>'+classes.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    picker.style.display='block';
+    document.getElementById('hof-body').innerHTML='';
+  }
+}
+async function loadHallOfFameForClass(classId,className){
+  if(!classId) return;
+  if(!className){
+    const opt=document.getElementById('hof-class-select')?.querySelector(`option[value="${classId}"]`);
+    className=opt?.textContent||'';
+  }
+  document.getElementById('hof-class-name').textContent=className?`Klasse: ${className}`:'';
   document.getElementById('hof-body').innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">Laster…</div>';
-  const {data,error}=await supabaseClient.rpc('get_class_hall_of_fame',{p_class_id:selectedClassId});
+  const {data,error}=await supabaseClient.rpc('get_class_hall_of_fame',{p_class_id:classId});
   if(error||!data){
     document.getElementById('hof-body').innerHTML='<div style="color:#e87070;text-align:center;padding:24px">Kunne ikke laste hall of fame.</div>';
     return;
@@ -956,14 +875,6 @@ async function openHallOfFame(){
 function toggleColl(headerEl){
   headerEl.closest('.coll-section').classList.toggle('collapsed');
 }
-function toggleClassAdmin(forceState){
-  const panel=document.getElementById('class-admin');
-  const btn=document.getElementById('class-admin-toggle');
-  if(!panel||!btn) return;
-  classAdminCollapsed=typeof forceState==='boolean'?forceState:!classAdminCollapsed;
-  panel.classList.toggle('collapsed',classAdminCollapsed);
-  btn.textContent=classAdminCollapsed?'Vis':'Skjul';
-}
 function hasApprovedTeacherAccess(){
   return !!teacherProfile?.is_approved;
 }
@@ -993,190 +904,12 @@ function setLiveSyncStatus(msg,isError){
   el.textContent=msg;
   el.style.color=isError?'#e05a5a':'#5b8dee';
 }
-function setClassAdminStatus(msg,isError){
-  const el=document.getElementById('class-admin-status');
-  if(!el) return;
-  el.style.display=msg?'block':'none';
-  el.textContent=msg||'';
-  el.style.color=isError?'#ef8f8f':'#5b8dee';
-}
 function toggleLocalAuthBar(show){
   const authBar=document.getElementById('auth-bar');
   const portalHint=document.getElementById('auth-portal-hint');
   if(!authBar||!portalHint) return;
   authBar.classList.toggle('hidden',!show);
   portalHint.classList.toggle('show',!show);
-}
-function hideStudentCred(studentId){
-  const panel=document.getElementById(`scred-${studentId}`);
-  if(panel) panel.style.display='none';
-}
-function _showStudentCredPanel(studentId,html){
-  document.querySelectorAll('.student-cred-inline').forEach(el=>el.style.display='none');
-  const panel=document.getElementById(`scred-${studentId}`);
-  const val=document.getElementById(`scred-val-${studentId}`);
-  if(!panel||!val) return;
-  val.innerHTML=html;
-  panel.style.display='block';
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-function revealStudentCode(studentId){
-  const student=currentClassStudents.find(s=>s.id===studentId);
-  if(!student) return;
-  const code=student.login_code||student.student_code||'?';
-  _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span>`);
-}
-function showLatestCredentials(details){
-  const box=document.getElementById('student-credential-box');
-  const value=document.getElementById('student-credential-value');
-  if(!box||!value||!details) return;
-  box.style.display='block';
-  const code=details.login_code||details.student_code||'-';
-  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Innloggingskode: <strong>${escapeHtml(code)}</strong><br>PIN: <strong>${escapeHtml(details.pin||'-')}</strong>`;
-  box.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-function renderClassPicker(){
-  const select=document.getElementById('student-class-select');
-  if(!select) return;
-  select.innerHTML=`<option value="">Velg klasse</option>`+teacherClasses.map(cls=>`<option value="${cls.id}" ${cls.id===selectedClassId?'selected':''}>${escapeHtml(cls.name)} (${escapeHtml(cls.class_code)})</option>`).join('');
-}
-function renderClasses(){
-  const list=document.getElementById('class-list');
-  if(!list) return;
-  renderClassPicker();
-  if(!teacherClasses.length){
-    list.innerHTML='<div class="class-admin-empty">Ingen klasser ennå.</div>';
-    return;
-  }
-  list.innerHTML=teacherClasses.map(cls=>`<div class="class-item ${cls.id===selectedClassId?'active':''}" onclick="selectClass('${cls.id}')"><div class="class-item-name">${escapeHtml(cls.name)}</div><div class="class-item-meta">Kode: ${escapeHtml(cls.class_code)}${cls.grade_label?` · ${escapeHtml(cls.grade_label)}`:''}${cls.school_year?` · ${escapeHtml(cls.school_year)}`:''}</div></div>`).join('');
-}
-function renderStudents(students){
-  currentClassStudents=students||[];
-  const list=document.getElementById('student-list');
-  if(!list) return;
-  if(!selectedClassId){
-    list.innerHTML='<div class="class-admin-empty">Velg en klasse for å se elevene.</div>';
-    return;
-  }
-  if(!students.length){
-    list.innerHTML='<div class="class-admin-empty">Ingen elever i denne klassen ennå.</div>';
-    return;
-  }
-  list.innerHTML=students.map(student=>{
-    const fullName=[student.first_name,student.last_name].filter(Boolean).join(' ');
-    const meta=fullName?`<div class="student-item-meta">${escapeHtml(fullName)}</div>`:'';
-    return `<div class="student-item" id="stu-${student.id}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div>${meta}</div><div class="student-item-actions"><button class="class-admin-btn" style="font-size:0.8rem;padding:4px 8px" onclick="revealStudentCode('${student.id}')">👁 Kode</button><button class="class-admin-btn" onclick="resetStudentPinFromUI('${student.id}')">Ny PIN</button></div></div><div class="student-cred-inline" id="scred-${student.id}" style="display:none"><div class="credential-warning">⚠️ Ikke vis til klassen — snu skjermen eller steng skjermvisning.</div><div class="student-cred-value" id="scred-val-${student.id}"></div><button class="class-admin-btn" style="font-size:0.75rem;padding:3px 10px" onclick="hideStudentCred('${student.id}')">Skjul ×</button></div></div>`;
-  }).join('');
-}
-function updateClassAdminVisibility(){
-  const panel=document.getElementById('class-admin');
-  if(!panel) return;
-  panel.classList.toggle('show',!!teacherProfile?.is_approved);
-  if(teacherProfile?.is_approved){
-    toggleClassAdmin(classAdminCollapsed);
-  }
-}
-async function loadTeacherClasses(){
-  if(!supabaseClient||!teacherProfile?.is_approved){
-    teacherClasses=[];
-    selectedClassId='';
-    renderClasses();
-    renderStudents([]);
-    updateClassAdminVisibility();
-    return;
-  }
-  const {data,error}=await supabaseClient
-    .from('classes')
-    .select('id,name,grade_label,school_year,class_code,status,created_at')
-    .order('created_at',{ascending:true});
-  if(error){
-    setClassAdminStatus(`Kunne ikke hente klasser: ${error.message}`,true);
-    return;
-  }
-  teacherClasses=data||[];
-  if(selectedClassId&&!teacherClasses.some(cls=>cls.id===selectedClassId)){
-    selectedClassId='';
-  }
-  if(!selectedClassId&&teacherClasses.length){
-    selectedClassId=teacherClasses[0].id;
-  }
-  renderClasses();
-  updateClassAdminVisibility();
-  await loadStudentsForSelectedClass();
-}
-async function loadStudentsForSelectedClass(){
-  if(!supabaseClient||!selectedClassId){
-    renderStudents([]);
-    return;
-  }
-  const {data,error}=await supabaseClient.rpc('list_class_students',{p_class_id:selectedClassId});
-  if(error){
-    setClassAdminStatus(`Kunne ikke hente elever: ${error.message}`,true);
-    return;
-  }
-  renderStudents(Array.isArray(data)?data:[]);
-}
-function selectClass(classId){
-  selectedClassId=classId;
-  renderClasses();
-  loadStudentsForSelectedClass();
-}
-async function createClassFromUI(){
-  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
-  const name=document.getElementById('class-name-input').value.trim();
-  const grade=document.getElementById('class-grade-input').value.trim();
-  const year=document.getElementById('class-year-input').value.trim();
-  if(!name){alert('Skriv inn klassenavn først.');return}
-  const {data,error}=await supabaseClient.rpc('create_class',{
-    p_name:name,
-    p_grade_label:grade||null,
-    p_school_year:year||null
-  });
-  if(error){setClassAdminStatus(`Kunne ikke opprette klasse: ${error.message}`,true);return}
-  const row=Array.isArray(data)?data[0]:data;
-  document.getElementById('class-name-input').value='';
-  document.getElementById('class-grade-input').value='';
-  document.getElementById('class-year-input').value='';
-  setClassAdminStatus(`Klasse opprettet: ${row?.name||name} (${row?.class_code||''})`,false);
-  await loadTeacherClasses();
-  if(row?.id) selectClass(row.id);
-}
-async function createStudentFromUI(){
-  if(!supabaseClient){alert('Supabase er ikke konfigurert ennå.');return}
-  const classId=document.getElementById('student-class-select').value||selectedClassId;
-  const displayName=document.getElementById('student-display-name-input').value.trim();
-  const firstName=document.getElementById('student-first-name-input').value.trim();
-  const lastName=document.getElementById('student-last-name-input').value.trim();
-  if(!classId){alert('Velg klasse først.');return}
-  if(!displayName){alert('Skriv inn elevnavn først.');return}
-  const {data,error}=await supabaseClient.rpc('create_student_profile',{
-    p_class_id:classId,
-    p_display_name:displayName,
-    p_first_name:firstName||null,
-    p_last_name:lastName||null
-  });
-  if(error){setClassAdminStatus(`Kunne ikke opprette elev: ${error.message}`,true);return}
-  const details=Array.isArray(data)?data[0]:data;
-  selectedClassId=classId;
-  document.getElementById('student-display-name-input').value='';
-  document.getElementById('student-first-name-input').value='';
-  document.getElementById('student-last-name-input').value='';
-  showLatestCredentials(details);
-  setClassAdminStatus(`Elev opprettet: ${details?.display_name||displayName}`,false);
-  renderClasses();
-  renderClassPicker();
-  await loadStudentsForSelectedClass();
-}
-async function resetStudentPinFromUI(studentId){
-  if(!supabaseClient||!studentId) return;
-  const {data,error}=await supabaseClient.rpc('reset_student_pin',{p_student_id:studentId});
-  if(error){setClassAdminStatus(`Kunne ikke lage ny PIN: ${error.message}`,true);return}
-  const details=Array.isArray(data)?data[0]:data;
-  const student=currentClassStudents.find(item=>item.id===studentId);
-  const code=details?.login_code||details?.student_code||'?';
-  const name=student?.display_name||details?.display_name||'Elev';
-  _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span><br>PIN: <span class="pin">${escapeHtml(details?.pin||'?')}</span>`);
-  setClassAdminStatus(`Ny PIN generert for ${name}`,false);
 }
 async function fetchAndRenderReactions(){
   const feed=document.getElementById('reaction-feed');
@@ -1224,7 +957,6 @@ async function refreshTeacherAuthStatus(){
     statusEl.textContent='Supabase ikke konfigurert';
     if(noteEl) noteEl.textContent='Lærere må ha konto og godkjenning før liveøkter kan opprettes.';
     toggleLocalAuthBar(true);
-    updateClassAdminVisibility();
     updateTeacherLaunchAccess();
     return;
   }
@@ -1235,7 +967,6 @@ async function refreshTeacherAuthStatus(){
     statusEl.textContent='Ikke innlogget';
     if(noteEl) noteEl.textContent='Lag konto eller logg inn, og be deretter om lærertilgang.';
     toggleLocalAuthBar(true);
-    updateClassAdminVisibility();
     updateTeacherLaunchAccess();
     return;
   }
@@ -1254,7 +985,6 @@ async function refreshTeacherAuthStatus(){
   if(profileError){
     statusEl.textContent=`Innlogget: ${userLabel}`;
     if(noteEl) noteEl.textContent='Kunne ikke hente lærerstatus akkurat nå.';
-    updateClassAdminVisibility();
     updateTeacherLaunchAccess();
     return;
   }
@@ -1263,23 +993,19 @@ async function refreshTeacherAuthStatus(){
   if(profile?.is_approved){
     statusEl.textContent=`Innlogget: ${userLabel}`;
     if(noteEl) noteEl.textContent='Lærertilgang godkjent. Du kan opprette liveøkter.';
-    updateClassAdminVisibility();
     updateTeacherLaunchAccess();
-    await loadTeacherClasses();
     return;
   }
 
   if(profile?.is_teacher){
     statusEl.textContent=`Innlogget: ${userLabel}`;
     if(noteEl) noteEl.textContent='Lærertilgang er sendt inn og venter på godkjenning.';
-    updateClassAdminVisibility();
     updateTeacherLaunchAccess();
     return;
   }
 
   statusEl.textContent=`Innlogget: ${userLabel}`;
   if(noteEl) noteEl.textContent='Konto finnes, men du må fortsatt be om lærertilgang.';
-  updateClassAdminVisibility();
   updateTeacherLaunchAccess();
 }
 async function signUpTeacher(){
@@ -3035,7 +2761,6 @@ async function init(){
   if(versionBadge) versionBadge.textContent=`v${APP_VERSION}`;
   await initSupabase();
   renderWordList();
-  toggleClassAdmin(true);
   if(hasApprovedTeacherAccess()){
     setLiveSyncStatus('Live-modus aktiv. Sett opp innhold og klargjør når du vil starte en digital Bingo-økt.',false);
   } else {
