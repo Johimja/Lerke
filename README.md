@@ -13,7 +13,7 @@ Lerke is a lightweight classroom game portal for Steinerskolen i Kristiansand. T
 
 The app is still intentionally simple at the frontend level: mostly static HTML/CSS/JavaScript pages with a small Supabase backend layer behind the live Bingo flow. It originally started as a replacement for a broken Google Sheets bingo generator and has since grown into a broader Lerke portal.
 
-There is now also an active next-step backend track for teacher-managed classes and student accounts using `class code + student code + PIN`, while anonymous live guest sessions are still intended to remain supported.
+There is now also an active backend track for teacher-managed classes and student accounts using a single student `login_code` + PIN, while anonymous live guest sessions are still intended to remain supported.
 
 SQL execution guidance now lives in [supabase/sql/README.md](supabase/sql/README.md), so the main README does not have to duplicate which patch chain is current.
 For current SQL context, default to [supabase/sql/supabase_bingo_fresh_install_v18.sql](supabase/sql/supabase_bingo_fresh_install_v18.sql); older migration files are archived for reference only.
@@ -56,7 +56,7 @@ lerke/
   - join by manual join code
   - get a generated nickname per session
   - reroll nickname within the session limit
-  - log in through the student account portal with class code + student code + PIN
+  - log in through the student account portal with their student login code + PIN
 - Shared live session state is backed by Supabase.
 
 Shared project history and handoff notes currently live in [docs/shared_notes.md](docs/shared_notes.md).
@@ -99,7 +99,7 @@ Shared project history and handoff notes currently live in [docs/shared_notes.md
 - shared frontend config files now live in `config/`
 - active images/audio now live in `media/`
 - Live Bingo uses Supabase for auth, session state, join flow, and participant presence
-- Student accounts use the teacher-managed class + student + PIN backend track
+- Student accounts use the teacher-managed student login code + PIN backend track
 - `config/supabase-public-config.js` provides `window.LERKE_SUPABASE = { url, anonKey }`
 - `config/supabase-public-config.js` is safe to deploy because it only contains the public project URL and publishable anon key
 - Never put the Supabase `service_role` key in this repo or in frontend code

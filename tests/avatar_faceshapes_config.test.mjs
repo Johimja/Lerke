@@ -19,7 +19,7 @@ function pngSize(relPath) {
 
 const indexHtml = read('index.html');
 const teacherHtml = read('apps/bingo/teacher.html');
-const avatarSql = read('supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql');
+const avatarSql = read('supabase/sql/archive/legacy-migrations/supabase_bingo_v18_avatar_faceshapes.sql');
 
 assert.ok(existsSync(join(root, 'media/avatar_faceshapes.png')), 'canonical faceshape sheet must exist');
 assert.deepEqual(pngSize('media/avatar_faceshapes.png'), { width: 1024, height: 1280 });
@@ -27,7 +27,7 @@ assert.deepEqual(pngSize('media/avatar_faceshapes.png'), { width: 1024, height: 
 for (const [name, text] of [
   ['index.html', indexHtml],
   ['apps/bingo/teacher.html', teacherHtml],
-  ['supabase_bingo_v17_avatar_shop.sql', avatarSql],
+  ['supabase_bingo_v18_avatar_faceshapes.sql', avatarSql],
 ]) {
   assert.match(text, /avatar_faceshapes\.png/, `${name} must reference avatar_faceshapes.png`);
   assert.doesNotMatch(text, /avatarspreadsheet\.png/, `${name} must not reference avatarspreadsheet.png`);

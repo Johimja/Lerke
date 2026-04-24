@@ -44,6 +44,35 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
+
+**What was done:**
+
+- `index.html`:
+  - The logged-in student portal card no longer displays the student's `login_code`; it now shows only the student display name in the header.
+  - The teacher class/student list shows only each student's display name by default.
+  - Added a deliberate `Vis kode` action per student that reveals only `Innloggingskode` (`login_code`, with `student_code` fallback for legacy rows). It does not show or mention PIN.
+  - `Ny PIN` remains the only flow that generates and displays a new PIN, alongside the login code, with the existing warning panel.
+  - Removed now-unused `student-item-meta` styling.
+- `apps/bingo/teacher.html`:
+  - Removed leftover light-theme CSS selectors for the deleted `Klasser og elever` / student-management UI. A scan found no remaining class/student-management code there; Hall of Fame still fetches classes independently when opened.
+- Tests:
+  - Added `tests/portal_student_code_reveal.test.mjs` to guard that the student portal card does not expose `login_code`, that `Vis kode` exists, and that code reveal does not expose PIN.
+  - Updated `tests/avatar_faceshapes_config.test.mjs` to read the archived v18 faceshape SQL path used by the current repo layout.
+
+**Verification run:**
+
+- `node tests/portal_student_code_reveal.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+- Inline JavaScript parse check for all four HTML files ✅
+- `git diff --check` ✅
+
+---
+
 ### 2026-04-24 — Automated: Student login code display and projected-screen privacy fix
 
 **What was done:**

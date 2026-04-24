@@ -379,7 +379,6 @@ html{scroll-behavior:smooth}
 .student-item{background:rgba(255,255,255,.58);border:1px solid rgba(67,32,92,.12);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .student-item-main{min-width:0}
 .student-item-name{font-weight:700;color:var(--lerke-plum)}
-.student-item-meta{font-size:.76rem;color:#6d5f72;margin-top:4px;line-height:1.4}
 .student-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .credential-box{margin-top:10px;background:linear-gradient(135deg,rgba(67,32,92,.96),rgba(111,47,134,.92));border:1px solid rgba(67,32,92,.3);border-radius:14px;padding:12px}
 .credential-title{font-size:.72rem;color:#f2d78b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
@@ -496,7 +495,7 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .class-item-name,[data-theme="dark"] .student-item-name{color:#f0f6fc}
 [data-theme="dark"] .class-item-meta{color:#c9d1d9}
 [data-theme="dark"] .student-item{background:rgba(13,17,23,.68);border-color:rgba(240,246,252,.08)}
-[data-theme="dark"] .student-item-meta,[data-theme="dark"] .student-session-meta{color:#c9d1d9}
+[data-theme="dark"] .student-session-meta{color:#c9d1d9}
 [data-theme="dark"] .game-card{background:linear-gradient(rgba(28,33,40,.95),rgba(28,33,40,.95)),url('media/wallpaper.png') repeat;border-color:rgba(240,246,252,.08)}
 [data-theme="dark"] .game-card:hover{border-color:rgba(210,168,255,.3)}
 [data-theme="dark"] .section-copy{color:#c9d1d9}
@@ -1212,9 +1211,7 @@ function renderStudentPortalState(){
   if(sessionEl) sessionEl.classList.toggle('show',loggedIn);
   if(nameEl) nameEl.textContent=loggedIn?(currentStudentProfile.display_name||'Elev'):'-';
   if(metaEl){
-    metaEl.textContent=loggedIn
-      ? `${currentStudentProfile.class_name||'Klasse'}${currentStudentProfile.login_code?` · Kode: ${currentStudentProfile.login_code}`:''}`
-      : '-';
+    metaEl.textContent=loggedIn?'':'-';
   }
   const avatarDisplay=document.getElementById('student-avatar-display');
   if(avatarDisplay){
@@ -1360,7 +1357,6 @@ function revealStudentCode(studentId){
   const code=student.login_code||student.student_code||'?';
   _showStudentCredPanel(studentId,`Innloggingskode: <span class="code">${escapeHtml(code)}</span>`);
 }
-
 function renderClassPicker(){
   const select=document.getElementById('student-class-select');
   if(!select) return;
@@ -1391,9 +1387,7 @@ function renderStudents(students){
     return;
   }
   list.innerHTML=students.map(student=>{
-    const fullName=[student.first_name,student.last_name].filter(Boolean).join(' ');
-    const meta=fullName?`<div class="student-item-meta">${escapeHtml(fullName)}</div>`:'';
-    return `<div class="student-item" id="stu-${student.id}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div>${meta}</div><div class="student-item-actions"><button class="class-admin-btn" style="font-size:0.8rem;padding:4px 8px" onclick="revealStudentCode('${student.id}')">👁 Kode</button><button class="class-admin-btn" onclick="resetStudentPinFromPortal('${student.id}')">Ny PIN</button></div></div><div class="student-cred-inline" id="scred-${student.id}" style="display:none"><div class="credential-warning">⚠️ Ikke vis til klassen — snu skjermen eller steng skjermvisning.</div><div class="student-cred-value" id="scred-val-${student.id}"></div><button class="class-admin-btn" style="font-size:.75rem;padding:3px 10px" onclick="hideStudentCred('${student.id}')">Skjul ×</button></div></div>`;
+    return `<div class="student-item" id="stu-${student.id}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div></div><div class="student-item-actions"><button class="class-admin-btn" style="font-size:0.8rem;padding:4px 8px" onclick="revealStudentCode('${student.id}')">Vis kode</button><button class="class-admin-btn" onclick="resetStudentPinFromPortal('${student.id}')">Ny PIN</button></div></div><div class="student-cred-inline" id="scred-${student.id}" style="display:none"><div class="credential-warning">⚠️ Ikke vis til klassen — snu skjermen eller steng skjermvisning.</div><div class="student-cred-value" id="scred-val-${student.id}"></div><button class="class-admin-btn" style="font-size:.75rem;padding:3px 10px" onclick="hideStudentCred('${student.id}')">Skjul ×</button></div></div>`;
   }).join('');
 }
 
