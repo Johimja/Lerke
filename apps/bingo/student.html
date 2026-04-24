@@ -357,6 +357,8 @@ let strictLivePollErrorCount=0;
 let currentBoardRoundNumber=0;
 let currentBoardSignature='';
 let currentResponseKey='';
+let strictAnswerInFlight=false;
+let strictAnswerDrawKey='';
 let lastOtherBingoShownKey='';
 // Comeback wildcard state
 const WILDCARD_THRESHOLD=3;
@@ -505,8 +507,18 @@ function setSubtitle(text){
   const el=document.getElementById('subtitle');
   if(el) el.textContent=text;
 }
+function normalizeMarkedCellIndices(markedIndices){
+  let raw=[];
+  if(Array.isArray(markedIndices)) raw=markedIndices;
+  else if(typeof markedIndices==='string'){
+    try{raw=JSON.parse(markedIndices);}catch(e){raw=[];}
+  }
+  return (Array.isArray(raw)?raw:[])
+    .map(Number)
+    .filter(n=>Number.isInteger(n));
+}
 function applyMarkedCellsToGrid(markedIndices){
-  markedCells=new Set((markedIndices||[]).map(Number));
+  markedCells=new Set(normalizeMarkedCellIndices(markedIndices));
   const grid=document.getElementById('bingo-grid');
   if(!grid) return;
   Array.from(grid.children).forEach((el,i)=>{
@@ -776,6 +788,11 @@ function applyStrictLiveState(payload){
   const board=payload.board||null;
   const response=payload.current_response||null;
   const roundNumber=Math.max(1,parseInt(state.round_number,10)||1);
+  const drawKey=`${roundNumber}:${state.draw_index||0}`;
+  if(strictAnswerDrawKey&&strictAnswerDrawKey!==drawKey){
+    strictAnswerInFlight=false;
+    strictAnswerDrawKey='';
+  }
   currentSessionName=session.title||currentSessionName||'Lerke Bingo';
   totalRounds=Math.max(1,Math.min(20,parseInt(session.settings?.rounds,10)||totalRounds||1));
   document.getElementById('session-panel').style.display='block';
@@ -801,6 +818,8 @@ function applyStrictLiveState(payload){
   if(state.phase==='round_complete'){showLeaderboard();}else{hideLeaderboard();}
   const responseKey=`${roundNumber}:${state.draw_index||0}:${response?.answered_at||''}:${response?.response_outcome||''}`;
   if(response&&responseKey!==currentResponseKey){
+    strictAnswerInFlight=false;
+    strictAnswerDrawKey='';
     currentResponseKey=responseKey;
     if(response.response_outcome==='correct'){
       setJoinNote('Riktig!',false);
@@ -811,6 +830,10 @@ function applyStrictLiveState(payload){
     }
   } else if(!response){
     currentResponseKey='';
+    if(state.phase!=='draw_open'){
+      strictAnswerInFlight=false;
+      strictAnswerDrawKey='';
+    }
   }
   // Show bingo banner once per round — sessionStorage guard survives F5 refresh
   if(board?.has_bingo && !wasBingoShown(roundNumber)){
@@ -1011,9 +1034,11 @@ function showBingoBanner(text){
 
 async function submitStrictAnswer(idx){
   if(!supabaseClient||!isStrictLiveSession()||!currentCells[idx]) return;
+  if(strictAnswerInFlight) return;
   const grid=document.getElementById('bingo-grid');
-  const cellEl=grid?.children[idx];
-  if(cellEl) cellEl.classList.add('marked');
+  const state=strictLiveState?.state||{};
+  strictAnswerInFlight=true;
+  strictAnswerDrawKey=`${Math.max(1,parseInt(state.round_number,10)||1)}:${state.draw_index||0}`;
   try{
     const {data,error}=await supabaseClient.rpc('submit_bingo_answer',{
       p_session_id:liveSessionId,
@@ -1021,12 +1046,17 @@ async function submitStrictAnswer(idx){
       p_selected_value:currentCells[idx].label
     });
     if(error) throw error;
-    if(data?.marked_cells) applyMarkedCellsToGrid(data.marked_cells);
     if(data?.response_outcome==='correct'){
+      applyMarkedCellsToGrid(data?.marked_cells||[]);
       let msg='Riktig!';
       if(data.xp_gained>0) msg+=` +${data.xp_gained} XP`;
       setJoinNote(msg,false);
-    } else if(data?.response_outcome==='wrong') setJoinNote('Feil. Prøv igjen neste trekk.',true);
+    } else if(data?.response_outcome==='wrong'){
+      applyMarkedCellsToGrid(data?.marked_cells||[]);
+      setJoinNote('Feil. Prøv igjen neste trekk.',true);
+    } else {
+      applyMarkedCellsToGrid(data?.marked_cells||[]);
+    }
     if(data?.has_bingo){
       const rn=Math.max(1,parseInt(strictLiveState?.state?.round_number,10)||1);
       if(!wasBingoShown(rn)){
@@ -1036,8 +1066,11 @@ async function submitStrictAnswer(idx){
     }
     await refreshStrictLiveState();
   } catch(error){
+    const cellEl=grid?.children[idx];
     if(cellEl) cellEl.classList.remove('marked');
     setJoinNote(error.message||String(error),true);
+  } finally {
+    strictAnswerInFlight=false;
   }
 }
 
@@ -1332,6 +1365,10 @@ function updateSessionPanel(){
 function toggleCell(idx,el){
   if(isStrictLiveSession()){
     if(markedCells.has(idx)) return;
+    if(strictAnswerInFlight){
+      setJoinNote('Venter på svar fra forrige trykk.',true);
+      return;
+    }
     if(wildcardActive&&wildcardAvailable){
       useWildcard(idx);
       return;

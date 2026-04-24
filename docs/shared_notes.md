@@ -38,9 +38,45 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-04-24 — Automated: Mattebingo equation mode and live sync fixes
+
+**What was done:**
+
+- `apps/bingo/teacher.html`:
+  - Matte live rounds now generate equation groups by answer. In equation-card mode, a teacher prompt like `24` carries all valid equation answers in `correct_answers`, e.g. `2 × 12`, `12 × 2`, `3 × 8`, `8 × 3`, `4 × 6`, `6 × 4` when those tables are selected.
+  - Equation generation now uses each selected table up to `max(12, table)`, and includes reversed equations. Selecting `1, 2, 3` can produce `3 × 12`, `12 × 3`, `10 × 3`, etc. Adding custom `18` allows `18 × 17` and `17 × 18`, but not `3 × 17`.
+  - Fixed the teacher live join panel repeatedly collapsing on every poll/render. It now auto-collapses once per session/round, and manual reopening stays open.
+  - Teacher roster now separates visible marked-answer count from near-bingo line progress. The display can show `2/5` after two correct marks, while still using best-line progress for near-bingo alerts.
+- `apps/bingo/student.html`:
+  - Strict live matte mode now respects `matte_mode='eq'`, so students see equations on their boards when the teacher selects "Stykke → Svar".
+  - Strict answer clicks no longer apply an optimistic green checkmark. The board only updates from server-confirmed `marked_cells`.
+  - Only one answer can be in flight per draw. Wrong answers restore the board to confirmed marks, show the existing "Feil. Prøv igjen neste trekk." message, and the wrong cell remains usable on later draws.
+- `apps/bingo-generator/index.html`:
+  - Printable matte bingo now uses the same equation-generation and grouped answer logic as live bingo.
+- SQL:
+  - Created and applied `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` to the linked Supabase project `isuzuuvddteejktcowev`.
+  - The patch replaces `submit_bingo_answer` so existing databases accept `current_draw.correct_answers` arrays, while still falling back to `current_draw.answer` for older draw payloads.
+  - `supabase/sql/supabase_bingo_fresh_install_v18.sql` was kept in sync for new database installs only.
+- Tests:
+  - Added `tests/matte_bingo_math.test.mjs`.
+  - Added `tests/teacher_live_ui.test.mjs`.
+  - Added `tests/student_strict_answer_ui.test.mjs`.
+
+**Verification run:**
+
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+- `git diff --check` ✅
+
+**Operational note:** The V19 SQL patch has already been applied to Supabase via `supabase db query --linked --file supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql`.
 
 ---
 
@@ -475,3 +511,4 @@ Three providers selectable in a dropdown:
 15. `supabase/sql/supabase_bingo_v17_avatar_shop.sql` ✅ applied
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
+18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
