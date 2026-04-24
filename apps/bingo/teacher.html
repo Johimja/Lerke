@@ -65,6 +65,11 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .credential-box{margin-top:10px;background:#111521;border:1px solid #2a334c;border-radius:10px;padding:12px}
 .credential-title{font-size:0.72rem;color:#f8d694;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
 .credential-value{font-family:'Raleway',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;line-height:1.45}
+.credential-warning{font-size:0.75rem;color:#ff8a65;background:#2a1a10;border:1px solid #5a3020;border-radius:6px;padding:6px 9px;margin-bottom:8px;line-height:1.4}
+.codes-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.codes-toggle-btn{font-size:0.72rem;background:none;border:1px solid #3a4460;border-radius:5px;color:#aeb7d5;padding:3px 8px;cursor:pointer}
+.codes-toggle-btn:hover{background:#1e2540;color:#e8eaf6}
+.codes-visible-warning{font-size:0.72rem;color:#ff8a65;margin-left:6px}
 .class-admin-empty{font-size:0.82rem;color:#8c94b3;line-height:1.45;padding:8px 2px}
 .class-admin-note{font-size:0.76rem;color:#aeb7d5;margin-top:8px}
 .class-admin-status{margin-top:10px;font-size:0.78rem;color:#5b8dee}
@@ -518,7 +523,8 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
         <button class="class-admin-btn primary" onclick="createStudentFromUI()">Legg til elev</button>
       </div>
       <div class="credential-box" id="student-credential-box" style="display:none">
-        <div class="credential-title">Siste elevinnlogging</div>
+        <div class="credential-warning">⚠️ Ikke vis dette til klassen — snu skjermen eller steng skjermvisning først.</div>
+        <div class="credential-title">Innloggingsinfo</div>
         <div class="credential-value" id="student-credential-value">-</div>
       </div>
       <div class="student-list" id="student-list">
@@ -891,6 +897,7 @@ let teacherClasses=[];
 let selectedClassId='';
 let currentClassStudents=[];
 let classAdminCollapsed=true;
+let studentCodesVisible=false;
 window._words=defaultWords.map(w=>[...w]);
 
 // ===== TABS =====
@@ -1005,7 +1012,13 @@ function showLatestCredentials(details){
   const value=document.getElementById('student-credential-value');
   if(!box||!value||!details) return;
   box.style.display='block';
-  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Kode: ${escapeHtml(details.student_code||'-')}<br>PIN: ${escapeHtml(details.pin||'-')}`;
+  const code=details.login_code||details.student_code||'-';
+  value.innerHTML=`Navn: ${escapeHtml(details.display_name||'-')}<br>Innloggingskode: <strong>${escapeHtml(code)}</strong><br>PIN: <strong>${escapeHtml(details.pin||'-')}</strong>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function toggleStudentCodes(){
+  studentCodesVisible=!studentCodesVisible;
+  renderStudents(currentClassStudents);
 }
 function renderClassPicker(){
   const select=document.getElementById('student-class-select');
@@ -1034,7 +1047,16 @@ function renderStudents(students){
     list.innerHTML='<div class="class-admin-empty">Ingen elever i denne klassen ennå.</div>';
     return;
   }
-  list.innerHTML=students.map(student=>`<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div><div class="student-item-meta">Elevkode: ${escapeHtml(student.student_code)}${student.first_name||student.last_name?` · ${escapeHtml([student.first_name,student.last_name].filter(Boolean).join(' '))}`:''}</div></div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromUI('${student.id}')">Ny PIN</button></div></div>`).join('');
+  const toggleLabel=studentCodesVisible?'🙈 Skjul koder':'👁 Vis koder';
+  const visWarning=studentCodesVisible?'<span class="codes-visible-warning">⚠ Skjul før du viser skjermen til klassen!</span>':'';
+  const header=`<div class="codes-toggle-row"><span style="font-size:0.76rem;color:#8c94b3">${students.length} elev${students.length===1?'':'er'}</span><span>${visWarning}<button class="codes-toggle-btn" onclick="toggleStudentCodes()">${toggleLabel}</button></span></div>`;
+  list.innerHTML=header+students.map(student=>{
+    const fullName=[student.first_name,student.last_name].filter(Boolean).join(' ');
+    const codeLine=studentCodesVisible?`<span style="font-family:monospace;color:#f8d694">${escapeHtml(student.login_code||student.student_code||'')}</span>`:'';
+    const metaParts=[fullName?escapeHtml(fullName):'',codeLine].filter(Boolean);
+    const meta=metaParts.length?`<div class="student-item-meta">${metaParts.join(' · ')}</div>`:'';
+    return `<div class="student-item"><div class="student-item-main"><div class="student-item-name">${escapeHtml(student.display_name)}</div>${meta}</div><div class="student-item-actions"><button class="class-admin-btn" onclick="resetStudentPinFromUI('${student.id}')">Ny PIN</button></div></div>`;
+  }).join('');
 }
 function updateClassAdminVisibility(){
   const panel=document.getElementById('class-admin');
@@ -1142,7 +1164,7 @@ async function resetStudentPinFromUI(studentId){
   const details=Array.isArray(data)?data[0]:data;
   const student=currentClassStudents.find(item=>item.id===studentId);
   showLatestCredentials({...details,display_name:student?.display_name||details?.display_name||'Elev'});
-  setClassAdminStatus(`Ny PIN generert for elevkode ${details?.student_code||''}`,false);
+  setClassAdminStatus(`Ny PIN generert for ${details?.display_name||student?.display_name||'elev'}`,false);
 }
 async function fetchAndRenderReactions(){
   const feed=document.getElementById('reaction-feed');
