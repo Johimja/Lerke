@@ -38,9 +38,40 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code + V20 avatar8_accessory_costs — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-05-04 — Automated: Avatar-8 — Head accessory XP costs
+
+**What was done:**
+
+- `index.html`:
+  - Updated `ACCESSORY_CATALOGUE` — all 20 acc_* items now have real XP costs matching the face-shape pricing tier. `acc_none` and `acc_headband` remain free (0 XP). Other costs range from 50 XP (acc_cap) to 300 XP (acc_viking/acc_crown).
+  - Removed the Avatar-7 placeholder comment "All accessories are free in this layer".
+  - The existing `shopItemClick` / `purchaseAndEquipItem` / `renderAvatarShop` flow handles acc_* keys unchanged — `purchase_avatar_item` RPC is the single purchase path for both `head_*` and `acc_*` items.
+- SQL:
+  - Created and applied `supabase/sql/archive/Patches/supabase_bingo_v20_avatar8_accessory_costs.sql` — extends `get_avatar_item_cost()` with all 20 acc_* keys. Previously acc_* returned null (invalid item), blocking purchases; now the server correctly validates and deducts XP.
+  - `supabase/sql/supabase_bingo_fresh_install_v18.sql` updated so new installs also include acc_* costs in `get_avatar_item_cost()`.
+- Tests:
+  - Added `tests/avatar_accessories_costs.test.mjs` — verifies catalogue count (20), required fields, free items (acc_none, acc_headband), that premium items cost XP, and that every acc_* key in the catalogue appears in the SQL patch.
+
+**XP cost tiers for accessories:**
+- Free (0): acc_none, acc_headband
+- 50: acc_cap | 75: acc_beanie, acc_bow | 100: acc_bandana, acc_party_hat
+- 125: acc_graduation, acc_laurel | 150: acc_cowboy, acc_sombrero, acc_chef_hat, acc_earmuffs
+- 175: acc_bunny_ears, acc_antlers | 200: acc_tiara, acc_tophat
+- 250: acc_crown, acc_witch_hat | 300: acc_viking
+
+**Verification run:**
+
+- `node tests/avatar_accessories_costs.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- Supabase migration `v20_avatar8_accessory_costs` applied ✅
+
+**Operational note:** SQL migration applied to Supabase project `isuzuuvddteejktcowev` via MCP ✅.
 
 ---
 
@@ -510,7 +541,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to all 20 acc_* accessories (SQL v20 `get_avatar_item_cost` extension + ACCESSORY_CATALOGUE update). purchase_avatar_item RPC works for acc_* keys without additional changes. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
