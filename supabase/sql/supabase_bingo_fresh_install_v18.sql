@@ -1327,6 +1327,27 @@ as $$
     when 'head_helmet'         then 275
     when 'head_cap'            then 175
     when 'head_flat_top_beard' then 300
+    -- Head accessories (v20)
+    when 'acc_none'            then 0
+    when 'acc_headband'        then 0
+    when 'acc_beanie'          then 25
+    when 'acc_bow'             then 25
+    when 'acc_cap'             then 50
+    when 'acc_party_hat'       then 50
+    when 'acc_earmuffs'        then 50
+    when 'acc_bandana'         then 75
+    when 'acc_graduation'      then 75
+    when 'acc_chef_hat'        then 75
+    when 'acc_cowboy'          then 100
+    when 'acc_tophat'          then 100
+    when 'acc_sombrero'        then 100
+    when 'acc_laurel'          then 125
+    when 'acc_bunny_ears'      then 125
+    when 'acc_antlers'         then 150
+    when 'acc_tiara'           then 150
+    when 'acc_viking'          then 200
+    when 'acc_witch_hat'       then 200
+    when 'acc_crown'           then 300
     else null  -- invalid / unknown item
   end;
 $$;
