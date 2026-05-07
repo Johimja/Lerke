@@ -38,7 +38,7 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code + V20 avatar accessories shop — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
 
@@ -125,6 +125,30 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 - `git diff --check` ✅
 
 **Operational note:** The V19 SQL patch has already been applied to Supabase via `supabase db query --linked --file supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql`.
+
+---
+
+### 2026-05-07 — Automated: Head accessories shop XP costs (Avatar-8)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_shop.sql`:
+  - Replaces `get_avatar_item_cost` to include all 20 `acc_*` keys with tiered XP costs.
+  - `acc_none` is free (0 XP). Remaining 19 accessories scale from 25 XP (pannebånd, sløyfe) to 200 XP (vikinglehjelm). Cost tiers: 25, 50, 75, 100, 150, 175, 200.
+  - `purchase_avatar_item` is unchanged — it already handles any item key generically.
+  - **Migration applied** ✅ (`v20_avatar_accessories_shop` via Supabase MCP, 2026-05-07).
+- `supabase/sql/supabase_bingo_fresh_install_v18.sql`: Added V20 section at the end so fresh installs include acc_* cost entries.
+- `index.html` `ACCESSORY_CATALOGUE`: Updated all 19 paid accessories from `xp:0` to real XP costs. Items sorted by ascending XP cost in the catalogue so the shop displays cheapest first. `acc_none` stays at xp:0 (free, always equippable without purchase).
+- `tests/avatar_faceshapes_config.test.mjs`: Extended with Avatar-8 assertions — ACCESSORY_CATALOGUE exists, `acc_none` is free, `acc_crown` costs 150 XP, all 20 acc keys present in index.html, SQL patch covers acc_none/acc_crown/acc_viking and still includes head_afro.
+
+**Verification run:**
+
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+- `node tests/portal_student_code_reveal.test.mjs` ✅
 
 ---
 
@@ -510,7 +534,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — XP costs added to all 19 paid accessories (25–200 XP tier); SQL v20 extends `get_avatar_item_cost` for acc_* keys; `purchase_avatar_item` unchanged. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +584,4 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_shop.sql` ✅ applied
