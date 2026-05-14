@@ -38,9 +38,48 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code + V20 avatar_accessories_xp — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-05-14 — Automated: Avatar-8 — head accessories XP costs
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_xp_patch.sql`:
+  - Replaced `get_avatar_item_cost()` to extend the CASE statement with all 20 `acc_*` accessory keys and their XP prices. `purchase_avatar_item()` already routes through this helper for validation and cost lookup, so no further RPC changes were needed.
+  - **Migration applied** ✅ (`v20_avatar_accessories_xp` via Supabase MCP, 2026-05-14).
+- `index.html`:
+  - Updated `ACCESSORY_CATALOGUE` — removed the placeholder `xp:0` for all paid accessories and set real XP costs matching the SQL. Also removed the now-stale comment saying costs would be added in Avatar-8.
+
+**XP cost table (accessories):**
+
+| Key | Label | XP |
+|---|---|---|
+| acc_none | Ingen | 0 |
+| acc_cap | Caps | 50 |
+| acc_headband | Pannebånd | 50 |
+| acc_beanie | Lue | 75 |
+| acc_bow | Sløyfe | 75 |
+| acc_bandana | Bandana | 75 |
+| acc_party_hat | Festlue | 100 |
+| acc_graduation | Akademialue | 100 |
+| acc_earmuffs | Ørevarmere | 100 |
+| acc_tophat | Flosshatt | 125 |
+| acc_cowboy | Cowboyhatt | 125 |
+| acc_chef_hat | Kokkehatt | 125 |
+| acc_sombrero | Sombrero | 150 |
+| acc_laurel | Laurbærkrans | 150 |
+| acc_bunny_ears | Kaninører | 150 |
+| acc_tiara | Tiara | 175 |
+| acc_antlers | Gevir | 175 |
+| acc_crown | Krone | 200 |
+| acc_viking | Vikinglehjelm | 200 |
+| acc_witch_hat | Heksehatt | 250 |
+
+**Next task:** Avatar-9 — paid color changes (color picker/slider, server-verified XP cost per saved color change, canvas/CSS recoloring of silhouette).
 
 ---
 
@@ -510,7 +549,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to all 19 paid accessories in `ACCESSORY_CATALOGUE` (index.html) + extended `get_avatar_item_cost()` SQL helper via v20 patch. `purchase_avatar_item` RPC handles acc_* keys with no further changes. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +599,4 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_xp_patch.sql` ✅ applied
