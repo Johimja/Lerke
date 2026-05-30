@@ -44,6 +44,44 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-05-30 — Automated: Avatar accessories shop with XP costs (Avatar-8)
+
+**What was done:**
+
+- Created `supabase/sql/supabase_bingo_v20_avatar_accessories_shop.sql`:
+  - Replaces `get_avatar_item_cost()` to recognise all 20 `acc_*` keys in addition to the 20 `head_*` keys.
+  - `acc_none` = 0 XP (always free). The remaining 19 accessories range from 50 XP (acc_cap, acc_headband) to 250 XP (acc_bunny_ears). Costs follow a simple rarity ladder: common (50–75), uncommon (100–125), rare (150–175), epic (200–250).
+  - `purchase_avatar_item()` from V17 already calls `get_avatar_item_cost()` and handles the full buy/unlock/XP-deduction flow — no RPC changes needed.
+  - **Migration applied** ✅ (`v20_avatar_accessories_shop` via Supabase MCP, 2026-05-30).
+- `index.html` — `ACCESSORY_CATALOGUE`: updated all 19 purchasable accessories from `xp:0` to their correct XP costs matching the SQL function.
+- `supabase/sql/supabase_bingo_fresh_install_v18.sql`: updated the V18 `get_avatar_item_cost()` definition to include all acc_* costs, so new installs are in sync.
+
+**XP cost table:**
+
+| Accessory | XP | Accessory | XP |
+|---|---|---|---|
+| acc_none | 0 (free) | acc_party_hat | 100 |
+| acc_cap | 50 | acc_graduation | 100 |
+| acc_headband | 50 | acc_cowboy | 100 |
+| acc_beanie | 75 | acc_chef_hat | 100 |
+| acc_bandana | 75 | acc_tophat | 125 |
+| acc_bow | 75 | acc_sombrero | 125 |
+| acc_earmuffs | 75 | acc_crown | 150 |
+| acc_laurel | 150 | acc_tiara | 175 |
+| acc_antlers | 175 | acc_viking | 200 |
+| acc_witch_hat | 225 | acc_bunny_ears | 250 |
+
+**Verification:**
+
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- `node tests/portal_student_code_reveal.test.mjs` ✅
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+
+---
+
 ### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
 
 **What was done:**
@@ -510,7 +548,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — XP costs added to all 19 purchasable accessories (50–250 XP); `acc_none` stays free. SQL v20 migration updates `get_avatar_item_cost()` with acc_* entries; existing `purchase_avatar_item()` from V17 works unchanged. `ACCESSORY_CATALOGUE` in `index.html` updated to match. Fresh install SQL also updated. Migration applied ✅. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +598,4 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/supabase_bingo_v20_avatar_accessories_shop.sql` ✅ applied
