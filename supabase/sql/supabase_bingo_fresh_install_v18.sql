@@ -1578,10 +1578,34 @@ as $$
     when 'head_helmet'         then 275
     when 'head_cap'            then 175
     when 'head_flat_top_beard' then 300
+    when 'acc_none'            then 0
+    when 'acc_party_hat'       then 50
+    when 'acc_headband'        then 50
+    when 'acc_bandana'         then 75
+    when 'acc_cap'             then 75
+    when 'acc_beanie'          then 100
+    when 'acc_bow'             then 100
+    when 'acc_earmuffs'        then 125
+    when 'acc_graduation'      then 125
+    when 'acc_chef_hat'        then 150
+    when 'acc_cowboy'          then 150
+    when 'acc_witch_hat'       then 175
+    when 'acc_bunny_ears'      then 175
+    when 'acc_sombrero'        then 200
+    when 'acc_tophat'          then 200
+    when 'acc_viking'          then 225
+    when 'acc_laurel'          then 225
+    when 'acc_antlers'         then 250
+    when 'acc_tiara'           then 275
+    when 'acc_crown'           then 300
     else null
   end;
 $$;
 
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v18_avatar_faceshapes.sql
+
+-- >>> BEGIN FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql (kept in sync, see archive/Patches)
+-- V20 / Avatar-8: head accessory XP costs — folded into get_avatar_item_cost above.
+-- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
