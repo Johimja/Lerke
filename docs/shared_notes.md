@@ -44,6 +44,29 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-06-08 — Automated: Head accessory XP costs (Avatar-8)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` — extends `get_avatar_item_cost(p_item_key)` to return XP costs for all 20 `acc_*` keys (previously only `head_*` keys were priced; `acc_*` fell through to `null`/invalid). `acc_none` stays free (0 XP); the other 19 accessories range from 50–250 XP.
+- Kept `supabase/sql/supabase_bingo_fresh_install_v18.sql` in sync — its `get_avatar_item_cost` definition (the v18 override that wins for fresh installs) now also includes the `acc_*` cost cases.
+- `index.html`: Updated `ACCESSORY_CATALOGUE` `xp` values to match the new server-side costs (was all `xp:0` placeholders from Avatar-7). No RPC or frontend purchase-flow changes were needed — `purchase_avatar_item(p_item_key)` (v17) already resolves any item key generically through `get_avatar_item_cost`, and `shopItemClick`/`purchaseAndEquipItem`/`renderAvatarShop` in `index.html` already branch on `item.xp===0` vs paid for both catalogues.
+- `apps/bingo/teacher.html`'s `ACCESSORY_CATALOGUE_T` only stores `{key,col,row}` for rendering — no xp field, so no change needed there.
+
+**XP costs assigned (mirrors head-item pricing tiers):**
+acc_none=0 (free/default); 50: cap, party_hat, headband, bow; 75: graduation, beanie, bandana, earmuffs; 100: chef_hat, bunny_ears; 125: cowboy, witch_hat; 150: tophat, sombrero; 175: viking, laurel, antlers; 225: tiara; 250: crown.
+
+**Verification run:**
+
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- Inline JavaScript parse check for `index.html` and `apps/bingo/teacher.html` ✅
+
+**Migration applied** ✅ (`v20_avatar_accessory_costs` via Supabase MCP, 2026-06-08, project `isuzuuvddteejktcowev`). Verified server-side: `get_avatar_item_cost('acc_crown')=250`, `acc_none=0`, `acc_cap=50`, `head_basic=0`, invalid key returns `null`.
+
+**Next task:** Smoke-test accessory purchase/equip/XP-deduction end-to-end in the portal (login as student, buy a paid accessory, confirm XP deducted and item persists after refresh). After that: Avatar-9 (paid color changes) or Avatar-10+ (hair/eyes/beards sheets).
+
+---
+
 ### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
 
 **What was done:**
@@ -510,7 +533,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to all 19 priced accessories (SQL v20 extends `get_avatar_item_cost`; `purchase_avatar_item` already handles any item key generically, no new RPC needed) and updated `ACCESSORY_CATALOGUE` xp values in `index.html` to match. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +583,5 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v19b_reset_pin_login_code_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` ✅ applied
