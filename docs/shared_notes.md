@@ -44,6 +44,37 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-06-11 — Automated: Avatar-8 — Head accessories XP shop
+
+**What was done:**
+
+- `index.html`:
+  - Updated `ACCESSORY_CATALOGUE` with XP costs for all 19 non-free accessories (50–300 XP range). `acc_none` remains free (0 XP). Cost ladder mirrors the head/face-shape tier: simple items (headband, bow) at 50 XP, epic items (viking helmet) at 300 XP.
+  - Removed the now-stale comment noting that costs would be added in Avatar-8.
+- `supabase/sql/archive/Patches/supabase_bingo_v20_accessory_shop_patch.sql` — created:
+  - Replaces `get_avatar_item_cost()` with an extended version that includes all 20 `acc_*` cases alongside the original 20 `head_*` cases.
+  - No changes to `purchase_avatar_item()` — it already validates keys via `get_avatar_item_cost()`, so `acc_*` purchases now route through the existing XP-deduction and `unlocked_avatar_items` append logic automatically.
+- `supabase/sql/supabase_bingo_fresh_install_v18.sql` — updated `get_avatar_item_cost()` to include all `acc_*` cases for new installs.
+- **Migration applied** ✅ (`v20_accessory_shop` via Supabase MCP, 2026-06-11).
+
+**XP cost table:**
+| Accessory | XP | Accessory | XP |
+|---|---|---|---|
+| acc_none | 0 | acc_laurel | 150 |
+| acc_headband | 50 | acc_chef_hat | 175 |
+| acc_bow | 50 | acc_sombrero | 175 |
+| acc_bandana | 75 | acc_earmuffs | 200 |
+| acc_beanie | 75 | acc_tiara | 200 |
+| acc_cap | 100 | acc_bunny_ears | 225 |
+| acc_party_hat | 100 | acc_antlers | 225 |
+| acc_graduation | 125 | acc_crown | 250 |
+| acc_tophat | 125 | acc_witch_hat | 275 |
+| acc_cowboy | 150 | acc_viking | 300 |
+
+**Next task:** Avatar-9 — paid color changes (SQL RPC for color purchase, UI color picker, canvas/CSS recoloring of avatar layers).
+
+---
+
 ### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
 
 **What was done:**
@@ -151,9 +182,9 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
   - Added `ACCESSORY_CATALOGUE_T` (20 items, col/row only)
   - `renderAvatarCircleT` now renders face + accessory layers (reads `avatarData.acc`)
 
-**Key design note:** All accessories are xp:0 (free) in this release. They are saved as part of `avatar_data.acc` JSON field via the existing `save_student_avatar` RPC — no new SQL migration needed. Avatar-8 will add XP costs and optionally server-side purchase validation for accessories.
+**Key design note:** All accessories are xp:0 (free) in this release. They are saved as part of `avatar_data.acc` JSON field via the existing `save_student_avatar` RPC — no new SQL migration needed. Avatar-8 added XP costs and server-side purchase validation for accessories.
 
-**Next task:** Avatar-8 — add XP costs to accessories (SQL + update catalogue), and optionally add server-side purchase validation for acc_* keys (extend `purchase_avatar_item` or add a new RPC).
+**Next task:** Avatar-9 — paid color changes (SQL RPC for color purchase, color picker UI, canvas recoloring).
 
 ---
 
@@ -510,7 +541,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — XP costs added to all 19 non-free accessories (50–300 XP). `get_avatar_item_cost()` extended with all `acc_*` cases. `purchase_avatar_item()` already handled acc_* keys via the cost helper — no separate RPC needed. SQL patch: `v20_accessory_shop`. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +591,5 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v19b_reset_pin_login_code_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v20_accessory_shop_patch.sql` ✅ applied
