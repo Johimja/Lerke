@@ -38,9 +38,29 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 | Item | State |
 |---|---|
 | Live URL | `johimja.com/Lerke` |
-| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code — all applied |
+| Supabase DB | V1–V8 + podium + leaderboard + reactions/speed + V11 login_code + V12 XP + V13 avatars + V14 hall_of_fame + V16 wildcard + V17 avatar_shop + V18 teaching_word_lists + V18 avatar_faceshapes + V19 matte correct_answers + V19b reset_pin_login_code + V20 avatar_accessories_shop — all applied |
 | Session expiry | 24h (fixed from 12h) |
 | Lerke SVG branding | Done (`lerke_logo.svg`, `lerke_bingo_banner.svg`) |
+
+---
+
+### 2026-06-13 — Automated: Avatar accessories XP costs (Avatar-8)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_shop.sql`:
+  - Replaced `get_avatar_item_cost()` with an extended version covering all 20 `acc_*` keys from `ACCESSORY_CATALOGUE`, alongside the existing 20 `head_*` face-shape keys.
+  - XP costs: `acc_none`=0, `acc_headband`/`acc_bandana`=25, `acc_beanie`/`acc_bow`/`acc_party_hat`=50, `acc_cap`/`acc_earmuffs`=75, `acc_bunny_ears`/`acc_chef_hat`=100, `acc_laurel`/`acc_graduation`=125, `acc_cowboy`/`acc_tophat`=150, `acc_tiara`=175, `acc_crown`/`acc_witch_hat`=200, `acc_sombrero`=225, `acc_antlers`=250, `acc_viking`=275.
+  - No changes to `purchase_avatar_item()` — it already routes through `get_avatar_item_cost()` for validation and deduction.
+  - **Migration applied** ✅ (`v20_avatar_accessories_shop` via Supabase MCP, 2026-06-13).
+- `index.html` (`ACCESSORY_CATALOGUE`):
+  - All 19 paid accessories now carry their XP costs (previously all were `xp:0`).
+  - Items reordered by cost ascending so the shop naturally presents cheaper items first.
+  - `acc_none` (free, always owned) stays at position 0.
+- `supabase/sql/supabase_bingo_fresh_install_v18.sql`:
+  - Final `get_avatar_item_cost()` definition updated to include all `acc_*` entries so new installs are immediately correct.
+
+**Next task:** Avatar-9 — paid color changes (color picker/slider in portal, `purchase_avatar_color` RPC, per-save XP deduction, canvas/CSS recoloring of avatar layers).
 
 ---
 
@@ -510,7 +530,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to all 19 paid accessories (25–275 XP), updated `ACCESSORY_CATALOGUE` in `index.html`, extended `get_avatar_item_cost()` via SQL patch v20 (acc_none=0, headband/bandana=25, beanie/bow/party_hat=50, cap/earmuffs=75, bunny_ears/chef_hat=100, laurel/graduation=125, cowboy/tophat=150, tiara=175, crown/witch_hat=200, sombrero=225, antlers=250, viking=275). `purchase_avatar_item()` RPC required no changes. Migration applied ✅.
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +580,4 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessories_shop.sql` ✅ applied
