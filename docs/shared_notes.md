@@ -44,6 +44,27 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-06-17 — Automated: Avatar-8 head accessory XP costs
+
+**What was done:**
+
+- `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql`: replaces `get_avatar_item_cost` to price all 20 `acc_*` head-accessory keys (`acc_none=0` stays free; paid range 50–300 XP) alongside the existing `head_*` costs. No new column or RPC — `purchase_avatar_item(p_item_key)` and `unlocked_avatar_items` already worked generically for any recognized item key once `get_avatar_item_cost` returns a non-null cost.
+- `supabase/sql/supabase_bingo_fresh_install_v18.sql`: kept in sync with the same accessory costs for new database installs.
+- `index.html`: `ACCESSORY_CATALOGUE` updated with real `xp` values matching the SQL exactly (was all `xp:0` placeholders from Avatar-7). The shop UI (`renderAvatarShop`, `shopItemClick`, `purchaseAndEquipItem`) needed no changes — it was already cost-driven and category-agnostic.
+- `apps/bingo/teacher.html`: `ACCESSORY_CATALOGUE_T` is display-only (col/row, no xp) — no change needed there.
+- Added `tests/avatar_accessory_costs.test.mjs` — parses `ACCESSORY_CATALOGUE` from `index.html` and the `when 'acc_*' then N` cases from both the v20 patch and the fresh-install SQL, asserts all 20 keys are present, `acc_none` is free, and the three sources agree exactly.
+
+**Migration applied** ✅ (`v20_avatar_accessory_costs` via Supabase MCP, 2026-06-17, project `isuzuuvddteejktcowev`). Verified `get_avatar_item_cost('acc_crown')=300`, `acc_cap=50`, `acc_none=0`, `head_basic=0`, unknown key=null.
+
+**Verification run:**
+
+- `node tests/avatar_accessory_costs.test.mjs` ✅
+- Full `tests/*.test.mjs` suite ✅ (no failures)
+
+**Next task:** Avatar-9 — paid color changes (color picker/slider + server-verified XP cost per saved color change). Or Avatar-10+ (hair, eyes/glasses, beards, mouths sheets).
+
+---
+
 ### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
 
 **What was done:**
@@ -510,7 +531,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added real XP costs to all 20 acc_* keys (SQL v20 + `index.html` ACCESSORY_CATALOGUE xp values). No new RPC needed — `purchase_avatar_item`/`get_avatar_item_cost` already worked generically for any item key. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +581,5 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v19b_reset_pin_login_code_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` ✅ applied
