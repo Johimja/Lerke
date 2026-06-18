@@ -44,6 +44,32 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-06-18 — Automated: Head accessory XP costs (Avatar-8)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs.sql` — extends `get_avatar_item_cost()` with all 20 `acc_*` keys (previously only `head_*` keys were priced; accessories defaulted to free/unknown). `purchase_avatar_item()` needed no changes — it was already generic and resolves cost via `get_avatar_item_cost()` for any item key.
+- Folded the same `get_avatar_item_cost()` update into `supabase/sql/supabase_bingo_fresh_install_v18.sql` so new installs get accessory pricing too.
+- `index.html`: `ACCESSORY_CATALOGUE` now has real `xp` values per item (50–300 XP) instead of all-zero placeholders from Avatar-7. Shop buy/lock/equip UI (`renderAvatarShop`, `shopItemClick`, `purchaseAndEquipItem`) needed no changes — already driven generically off `item.xp`.
+- `apps/bingo/teacher.html`: `ACCESSORY_CATALOGUE_T` is display-only (col/row, no xp) — left unchanged.
+- Migration applied ✅ to Supabase project `isuzuuvddteejktcowev` via MCP `apply_migration` (`v20_avatar_accessory_costs`). Verified `get_avatar_item_cost('acc_crown')=300`, `acc_none=0`, invalid key still returns `null`.
+- Added `tests/avatar_accessory_costs.test.mjs` — cross-checks every `acc_*` xp value in `index.html` against the SQL patch case statement so the two never drift silently.
+
+**Verification run:**
+
+- `node tests/avatar_accessory_costs.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/portal_student_code_reveal.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- Inline JS syntax check (`new Function(...)`) on `index.html` and `apps/bingo/teacher.html` scripts ✅
+
+**Next task:** Avatar-9 — paid color changes (SQL RPC for color-change purchases, UI color slider/picker, per-save XP deduction, canvas/CSS recoloring on the base silhouette layer).
+
+---
+
 ### 2026-04-25 — Codex: Portal credential privacy and code-only reveal
 
 **What was done:**
@@ -510,7 +536,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to all 20 `acc_*` items via `get_avatar_item_cost()` extension (SQL v20); `purchase_avatar_item()` already validated/charged generically by item key, so no new RPC was needed. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +586,5 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v19b_reset_pin_login_code_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs.sql` ✅ applied
