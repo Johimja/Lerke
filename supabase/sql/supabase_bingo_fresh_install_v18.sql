@@ -1548,6 +1548,8 @@ $$;
 -- This patch keeps the same purchase RPC and unlocked_avatar_items column,
 -- but replaces the server-side item catalogue with the 20 real face-shape
 -- tile keys used by the frontend.
+--
+-- V20 (Avatar-8) extended this same function with head-accessory (acc_*) costs.
 -- =========================================================
 
 create or replace function public.get_avatar_item_cost(p_item_key text)
@@ -1578,6 +1580,26 @@ as $$
     when 'head_helmet'         then 275
     when 'head_cap'            then 175
     when 'head_flat_top_beard' then 300
+    when 'acc_none'            then 0
+    when 'acc_crown'           then 300
+    when 'acc_tophat'          then 175
+    when 'acc_cap'             then 50
+    when 'acc_graduation'      then 100
+    when 'acc_party_hat'       then 75
+    when 'acc_viking'          then 200
+    when 'acc_cowboy'          then 125
+    when 'acc_headband'        then 50
+    when 'acc_beanie'          then 75
+    when 'acc_sombrero'        then 150
+    when 'acc_laurel'          then 150
+    when 'acc_bow'             then 75
+    when 'acc_bandana'         then 75
+    when 'acc_witch_hat'       then 125
+    when 'acc_tiara'           then 250
+    when 'acc_chef_hat'        then 100
+    when 'acc_antlers'         then 200
+    when 'acc_earmuffs'        then 100
+    when 'acc_bunny_ears'      then 125
     else null
   end;
 $$;
