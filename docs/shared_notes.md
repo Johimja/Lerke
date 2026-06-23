@@ -22,6 +22,33 @@ SQL context rule:
 
 ---
 
+### 2026-06-23 — Automated: Head accessories shop XP costs (Avatar-8, v20)
+
+**What was done:**
+
+- `index.html`: `ACCESSORY_CATALOGUE` now has real XP costs for all 19 non-free accessories (50–300 XP, `acc_none` stays free at 0). No other frontend logic changed — the existing generic `shopItemClick`/`purchaseAndEquipItem` flow and `purchase_avatar_item` RPC already handle any catalogue item with `xp>0`, so accessories now sell through the same path heads use.
+- SQL:
+  - Created and applied `supabase/sql/archive/Patches/supabase_bingo_v20_accessory_costs_patch.sql` — replaces `get_avatar_item_cost(p_item_key)` to add the 19 `acc_*` costs alongside the existing `head_*` costs. No schema changes, no new RPC needed (Avatar-7's generic purchase RPC already worked for any item key with a non-null cost).
+  - Updated `supabase_bingo_fresh_install_v18.sql` in place (same function body, in the v18_avatar_faceshapes block) so new installs get accessory costs too.
+  - Migration applied to the linked Supabase project (`isuzuuvddteejktcowev`) via Supabase MCP `apply_migration`, verified with a manual `get_avatar_item_cost` query (`acc_crown`→300, `acc_none`→0, `head_afro`→300, unknown key→null).
+- Tests:
+  - Added `tests/avatar_accessory_costs.test.mjs` — asserts the frontend catalogue has exactly 20 accessory items, `acc_none` is free, the other 19 have a cost, and both SQL files (patch + fresh-install) price every key identically to the frontend.
+
+**Verification run:**
+
+- `node tests/avatar_accessory_costs.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- `node tests/matte_bingo_math.test.mjs` ✅
+- `node tests/portal_student_code_reveal.test.mjs` ✅
+- `node tests/reactions_contract.test.mjs` ✅
+- `node tests/student_strict_answer_ui.test.mjs` ✅
+- `node tests/teacher_live_ui.test.mjs` ✅
+- Inline JS syntax check on `index.html`'s 3 script blocks ✅
+
+**Next task:** Avatar-9 — paid color changes (color picker/slider + server-verified XP cost per saved color change).
+
+---
+
 ## Project Identity
 
 **Lerke** is a classroom game portal built for Steinerskolen i Kristiansand, Norway.
@@ -510,7 +537,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-5: smoke-test current face-shape shop** — code-level review found all 20 items consistent across index.html, teacher.html, and SQL. No issues. ✅
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
-- [ ] **Avatar-8: head accessories shop** — add XP costs to accessories (SQL migration + update catalogue xp values), extend or add server-side purchase RPC for acc_* keys.
+- [x] **Avatar-8: head accessories shop** — added XP costs to accessories (SQL v20 + updated catalogue xp values in index.html). Reused the existing generic `purchase_avatar_item` RPC — no new RPC needed since it already accepted any item key with a non-null cost. ✅
 - [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
@@ -560,3 +587,4 @@ Three providers selectable in a dropdown:
 16. `supabase/sql/supabase_bingo_v18_teaching_word_lists.sql` ✅ applied
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
+19. `supabase/sql/archive/Patches/supabase_bingo_v20_accessory_costs_patch.sql` ✅ applied
