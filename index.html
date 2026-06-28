@@ -322,7 +322,12 @@ html{scroll-behavior:smooth}
 .xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--lerke-green-deep),#8fcf3c);transition:width .4s ease}
 .lerke-avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;user-select:none}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
-.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
+.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-image:url('media/avatar_faceshapes.png');mask-image:url('media/avatar_faceshapes.png');-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.avatar-color-picker{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.avatar-color-swatch{width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.15);cursor:pointer;flex-shrink:0;padding:0}
+.avatar-color-swatch.active{border-color:var(--lerke-green-deep,#2f7d32);box-shadow:0 0 0 2px rgba(47,125,50,.35)}
+.avatar-color-custom{width:24px;height:24px;border:none;padding:0;background:none;cursor:pointer;flex-shrink:0}
+.avatar-color-cost{font-size:.72rem;color:var(--muted,#7c8099)}
 .avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_head_accessories.png');background-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
@@ -1085,7 +1090,11 @@ const ACCESSORY_CATALOGUE=[
   {key:'acc_bunny_ears', label:'Kaninører',       cat:'acc', col:3,row:4,xp:100},
 ];
 
-let pendingAvatar={head:'head_basic',acc:'acc_none'};
+const AVATAR_COLOR_PRESETS=['#caa07a','#e8b88a','#8d5524','#f2d6b3','#5c3a21','#f5c6a5'];
+const AVATAR_DEFAULT_HEAD_COLOR=AVATAR_COLOR_PRESETS[0];
+const AVATAR_COLOR_COST=25;
+
+let pendingAvatar={head:'head_basic',acc:'acc_none',headColor:AVATAR_DEFAULT_HEAD_COLOR};
 let currentShopTab='head';
 
 function _itemByKey(key){
@@ -1094,7 +1103,8 @@ function _itemByKey(key){
 function normalizeAvatarData(avatarData){
   const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
   const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
-  return {head,acc};
+  const headColor=(avatarData&&/^#[0-9a-fA-F]{6}$/.test(avatarData.headColor))?avatarData.headColor:AVATAR_DEFAULT_HEAD_COLOR;
+  return {head,acc,headColor};
 }
 
 function _spriteStyle(col,row,size){
@@ -1103,9 +1113,17 @@ function _spriteStyle(col,row,size){
   return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
 }
 
-function renderSingleSprite(col,row,size){
+function _headLayerStyle(col,row,size,color){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const pos=`${-col*size}px ${-row*size}px`;
+  return `-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;`+
+    `-webkit-mask-position:${pos};mask-position:${pos};background-color:${color||AVATAR_DEFAULT_HEAD_COLOR}`;
+}
+
+function renderSingleSprite(col,row,size,color){
   return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
-    `<span class="avatar-layer" style="${_spriteStyle(col,row,size)}"></span>`+
+    `<span class="avatar-layer" style="${_headLayerStyle(col,row,size,color)}"></span>`+
   `</span>`;
 }
 function renderSingleAccSprite(col,row,size){
@@ -1120,7 +1138,7 @@ function renderAvatarCircle(avatarData,name,size){
     const normalized=normalizeAvatarData(avatarData);
     const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
     const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
-    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    let layers=`<span class="avatar-layer" style="${_headLayerStyle(h.col,h.row,size,normalized.headColor)}"></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
@@ -1169,7 +1187,7 @@ function renderAvatarShop(){
     const isOwned=isFree||unlocked.includes(item.key);
     const isEquipped=pendingAvatar[item.cat]===item.key;
     const canAfford=xp>=item.xp;
-    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
+    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52,pendingAvatar.headColor);
     let btnClass,btnLabel;
     if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
     else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
@@ -1182,9 +1200,52 @@ function renderAvatarShop(){
       `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
     `</div>`;
   }).join('');
+  const colorHtml=currentShopTab==='head'?renderAvatarColorPicker():'';
   wrap.innerHTML=tabsHtml+
+    colorHtml+
     `<div class="avatar-shop-grid">${itemsHtml}</div>`+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
+}
+
+function renderAvatarColorPicker(){
+  const current=pendingAvatar.headColor||AVATAR_DEFAULT_HEAD_COLOR;
+  const swatches=AVATAR_COLOR_PRESETS.map(c=>
+    `<button type="button" class="avatar-color-swatch${c.toLowerCase()===current.toLowerCase()?' active':''}" `+
+    `style="background:${c}" onclick="chooseAvatarColor('${c}')" title="${c}"></button>`
+  ).join('');
+  return `<div class="avatar-color-picker">`+
+    swatches+
+    `<input type="color" class="avatar-color-custom" value="${current}" onchange="chooseAvatarColor(this.value)" title="Egen farge">`+
+    `<span class="avatar-color-cost">${AVATAR_COLOR_COST} XP per fargevalg</span>`+
+  `</div>`;
+}
+
+async function chooseAvatarColor(hex){
+  hex=(hex||'').toLowerCase();
+  if(!/^#[0-9a-f]{6}$/.test(hex)) return;
+  if(hex===(pendingAvatar.headColor||'').toLowerCase()) return;
+  const statusEl=()=>document.getElementById('avatar-save-status');
+  if(statusEl()) statusEl().textContent='Lagrer farge…';
+  try{
+    const {data,error}=await supabaseClient.rpc('purchase_avatar_color',{p_color_slot:'head',p_color:hex});
+    if(error) throw error;
+    if(!data.ok){
+      if(statusEl()) statusEl().textContent=data.error||'Kunne ikke lagre farge';
+      return;
+    }
+    if(currentStudentProfile&&data.total_xp!=null) currentStudentProfile.total_xp=data.total_xp;
+    pendingAvatar={...pendingAvatar,headColor:hex};
+    if(currentStudentProfile) currentStudentProfile.avatar_data=pendingAvatar;
+    updateXPBar();
+    updateAvatarDisplay();
+    renderAvatarShop();
+    if(statusEl()){
+      statusEl().textContent=data.unchanged?'':`✓ Farge lagret! −${data.xp_spent||0} XP`;
+      setTimeout(()=>{const s=statusEl();if(s)s.textContent='';},2500);
+    }
+  }catch(e){
+    if(statusEl()) statusEl().textContent='Feil: '+e.message;
+  }
 }
 
 async function shopItemClick(key){
