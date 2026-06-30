@@ -344,6 +344,24 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .avatar-shop-item.equipped{border-color:var(--lerke-green-deep);background:rgba(31,147,71,.15)}
 [data-theme="dark"] .avatar-shop-name{color:#e8e2f2}
 [data-theme="dark"] .avatar-shop-btn.s-buy{background:rgba(180,140,220,.1);color:#c8b8e2;border-color:rgba(180,140,220,.22)}
+.avatar-color-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.avatar-color-section{margin:4px 0 10px}
+.avatar-color-section-title{font-size:.7rem;font-weight:700;color:var(--lerke-plum);margin-bottom:5px}
+.avatar-color-row{display:flex;align-items:center;gap:7px;margin:5px 0}
+.avatar-color-swatch{width:24px;height:24px;border-radius:50%;border:2px solid rgba(67,32,92,.2);flex-shrink:0;cursor:pointer;transition:transform .1s}
+.avatar-color-swatch:hover{transform:scale(1.15)}
+.avatar-color-swatch.active{border-color:var(--lerke-plum);box-shadow:0 0 0 2px var(--lerke-plum)}
+.avatar-color-presets{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
+.avatar-color-input{width:36px;height:26px;border-radius:5px;border:1px solid rgba(67,32,92,.2);cursor:pointer;padding:1px 2px;flex-shrink:0}
+.avatar-color-actions{display:flex;gap:6px;align-items:center;margin-top:6px}
+.avatar-color-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(67,32,92,.18);font-size:.65rem;font-weight:700;cursor:pointer;background:rgba(67,32,92,.08);color:var(--lerke-plum);transition:background .12s}
+.avatar-color-btn:hover:not(:disabled){background:rgba(67,32,92,.18)}
+.avatar-color-btn:disabled{opacity:.45;cursor:not-allowed}
+.avatar-color-reset{font-size:.6rem;color:var(--muted,#7c8099);cursor:pointer;text-decoration:underline;background:none;border:none;padding:0}
+.avatar-color-reset:hover{color:var(--lerke-plum)}
+.avatar-color-preview-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+[data-theme="dark"] .avatar-color-btn{background:rgba(180,140,220,.1);color:#c8b8e2;border-color:rgba(180,140,220,.22)}
+[data-theme="dark"] .avatar-color-reset{color:rgba(200,184,226,.6)}
 .class-admin{
   display:none;
   width:100%;
@@ -1085,16 +1103,22 @@ const ACCESSORY_CATALOGUE=[
   {key:'acc_bunny_ears', label:'Kaninører',       cat:'acc', col:3,row:4,xp:100},
 ];
 
-let pendingAvatar={head:'head_basic',acc:'acc_none'};
+const COLOR_CHANGE_XP_COST=25;
+let pendingAvatar={head:'head_basic',acc:'acc_none',skinColor:null,accColor:null};
 let currentShopTab='head';
+let _pendingColorSlot=null;
+let _pendingColorValue=null;
 
+function _isValidHex(c){return typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c);}
 function _itemByKey(key){
   return AVATAR_ITEM_CATALOGUE.find(i=>i.key===key)||ACCESSORY_CATALOGUE.find(i=>i.key===key);
 }
 function normalizeAvatarData(avatarData){
   const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
   const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
-  return {head,acc};
+  const skinColor=_isValidHex(avatarData&&avatarData.skinColor)?avatarData.skinColor:null;
+  const accColor=_isValidHex(avatarData&&avatarData.accColor)?avatarData.accColor:null;
+  return {head,acc,skinColor,accColor};
 }
 
 function _spriteStyle(col,row,size){
@@ -1103,6 +1127,15 @@ function _spriteStyle(col,row,size){
   return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
 }
 
+function _coloredLayerStyle(col,row,size,imageUrl,color){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const pos=`${-col*size}px ${-row*size}px`;
+  return `background-color:${color};-webkit-mask-image:url('${imageUrl}');mask-image:url('${imageUrl}');`+
+    `-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;`+
+    `-webkit-mask-position:${pos};mask-position:${pos};`+
+    `-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat`;
+}
 function renderSingleSprite(col,row,size){
   return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
     `<span class="avatar-layer" style="${_spriteStyle(col,row,size)}"></span>`+
@@ -1120,8 +1153,19 @@ function renderAvatarCircle(avatarData,name,size){
     const normalized=normalizeAvatarData(avatarData);
     const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
     const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
-    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
-    if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
+    let layers;
+    if(normalized.skinColor){
+      layers=`<span class="avatar-color-layer" style="${_coloredLayerStyle(h.col,h.row,size,'media/avatar_faceshapes.png',normalized.skinColor)}"></span>`;
+    } else {
+      layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    }
+    if(a&&a.key!=='acc_none'){
+      if(normalized.accColor){
+        layers+=`<span class="avatar-color-layer" style="${_coloredLayerStyle(a.col,a.row,size,'media/avatar_head_accessories.png',normalized.accColor)}"></span>`;
+      } else {
+        layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
+      }
+    }
     return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
   // legacy fallback (old color/accessory format)
@@ -1159,11 +1203,17 @@ function renderAvatarShop(){
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
   const tabsHtml=`<div class="avatar-shop-tabs">`+
     `<div class="avatar-shop-tab${currentShopTab==='head'?' active':''}" onclick="setShopTab('head')">Hode</div>`+
     `<div class="avatar-shop-tab${currentShopTab==='acc'?' active':''}" onclick="setShopTab('acc')">Tilbehør</div>`+
+    `<div class="avatar-shop-tab${currentShopTab==='color'?' active':''}" onclick="setShopTab('color')">Farge</div>`+
   `</div>`;
+  if(currentShopTab==='color'){
+    wrap.innerHTML=tabsHtml+renderColorTab()+
+      `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
+    return;
+  }
+  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
   const itemsHtml=catalogue.map(item=>{
     const isFree=item.xp===0;
     const isOwned=isFree||unlocked.includes(item.key);
@@ -1185,6 +1235,117 @@ function renderAvatarShop(){
   wrap.innerHTML=tabsHtml+
     `<div class="avatar-shop-grid">${itemsHtml}</div>`+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
+}
+
+const SKIN_PRESETS=['#f8d5b4','#f0c096','#e0a070','#c47840','#8b5a2b','#4a2010'];
+const ACC_COLOR_PRESETS=['#e8c030','#d04040','#4080d0','#40a060','#9040c0','#e07030'];
+
+function renderColorTab(){
+  const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
+  const canAfford=xp>=COLOR_CHANGE_XP_COST;
+  const accKey=pendingAvatar.acc||'acc_none';
+  const hasAcc=accKey!=='acc_none';
+  const curSkin=pendingAvatar.skinColor||'#c8a070';
+  const curAcc=pendingAvatar.accColor||'#e8c030';
+
+  function colorSwatches(presets,slot,current){
+    return presets.map(c=>{
+      const isActive=current===c;
+      return `<span class="avatar-color-swatch${isActive?' active':''}" style="background:${c}" title="${c}" onclick="onColorSwatchClick('${slot}','${c}')"></span>`;
+    }).join('');
+  }
+
+  const skinSection=`<div class="avatar-color-section">`+
+    `<div class="avatar-color-section-title">Hodeform-farge</div>`+
+    `<div class="avatar-color-presets">${colorSwatches(SKIN_PRESETS,'skinColor',pendingAvatar.skinColor)}</div>`+
+    `<div class="avatar-color-row">`+
+      `<input type="color" class="avatar-color-input" id="color-picker-skin" value="${curSkin}" oninput="onColorPickerChange('skinColor',this.value)">`+
+      `<span style="font-size:.7rem;color:var(--muted,#7c8099)">Velg farge</span>`+
+    `</div>`+
+    `<div class="avatar-color-actions">`+
+      `<button class="avatar-color-btn" onclick="purchaseAvatarColor('skinColor')" ${canAfford?'':'disabled'}>Endre (${COLOR_CHANGE_XP_COST} XP)</button>`+
+      (pendingAvatar.skinColor?`<button class="avatar-color-reset" onclick="resetAvatarColor('skinColor')">Tilbakestill</button>`:'')+
+    `</div>`+
+  `</div>`;
+
+  const accSection=hasAcc?`<div class="avatar-color-section">`+
+    `<div class="avatar-color-section-title">Tilbehørsfarge</div>`+
+    `<div class="avatar-color-presets">${colorSwatches(ACC_COLOR_PRESETS,'accColor',pendingAvatar.accColor)}</div>`+
+    `<div class="avatar-color-row">`+
+      `<input type="color" class="avatar-color-input" id="color-picker-acc" value="${curAcc}" oninput="onColorPickerChange('accColor',this.value)">`+
+      `<span style="font-size:.7rem;color:var(--muted,#7c8099)">Velg farge</span>`+
+    `</div>`+
+    `<div class="avatar-color-actions">`+
+      `<button class="avatar-color-btn" onclick="purchaseAvatarColor('accColor')" ${canAfford?'':'disabled'}>Endre (${COLOR_CHANGE_XP_COST} XP)</button>`+
+      (pendingAvatar.accColor?`<button class="avatar-color-reset" onclick="resetAvatarColor('accColor')">Tilbakestill</button>`:'')+
+    `</div>`+
+  `</div>`:
+  `<div style="font-size:.72rem;color:var(--muted,#7c8099);margin:6px 0">Velg et tilbehør i Tilbehør-fanen for å farge det.</div>`;
+
+  return `<div style="padding:2px 0">`+
+    `<div class="avatar-color-preview-wrap">`+
+      renderAvatarCircle(pendingAvatar,currentStudentProfile&&currentStudentProfile.display_name,52)+
+      `<span style="font-size:.7rem;color:var(--muted,#7c8099)">Forhåndsvisning</span>`+
+    `</div>`+
+    skinSection+accSection+
+  `</div>`;
+}
+
+function onColorSwatchClick(slot,color){
+  pendingAvatar={...pendingAvatar,[slot]:color};
+  updateAvatarDisplay();
+  renderAvatarShop();
+}
+
+function onColorPickerChange(slot,color){
+  if(!_isValidHex(color)) return;
+  pendingAvatar={...pendingAvatar,[slot]:color};
+  updateAvatarDisplay();
+}
+
+async function purchaseAvatarColor(slot){
+  const color=pendingAvatar[slot];
+  if(!_isValidHex(color)){
+    const s=document.getElementById('avatar-save-status');
+    if(s) s.textContent='Velg en farge først.';
+    return;
+  }
+  const statusEl=()=>document.getElementById('avatar-save-status');
+  if(statusEl()) statusEl().textContent='Kjøper…';
+  try{
+    const {data,error}=await supabaseClient.rpc('purchase_avatar_color',{p_color_slot:slot,p_color:color});
+    if(error) throw error;
+    if(!data.ok){
+      if(statusEl()) statusEl().textContent=data.error||'Farge-endring mislyktes';
+      return;
+    }
+    if(currentStudentProfile){
+      if(data.total_xp!=null) currentStudentProfile.total_xp=data.total_xp;
+      if(data.avatar_data) currentStudentProfile.avatar_data=data.avatar_data;
+    }
+    pendingAvatar={...pendingAvatar,[slot]:color};
+    updateXPBar();
+    updateAvatarDisplay();
+    renderAvatarShop();
+    if(statusEl()){
+      statusEl().textContent=`✓ Farge lagret! −${COLOR_CHANGE_XP_COST} XP`;
+      setTimeout(()=>{const s=statusEl();if(s)s.textContent='';},2500);
+    }
+  }catch(e){
+    if(statusEl()) statusEl().textContent='Feil: '+e.message;
+  }
+}
+
+async function resetAvatarColor(slot){
+  const updated={...pendingAvatar,[slot]:null};
+  pendingAvatar=updated;
+  try{
+    const {error}=await supabaseClient.rpc('save_student_avatar',{p_avatar_data:pendingAvatar});
+    if(error) throw error;
+    if(currentStudentProfile) currentStudentProfile.avatar_data=pendingAvatar;
+  }catch(e){console.error('resetAvatarColor',e);}
+  updateAvatarDisplay();
+  renderAvatarShop();
 }
 
 async function shopItemClick(key){
