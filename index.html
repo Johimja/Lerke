@@ -322,8 +322,8 @@ html{scroll-behavior:smooth}
 .xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--lerke-green-deep),#8fcf3c);transition:width .4s ease}
 .lerke-avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;font-family:'Raleway',sans-serif;color:#fff;flex-shrink:0;position:relative;user-select:none}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
-.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
-.avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_head_accessories.png');background-repeat:no-repeat}
+.avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-image:url('media/avatar_faceshapes.png');mask-image:url('media/avatar_faceshapes.png');-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-image:url('media/avatar_head_accessories.png');mask-image:url('media/avatar_head_accessories.png');-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
 .avatar-shop-tab{flex:1;padding:6px 2px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted,#7c8099);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -344,6 +344,14 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .avatar-shop-item.equipped{border-color:var(--lerke-green-deep);background:rgba(31,147,71,.15)}
 [data-theme="dark"] .avatar-shop-name{color:#e8e2f2}
 [data-theme="dark"] .avatar-shop-btn.s-buy{background:rgba(180,140,220,.1);color:#c8b8e2;border-color:rgba(180,140,220,.22)}
+.avatar-color-panel{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+.avatar-color-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:rgba(255,250,242,.7);border:1px solid rgba(67,32,92,.1)}
+.avatar-color-info{display:flex;flex-direction:column;gap:4px;flex:1}
+.avatar-color-label{font-size:.72rem;font-weight:700;color:var(--lerke-ink,#2d2d2d)}
+.avatar-color-input{width:100%;height:28px;border-radius:5px;border:1px solid rgba(67,32,92,.2);cursor:pointer;padding:2px 4px}
+.avatar-color-note{font-size:.68rem;color:var(--muted,#7c8099);margin-top:4px}
+[data-theme="dark"] .avatar-color-row{background:rgba(30,22,48,.5);border-color:rgba(180,140,220,.14)}
+[data-theme="dark"] .avatar-color-label{color:#e8e2f2}
 .class-admin{
   display:none;
   width:100%;
@@ -1085,7 +1093,9 @@ const ACCESSORY_CATALOGUE=[
   {key:'acc_bunny_ears', label:'Kaninører',       cat:'acc', col:3,row:4,xp:100},
 ];
 
-let pendingAvatar={head:'head_basic',acc:'acc_none'};
+const AVATAR_DEFAULT_FACE_COLOR='#d4a574';
+const AVATAR_DEFAULT_ACC_COLOR='#8b6040';
+let pendingAvatar={head:'head_basic',acc:'acc_none',faceColor:AVATAR_DEFAULT_FACE_COLOR,accColor:AVATAR_DEFAULT_ACC_COLOR};
 let currentShopTab='head';
 
 function _itemByKey(key){
@@ -1094,23 +1104,27 @@ function _itemByKey(key){
 function normalizeAvatarData(avatarData){
   const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
   const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
-  return {head,acc};
+  const faceColor=(avatarData&&avatarData.faceColor)||AVATAR_DEFAULT_FACE_COLOR;
+  const accColor=(avatarData&&avatarData.accColor)||AVATAR_DEFAULT_ACC_COLOR;
+  return {head,acc,faceColor,accColor};
 }
 
 function _spriteStyle(col,row,size){
   const bsW=Math.round(1024*(size/256));
   const bsH=Math.round(1280*(size/256));
-  return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
+  return `-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;-webkit-mask-position:${-col*size}px ${-row*size}px;mask-position:${-col*size}px ${-row*size}px`;
 }
 
-function renderSingleSprite(col,row,size){
+function renderSingleSprite(col,row,size,color){
+  color=color||AVATAR_DEFAULT_FACE_COLOR;
   return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
-    `<span class="avatar-layer" style="${_spriteStyle(col,row,size)}"></span>`+
+    `<span class="avatar-layer" style="${_spriteStyle(col,row,size)};background-color:${color}"></span>`+
   `</span>`;
 }
-function renderSingleAccSprite(col,row,size){
+function renderSingleAccSprite(col,row,size,color){
+  color=color||AVATAR_DEFAULT_ACC_COLOR;
   return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">`+
-    `<span class="avatar-acc-layer" style="${_spriteStyle(col,row,size)}"></span>`+
+    `<span class="avatar-acc-layer" style="${_spriteStyle(col,row,size)};background-color:${color}"></span>`+
   `</span>`;
 }
 
@@ -1120,8 +1134,8 @@ function renderAvatarCircle(avatarData,name,size){
     const normalized=normalizeAvatarData(avatarData);
     const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
     const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
-    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
-    if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
+    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)};background-color:${normalized.faceColor}"></span>`;
+    if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)};background-color:${normalized.accColor}"></span>`;
     return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
   // legacy fallback (old color/accessory format)
@@ -1159,31 +1173,64 @@ function renderAvatarShop(){
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
   const tabsHtml=`<div class="avatar-shop-tabs">`+
     `<div class="avatar-shop-tab${currentShopTab==='head'?' active':''}" onclick="setShopTab('head')">Hode</div>`+
     `<div class="avatar-shop-tab${currentShopTab==='acc'?' active':''}" onclick="setShopTab('acc')">Tilbehør</div>`+
+    `<div class="avatar-shop-tab${currentShopTab==='color'?' active':''}" onclick="setShopTab('color')">Farger</div>`+
   `</div>`;
-  const itemsHtml=catalogue.map(item=>{
-    const isFree=item.xp===0;
-    const isOwned=isFree||unlocked.includes(item.key);
-    const isEquipped=pendingAvatar[item.cat]===item.key;
-    const canAfford=xp>=item.xp;
-    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
-    let btnClass,btnLabel;
-    if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
-    else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
-    else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
-    else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
-    return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
-      preview+
-      `<div class="avatar-shop-name">${item.label}</div>`+
-      (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
-      `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
+  let contentHtml;
+  if(currentShopTab==='color'){
+    const faceColor=pendingAvatar.faceColor||AVATAR_DEFAULT_FACE_COLOR;
+    const accColor=pendingAvatar.accColor||AVATAR_DEFAULT_ACC_COLOR;
+    const canAfford=xp>=25;
+    const headItem=AVATAR_ITEM_CATALOGUE.find(i=>i.key===pendingAvatar.head)||AVATAR_ITEM_CATALOGUE[0];
+    const accItem=ACCESSORY_CATALOGUE.find(i=>i.key===pendingAvatar.acc)||ACCESSORY_CATALOGUE[0];
+    const btnCls=canAfford?'s-buy':'s-locked';
+    const btnAttr=canAfford?'':'disabled';
+    contentHtml=`<div class="avatar-color-panel">`+
+      `<div class="avatar-color-row">`+
+        renderSingleSprite(headItem.col,headItem.row,48,faceColor)+
+        `<div class="avatar-color-info">`+
+          `<div class="avatar-color-label">Ansiktsfarge</div>`+
+          `<input type="color" id="face-color-input" value="${faceColor}" class="avatar-color-input" oninput="previewAvatarColor('faceColor',this.value)">`+
+          `<button class="avatar-shop-btn ${btnCls}" onclick="purchaseAvatarColor('faceColor')" ${btnAttr}>Bruk (25 XP)</button>`+
+        `</div>`+
+      `</div>`+
+      `<div class="avatar-color-row">`+
+        renderSingleAccSprite(accItem.col,accItem.row,48,accColor)+
+        `<div class="avatar-color-info">`+
+          `<div class="avatar-color-label">Tilbehørsfarge</div>`+
+          `<input type="color" id="acc-color-input" value="${accColor}" class="avatar-color-input" oninput="previewAvatarColor('accColor',this.value)">`+
+          `<button class="avatar-shop-btn ${btnCls}" onclick="purchaseAvatarColor('accColor')" ${btnAttr}>Bruk (25 XP)</button>`+
+        `</div>`+
+      `</div>`+
+      `<div class="avatar-color-note">Fargeendring koster 25 XP. Fargen lagres til din konto.</div>`+
     `</div>`;
-  }).join('');
-  wrap.innerHTML=tabsHtml+
-    `<div class="avatar-shop-grid">${itemsHtml}</div>`+
+  } else {
+    const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
+    const itemsHtml=catalogue.map(item=>{
+      const isFree=item.xp===0;
+      const isOwned=isFree||unlocked.includes(item.key);
+      const isEquipped=pendingAvatar[item.cat]===item.key;
+      const canAfford=xp>=item.xp;
+      const preview=item.cat==='acc'
+        ?renderSingleAccSprite(item.col,item.row,52,AVATAR_DEFAULT_ACC_COLOR)
+        :renderSingleSprite(item.col,item.row,52,AVATAR_DEFAULT_FACE_COLOR);
+      let btnClass,btnLabel;
+      if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
+      else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
+      else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
+      else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
+      return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
+        preview+
+        `<div class="avatar-shop-name">${item.label}</div>`+
+        (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
+        `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
+      `</div>`;
+    }).join('');
+    contentHtml=`<div class="avatar-shop-grid">${itemsHtml}</div>`;
+  }
+  wrap.innerHTML=tabsHtml+contentHtml+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
 }
 
@@ -1240,6 +1287,44 @@ async function saveStudentAvatar(){
     if(currentStudentProfile) currentStudentProfile.avatar_data=pendingAvatar;
   }catch(e){
     console.error('saveStudentAvatar',e);
+  }
+}
+
+function previewAvatarColor(slot,hex){
+  if(!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
+  pendingAvatar={...pendingAvatar,[slot]:hex};
+  updateAvatarDisplay();
+  renderAvatarShop();
+}
+
+async function purchaseAvatarColor(slot){
+  const inputId=slot==='faceColor'?'face-color-input':'acc-color-input';
+  const input=document.getElementById(inputId);
+  const hex=(input&&input.value)||pendingAvatar[slot];
+  if(!hex||!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
+  const statusEl=()=>document.getElementById('avatar-save-status');
+  if(statusEl()) statusEl().textContent='Lagrer farge…';
+  try{
+    const {data,error}=await supabaseClient.rpc('purchase_avatar_color',{p_color_slot:slot,p_color:hex});
+    if(error) throw error;
+    if(!data.ok){
+      if(statusEl()) statusEl().textContent=data.error||'Farge-kjøp mislyktes';
+      return;
+    }
+    pendingAvatar={...pendingAvatar,[slot]:hex};
+    if(currentStudentProfile){
+      if(data.total_xp!=null) currentStudentProfile.total_xp=data.total_xp;
+      currentStudentProfile.avatar_data=pendingAvatar;
+    }
+    updateXPBar();
+    updateAvatarDisplay();
+    renderAvatarShop();
+    if(statusEl()){
+      statusEl().textContent=`✓ Farge lagret! −25 XP`;
+      setTimeout(()=>{const s=statusEl();if(s)s.textContent='';},2500);
+    }
+  }catch(e){
+    if(statusEl()) statusEl().textContent='Feil: '+e.message;
   }
 }
 
