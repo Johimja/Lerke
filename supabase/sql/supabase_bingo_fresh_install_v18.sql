@@ -1652,3 +1652,55 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+-- >>> BEGIN FILE: supabase_bingo_v21_avatar_color_patch.sql
+-- Avatar-9: purchase_avatar_color — deducts 25 XP, saves color slot in avatar_data
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color      text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_student_id   uuid;
+  v_total_xp     integer;
+  v_avatar_data  jsonb;
+  v_color_cost   constant integer := 25;
+begin
+  if p_color_slot not in ('skinColor', 'accColor') then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargesport: ' || coalesce(p_color_slot, ''));
+  end if;
+  if p_color !~ '^#[0-9a-fA-F]{6}$' then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig farge: ' || coalesce(p_color, ''));
+  end if;
+  select id, total_xp, coalesce(avatar_data, '{}'::jsonb)
+  into   v_student_id, v_total_xp, v_avatar_data
+  from   student_profiles
+  where  auth_user_id = auth.uid()
+  limit  1;
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'Elevprofil ikke funnet');
+  end if;
+  if v_total_xp < v_color_cost then
+    return jsonb_build_object('ok', false, 'error', 'Ikke nok XP – du trenger ' || v_color_cost || ' XP');
+  end if;
+  update student_profiles
+  set
+    total_xp    = total_xp - v_color_cost,
+    avatar_data = coalesce(avatar_data, '{}'::jsonb) || jsonb_build_object(p_color_slot, p_color)
+  where id = v_student_id
+  returning total_xp, avatar_data into v_total_xp, v_avatar_data;
+  return jsonb_build_object(
+    'ok',          true,
+    'total_xp',    v_total_xp,
+    'avatar_data', v_avatar_data,
+    'xp_spent',    v_color_cost
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text) to authenticated;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_patch.sql
+
