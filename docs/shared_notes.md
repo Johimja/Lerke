@@ -44,6 +44,50 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-07-11 — Automated: Paid avatar color changes (Avatar-9)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql`:
+  - New RPC `purchase_avatar_color(p_color_slot text, p_color text)`:
+    - Validates slot: only `'silhouetteColor'` and `'accColor'` accepted.
+    - Validates hex color: must match `^#[0-9a-fA-F]{6}$`.
+    - Deducts 25 XP from the student's `total_xp`.
+    - Merges the new color key into `avatar_data` JSONB using `||`.
+    - Returns `{ok, total_xp, avatar_data, xp_spent}` or `{ok:false, error}`.
+  - **Migration applied** ✅ (`v21_avatar_color` via Supabase MCP, 2026-07-11, project `isuzuuvddteejktcowev`). Verified `purchase_avatar_color` function present with 2 args.
+  - `supabase/sql/supabase_bingo_fresh_install_v18.sql` updated in sync.
+- `index.html` + `apps/bingo/teacher.html` — **CSS rendering switch (mask-image approach)**:
+  - `.avatar-layer` / `.avatar-acc-layer` and `.t-avatar-layer` / `.t-avatar-acc-layer` switched from `background-image` sprite display to `mask-image` + `background-color:#fff` default. The sprite's alpha channel becomes the CSS mask; `background-color` provides the fill color. This enables arbitrary per-layer colorization without canvas or SVG refactoring.
+- `index.html` — **JS changes**:
+  - `_spriteStyle(col,row,size,color?)` — now outputs `mask-size`/`mask-position` (with `-webkit-` prefixes). Optional `color` arg appends `background-color:HEX` inline.
+  - `normalizeAvatarData` — now extracts `silhouetteColor` and `accColor` from `avatar_data` (hex-validated; null if absent/invalid). Returns `{head, acc, silhouetteColor, accColor}`.
+  - `renderAvatarCircle` — passes `normalized.silhouetteColor` to face-shape layer, `normalized.accColor||normalized.silhouetteColor` to accessory layer.
+  - Added `hue2rgb`, `hueToHex(hue)` (HSL 72%/58% formula), `hexToHue(hex)` color helpers.
+  - Added `renderColorTab()` — "Farge" tab content: hue sliders for ansiktsfarge and tilbehørsfarge, live avatar preview on slider drag, buy buttons (25 XP each), disabled when XP insufficient.
+  - Added `onFaceHueChange`, `onAccHueChange` — live preview handlers (update avatar display without committing).
+  - Added `getCurrentFaceColor`, `getCurrentAccColor` — read current slider values as hex.
+  - Added `purchaseAvatarColor(slot, hexColor)` — calls `purchase_avatar_color` RPC, updates `currentStudentProfile.total_xp`/`avatar_data`, syncs `pendingAvatar`, refreshes XP bar + avatar display + shop.
+  - `renderAvatarShop` — added "Farge" third tab; delegates to `renderColorTab()` when active; Hode/Tilbehør tabs unchanged.
+  - Added CSS: `.avatar-color-section-label`, `.avatar-color-row`, `.avatar-hue-slider` (rainbow gradient track + white thumb), `.avatar-color-dot`.
+- `apps/bingo/teacher.html` — **JS changes**:
+  - `_tSpriteStyle(col,row,size,color?)` — same mask-based refactor with optional color arg.
+  - `renderAvatarCircleT` — reads `silhouetteColor` and `accColor` from `avatarData`, passes to `_tSpriteStyle`. Teacher roster/podium/Hall of Fame now display student-chosen colors.
+- Tests:
+  - Added `tests/avatar_color_purchase.test.mjs` — 33 checks covering CSS mask approach, JS helpers, normalizeAvatarData, renderAvatarCircle/T, color tab UI, purchaseAvatarColor flow, SQL patch, and fresh-install sync.
+
+**Verification run:**
+
+- `node tests/avatar_color_purchase.test.mjs` ✅ (33/33)
+- `node tests/avatar_accessory_costs.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- Full `tests/*.test.mjs` suite ✅ (all green, exit 0)
+- Supabase spot-check: `purchase_avatar_color` function present with 2 args ✅
+
+**Next task:** Avatar-10 — hair sheet (generate `media/avatar_hair.png`, add Hair layer to renderer, ~20 styles). Or Avatar-9b polish: allow resetting colors to white for free.
+
+---
+
 ### 2026-06-27 — Automated: Head accessory XP costs (Avatar-8)
 
 **What was done:**
@@ -536,7 +580,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
 - [x] **Avatar-8: head accessories shop** — added XP costs to accessories (SQL v20 + updated `ACCESSORY_CATALOGUE` xp values in index.html); `purchase_avatar_item` RPC already worked generically for acc_* keys, no new RPC needed. ✅
-- [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
+- [x] **Avatar-9: paid color changes** — hue slider for silhouetteColor + accColor, CSS mask rendering, `purchase_avatar_color` RPC (25 XP), live preview, teacher display updated. SQL v21 applied. ✅
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
@@ -586,3 +630,4 @@ Three providers selectable in a dropdown:
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
 19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql` ✅ applied
