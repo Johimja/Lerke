@@ -1436,12 +1436,22 @@ async function fetchSessionAvatars(sessionId){
     if(!error&&data){studentAvatarCache=data;avatarCacheSessionId=sessionId;}
   }catch(e){}
 }
+function _coloredLayerHtmlT(col,row,size,color){
+  const s=size/256;
+  const bsW=Math.round(1024*s);
+  const bsH=Math.round(1280*s);
+  const pos=`${-col*size}px ${-row*size}px`;
+  return `<span style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:${color};-webkit-mask-image:url('../../media/avatar_faceshapes.png');mask-image:url('../../media/avatar_faceshapes.png');-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;-webkit-mask-position:${pos};mask-position:${pos};-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat"></span>`;
+}
 function renderAvatarCircleT(avatarData,name,size){
   size=size||28;
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const color=(avatarData.faceColor&&/^#[0-9a-fA-F]{3,6}$/.test(avatarData.faceColor))?avatarData.faceColor:null;
+    let layers=color
+      ?_coloredLayerHtmlT(h.col,h.row,size,color)
+      :`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
