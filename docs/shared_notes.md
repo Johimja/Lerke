@@ -44,6 +44,37 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-07-16 — Automated: Avatar background color purchases (Avatar-9)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql`:
+  - New RPC `purchase_avatar_color(p_color_slot text, p_color text)` — validates the slot (`bgColor` only for now) and hex color format (`#RRGGBB`), checks XP balance, deducts 25 XP, merges the new color into `avatar_data` via `jsonb ||`, returns `{ok, total_xp, level, avatar_data, xp_spent}`.
+  - No schema changes — `avatar_data` jsonb column already exists (v13).
+  - **Migration applied** ✅ (`v21_avatar_color` via Supabase MCP, 2026-07-16, project `isuzuuvddteejktcowev`). Verified `purchase_avatar_color` exists with 2 args.
+- `index.html`:
+  - Added `COLOR_PRESETS` array (16 hex colors covering warm, cool, earthy, and the Lerke plum default `#43205c`).
+  - `pendingAvatar` default extended to `{head:'head_basic',acc:'acc_none',bgColor:'#43205c'}`.
+  - `normalizeAvatarData` extended to read and validate `bgColor` (falls back to `#43205c`).
+  - `renderAvatarCircle` now applies `normalized.bgColor` as `background` on the `.lerke-avatar-sprite` container — white silhouette shows over the chosen color.
+  - Added "Farger" tab to `renderAvatarShop` (third tab after Hode/Tilbehør). Color tab renders a 4×4 grid of color swatches; currently-selected swatch gets `.selected` ring.
+  - Added `pickColor(color)` async function — skips no-op (same color guard), checks XP ≥ 25 client-side, calls `purchase_avatar_color` RPC, updates `currentStudentProfile.total_xp` + `avatar_data`, refreshes XP bar + avatar display + shop.
+  - Added CSS: `.avatar-color-grid`, `.avatar-color-swatch`, `.avatar-color-swatch.selected`, `.avatar-color-cost`, dark-mode override.
+- `apps/bingo/teacher.html`:
+  - `renderAvatarCircleT` now reads `avatarData.bgColor` (with hex validation fallback to `#43205c`) and applies it as `background` on the `.t-avatar-sprite` container. Students' chosen colors now show in the teacher roster, podium, and Hall of Fame.
+- Tests:
+  - Added `tests/avatar_color.test.mjs` (44 checks) — guards COLOR_PRESETS shape/validity, normalizeAvatarData bgColor, renderAvatarCircle background application, pendingAvatar default, Farger tab presence, pickColor function and RPC wiring, CSS classes, SQL patch correctness, and teacher.html bgColor support.
+
+**Verification run:**
+
+- `node tests/avatar_color.test.mjs` ✅ (44/44)
+- Full `tests/*.test.mjs` suite ✅ (all green)
+- Supabase `execute_sql` spot-check: `purchase_avatar_color` exists with 2 args ✅
+
+**Next task:** Avatar-10+ — hair, eyes/glasses, beards, mouths sheets (one sheet/category at a time). Or Avatar-9b: add `accColor` as a second color slot so accessories can be tinted.
+
+---
+
 ### 2026-06-27 — Automated: Head accessory XP costs (Avatar-8)
 
 **What was done:**
@@ -536,7 +567,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
 - [x] **Avatar-8: head accessories shop** — added XP costs to accessories (SQL v20 + updated `ACCESSORY_CATALOGUE` xp values in index.html); `purchase_avatar_item` RPC already worked generically for acc_* keys, no new RPC needed. ✅
-- [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
+- [x] **Avatar-9: paid color changes** — `purchase_avatar_color` RPC (25 XP, bgColor slot), 16-color preset grid in "Farger" tab, bgColor applied to avatar sprite background in portal + teacher view. SQL v21 applied. ✅
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
@@ -586,3 +617,4 @@ Three providers selectable in a dropdown:
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
 19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql` ✅ applied
