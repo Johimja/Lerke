@@ -1441,9 +1441,10 @@ function renderAvatarCircleT(avatarData,name,size){
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
+    const bgColor=(avatarData.bgColor&&/^#[0-9a-fA-F]{6}$/.test(avatarData.bgColor))?avatarData.bgColor:'#43205c';
     let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
-    return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
+    return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px;background:${bgColor}">${layers}</span>`;
   }
   // legacy fallback
   const LEGACY=['#e85d75','#f5934e','#f2c94c','#6fcf97','#56b4e9','#bb6bd9'];
