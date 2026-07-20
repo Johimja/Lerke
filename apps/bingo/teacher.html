@@ -385,6 +385,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 [data-theme="light"] h1{background:linear-gradient(135deg,#c05a00,#8a1c1c);-webkit-background-clip:text;background-clip:text}
 .t-avatar-sprite{display:inline-block;position:relative;border-radius:5px;overflow:hidden;flex-shrink:0;vertical-align:middle}
 .t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_faceshapes.png');background-repeat:no-repeat}
+.t-avatar-skin-layer{position:absolute;top:0;left:0;width:100%;height:100%}
 .t-avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_head_accessories.png');background-repeat:no-repeat}
 </style>
 <script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
@@ -1427,6 +1428,14 @@ function _tSpriteStyle(col,row,size){
   const s=size/256;
   return `background-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;background-position:${-col*size}px ${-row*size}px`;
 }
+function _tSkinLayerStyle(col,row,size,color){
+  const s=size/256;
+  return `background:${color};`+
+    `-webkit-mask-image:url('../../media/avatar_faceshapes.png');mask-image:url('../../media/avatar_faceshapes.png');`+
+    `-webkit-mask-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;mask-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;`+
+    `-webkit-mask-position:${-col*size}px ${-row*size}px;mask-position:${-col*size}px ${-row*size}px;`+
+    `-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat`;
+}
 let studentAvatarCache={};
 let avatarCacheSessionId=null;
 async function fetchSessionAvatars(sessionId){
@@ -1441,7 +1450,8 @@ function renderAvatarCircleT(avatarData,name,size){
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const skinColor=(avatarData.skinColor&&/^#[0-9a-fA-F]{6}$/.test(avatarData.skinColor))?avatarData.skinColor:'#c8a882';
+    let layers=`<span class="t-avatar-skin-layer" style="${_tSkinLayerStyle(h.col,h.row,size,skinColor)}"></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
