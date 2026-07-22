@@ -1652,3 +1652,88 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+-- >>> BEGIN FILE: supabase_bingo_v21_avatar_color_patch.sql
+-- V21 — Avatar colour changes (paid)
+-- purchase_avatar_color(p_color_slot, p_color)
+-- Rules: only 'headColor' slot, #rrggbb format, 25 XP per change,
+--        free no-op if same color, default white treated as #ffffff.
+
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color      text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  COLOR_CHANGE_COST constant integer := 25;
+  VALID_SLOTS       constant text[]  := array['headColor'];
+
+  v_user_id     uuid   := auth.uid();
+  v_student_id  bigint;
+  v_xp          integer;
+  v_avatar_data jsonb;
+  v_current_col text;
+  v_new_avatar  jsonb;
+  v_xp_spent    integer := 0;
+begin
+  if p_color_slot != all(VALID_SLOTS) then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargefelt');
+  end if;
+
+  if p_color !~ '^#[0-9a-fA-F]{6}$' then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargeformat');
+  end if;
+
+  select id, total_xp, avatar_data
+    into v_student_id, v_xp, v_avatar_data
+    from public.student_profiles
+   where auth_user_id = v_user_id
+   limit 1;
+
+  if v_student_id is null then
+    return jsonb_build_object('ok', false, 'error', 'Elevprofil ikke funnet');
+  end if;
+
+  v_current_col := coalesce(v_avatar_data ->> p_color_slot, '#ffffff');
+
+  if lower(v_current_col) = lower(p_color) then
+    return jsonb_build_object(
+      'ok',         true,
+      'total_xp',   v_xp,
+      'level',      floor(v_xp::numeric / 100)::int + 1,
+      'avatar_data', coalesce(v_avatar_data, '{}'::jsonb),
+      'xp_spent',   0
+    );
+  end if;
+
+  if v_xp < COLOR_CHANGE_COST then
+    return jsonb_build_object('ok', false, 'error', 'For lite XP');
+  end if;
+
+  v_xp_spent   := COLOR_CHANGE_COST;
+  v_xp         := v_xp - COLOR_CHANGE_COST;
+  v_new_avatar := coalesce(v_avatar_data, '{}'::jsonb)
+               || jsonb_build_object(p_color_slot, lower(p_color));
+
+  update public.student_profiles
+     set total_xp    = v_xp,
+         avatar_data = v_new_avatar
+   where id = v_student_id;
+
+  return jsonb_build_object(
+    'ok',         true,
+    'total_xp',   v_xp,
+    'level',      floor(v_xp::numeric / 100)::int + 1,
+    'avatar_data', v_new_avatar,
+    'xp_spent',   v_xp_spent
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text)
+  to authenticated, anon;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_patch.sql
+
