@@ -1436,12 +1436,26 @@ async function fetchSessionAvatars(sessionId){
     if(!error&&data){studentAvatarCache=data;avatarCacheSessionId=sessionId;}
   }catch(e){}
 }
+function _tColoredMaskStyle(col,row,size,color,url){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const pos=`${-col*size}px ${-row*size}px`;
+  const mask=`url('${url}') ${pos} / ${bsW}px ${bsH}px no-repeat`;
+  return `background-color:${color};-webkit-mask:${mask};mask:${mask}`;
+}
 function renderAvatarCircleT(avatarData,name,size){
   size=size||28;
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const hColor=/^#[0-9a-fA-F]{6}$/.test(avatarData.headColor)?avatarData.headColor:'#ffffff';
+    let headLayerStyle;
+    if(hColor!=='#ffffff'){
+      headLayerStyle=`style="position:absolute;top:0;left:0;width:100%;height:100%;${_tColoredMaskStyle(h.col,h.row,size,hColor,'../../media/avatar_faceshapes.png')}"`;
+    } else {
+      headLayerStyle=`class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"`;
+    }
+    let layers=`<span ${headLayerStyle}></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
