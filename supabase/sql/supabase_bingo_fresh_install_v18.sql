@@ -1652,3 +1652,61 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+-- >>> BEGIN FILE: supabase_bingo_v21_avatar_color_changes_patch.sql
+-- V21: Paid avatar color changes (Avatar-9)
+-- purchase_avatar_color(p_color_slot, p_color) — 25 XP per color save.
+-- Slot 'skin' → avatar_data.skinColor. No schema changes.
+
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color      text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cost         int  := 25;
+  v_valid_slots  text[] := array['skin'];
+  v_student_id   uuid;
+  v_profile      student_profiles%rowtype;
+  v_avatar_data  jsonb;
+  v_slot_key     text;
+begin
+  if not (p_color_slot = any(v_valid_slots)) then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargeslot');
+  end if;
+  if not (lower(p_color) ~ '^#[0-9a-f]{6}$') then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig farge (bruk #rrggbb-format)');
+  end if;
+  v_slot_key := p_color_slot || 'Color';
+  select sal.student_id into v_student_id
+  from student_auth_links sal
+  where sal.auth_user_id = auth.uid()
+  limit 1;
+  if v_student_id is null then
+    return jsonb_build_object('ok', false, 'error', 'Elevprofil ikke funnet');
+  end if;
+  select * into v_profile from student_profiles where id = v_student_id;
+  if v_profile.total_xp < v_cost then
+    return jsonb_build_object('ok', false, 'error', format('Ikke nok XP — trenger %s XP', v_cost));
+  end if;
+  v_avatar_data := coalesce(v_profile.avatar_data, '{}'::jsonb)
+                   || jsonb_build_object(v_slot_key, lower(p_color));
+  update student_profiles
+  set total_xp    = total_xp - v_cost,
+      avatar_data = v_avatar_data
+  where id = v_student_id;
+  return jsonb_build_object(
+    'ok',          true,
+    'total_xp',    v_profile.total_xp - v_cost,
+    'avatar_data', v_avatar_data,
+    'xp_spent',    v_cost
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text) to authenticated, anon;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_changes_patch.sql
+

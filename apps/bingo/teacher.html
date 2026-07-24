@@ -1427,6 +1427,14 @@ function _tSpriteStyle(col,row,size){
   const s=size/256;
   return `background-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;background-position:${-col*size}px ${-row*size}px`;
 }
+function _tMaskStyle(col,row,size,url,color){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  return `position:absolute;top:0;left:0;width:100%;height:100%;background-color:${color};`+
+    `-webkit-mask-image:url('${url}');mask-image:url('${url}');`+
+    `-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;`+
+    `-webkit-mask-position:${-col*size}px ${-row*size}px;mask-position:${-col*size}px ${-row*size}px`;
+}
 let studentAvatarCache={};
 let avatarCacheSessionId=null;
 async function fetchSessionAvatars(sessionId){
@@ -1441,7 +1449,14 @@ function renderAvatarCircleT(avatarData,name,size){
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const skinColor=(typeof avatarData.skinColor==='string'&&/^#[0-9a-fA-F]{6}$/.test(avatarData.skinColor))
+      ?avatarData.skinColor:null;
+    let layers;
+    if(skinColor){
+      layers=`<span style="${_tMaskStyle(h.col,h.row,size,'../../media/avatar_faceshapes.png',skinColor)}"></span>`;
+    } else {
+      layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    }
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
