@@ -386,6 +386,7 @@ header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bord
 .t-avatar-sprite{display:inline-block;position:relative;border-radius:5px;overflow:hidden;flex-shrink:0;vertical-align:middle}
 .t-avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_faceshapes.png');background-repeat:no-repeat}
 .t-avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('../../media/avatar_head_accessories.png');background-repeat:no-repeat}
+.t-avatar-layer-c{position:absolute;top:0;left:0;width:100%;height:100%}
 </style>
 <script>(function(){var s=localStorage.getItem('lerke-theme');document.documentElement.setAttribute('data-theme',s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})();</script>
 </head>
@@ -1423,9 +1424,22 @@ const ACCESSORY_CATALOGUE_T=[
   {key:'acc_bow',col:0,row:3},{key:'acc_bandana',col:1,row:3},{key:'acc_witch_hat',col:2,row:3},{key:'acc_tiara',col:3,row:3},
   {key:'acc_chef_hat',col:0,row:4},{key:'acc_antlers',col:1,row:4},{key:'acc_earmuffs',col:2,row:4},{key:'acc_bunny_ears',col:3,row:4},
 ];
+const T_FACE_IMG='../../media/avatar_faceshapes.png';
+const T_ACC_IMG='../../media/avatar_head_accessories.png';
+const T_DEFAULT_SKIN='#d4956a';
+const T_DEFAULT_PROP='#ffffff';
+const T_COLOR_RE=/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
 function _tSpriteStyle(col,row,size){
   const s=size/256;
   return `background-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;background-position:${-col*size}px ${-row*size}px`;
+}
+function _tLayerColorStyle(col,row,size,imgUrl,color){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const sz=`${bsW}px ${bsH}px`;
+  const pos=`${-col*size}px ${-row*size}px`;
+  return `background-color:${color};-webkit-mask-image:url('${imgUrl}');-webkit-mask-repeat:no-repeat;-webkit-mask-size:${sz};-webkit-mask-position:${pos};mask-image:url('${imgUrl}');mask-repeat:no-repeat;mask-size:${sz};mask-position:${pos}`;
 }
 let studentAvatarCache={};
 let avatarCacheSessionId=null;
@@ -1441,8 +1455,10 @@ function renderAvatarCircleT(avatarData,name,size){
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
-    if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
+    const skinColor=T_COLOR_RE.test(avatarData.skinColor)?avatarData.skinColor:T_DEFAULT_SKIN;
+    const propColor=T_COLOR_RE.test(avatarData.propColor)?avatarData.propColor:T_DEFAULT_PROP;
+    let layers=`<span class="t-avatar-layer-c" style="${_tLayerColorStyle(h.col,h.row,size,T_FACE_IMG,skinColor)}"></span>`;
+    if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-layer-c" style="${_tLayerColorStyle(a.col,a.row,size,T_ACC_IMG,propColor)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
   // legacy fallback
