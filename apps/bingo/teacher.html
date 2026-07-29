@@ -1436,12 +1436,22 @@ async function fetchSessionAvatars(sessionId){
     if(!error&&data){studentAvatarCache=data;avatarCacheSessionId=sessionId;}
   }catch(e){}
 }
+function _tSkinMaskStyle(col,row,size){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const mPos=`${-col*size}px ${-row*size}px`;
+  return `-webkit-mask-image:url('../../media/avatar_faceshapes.png');mask-image:url('../../media/avatar_faceshapes.png');-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;-webkit-mask-position:${mPos};mask-position:${mPos};-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat`;
+}
 function renderAvatarCircleT(avatarData,name,size){
   size=size||28;
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const skinColor=(avatarData.skinColor&&/^#[0-9A-Fa-f]{6}$/i.test(avatarData.skinColor))?avatarData.skinColor:null;
+    const faceLayer=skinColor
+      ?`<span style="position:absolute;top:0;left:0;width:100%;height:100%;background:${skinColor};${_tSkinMaskStyle(h.col,h.row,size)}"></span>`
+      :`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    let layers=faceLayer;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
