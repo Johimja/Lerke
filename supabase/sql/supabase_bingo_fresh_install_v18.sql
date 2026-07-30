@@ -1652,3 +1652,58 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+-- >>> BEGIN FILE: supabase_bingo_v21_avatar_color_patch.sql
+-- V21: Avatar paid color changes
+-- purchase_avatar_color(p_color_slot, p_color): deducts 25 XP and saves skinColor
+-- into avatar_data. White (#ffffff) reset is handled client-side via save_student_avatar.
+
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color      text
+) returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cost        constant integer := 25;
+  v_student_id  uuid;
+  v_current_xp  integer;
+  v_current_av  jsonb;
+  v_new_av      jsonb;
+begin
+  if not (p_color_slot = any(array['skinColor'])) then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargetype');
+  end if;
+  if p_color !~ '^#[0-9a-fA-F]{6}$' then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig farge');
+  end if;
+  select id, total_xp, avatar_data
+    into v_student_id, v_current_xp, v_current_av
+    from public.student_profiles
+   where auth_user_id = auth.uid()
+   limit 1;
+  if v_student_id is null then
+    return jsonb_build_object('ok', false, 'error', 'Fant ikke elevprofil');
+  end if;
+  if v_current_xp < v_cost then
+    return jsonb_build_object('ok', false, 'error', 'Ikke nok XP');
+  end if;
+  v_new_av := coalesce(v_current_av, '{}'::jsonb) || jsonb_build_object(p_color_slot, p_color);
+  update public.student_profiles
+     set total_xp    = total_xp - v_cost,
+         avatar_data = v_new_av
+   where id = v_student_id;
+  return jsonb_build_object(
+    'ok',          true,
+    'total_xp',    v_current_xp - v_cost,
+    'level',       floor((v_current_xp - v_cost)::numeric / 100) + 1,
+    'avatar_data', v_new_av,
+    'xp_spent',    v_cost
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text) to authenticated;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_patch.sql
+
