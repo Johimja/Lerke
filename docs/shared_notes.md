@@ -44,6 +44,44 @@ Next tool planned: **Lerke Quiz** (after Bingo is stable).
 
 ---
 
+### 2026-08-03 — Automated: Paid avatar color changes (Avatar-9)
+
+**What was done:**
+
+- Created `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql`:
+  - New RPC `purchase_avatar_color(p_color_slot text, p_color text)` — validates the slot (`baseColor` only), validates a `#rrggbb` hex color, deducts 25 XP, updates `avatar_data` with the new color. Returns `{ok, xp_spent, total_xp, avatar_data}`. No charge if the selected color is the same as the current one. Returns `{ok:false, error}` on invalid slot/color, missing profile, or insufficient XP.
+  - **Migration applied** ✅ (`v21_avatar_color` via Supabase MCP, 2026-08-03, project `isuzuuvddteejktcowev`).
+  - `supabase/sql/supabase_bingo_fresh_install_v18.sql` updated in sync for new database installs.
+- `index.html`:
+  - Added `AVATAR_DEFAULT_COLOR = '#c8b4e8'` (lavender) constant.
+  - `pendingAvatar` default extended to include `baseColor: AVATAR_DEFAULT_COLOR`.
+  - `normalizeAvatarData` now returns `{head, acc, baseColor}` — validates hex format, falls back to `AVATAR_DEFAULT_COLOR`.
+  - Added `_colorLayerStyle(col, row, size, color)` helper — returns inline style for a colored CSS-masked face shape layer.
+  - Added `.avatar-color-layer` CSS class — uses `mask-image: url('media/avatar_faceshapes.png')` to show only the face shape silhouette in the student's chosen color.
+  - `renderAvatarCircle` updated: replaces the white `.avatar-layer` span with a colored `.avatar-color-layer` span, tinted via `_colorLayerStyle`. Accessories remain white on top.
+  - Avatar shop gains a third tab **Farge** (`setShopTab('color')`). The color tab shows: current color swatch, `<input type="color">`, XP cost note (25 XP), and "Endre farge" button.
+  - `onColorInputChange(hex)`: live-updates the color swatch and the student avatar preview as the picker moves (no XP deducted until confirmed).
+  - `purchaseAvatarColor()`: calls `purchase_avatar_color` RPC, updates `currentStudentProfile.total_xp`, sets `pendingAvatar.baseColor`, refreshes XP bar, avatar display, and shop.
+  - `_pendingColorPick` state variable: tracks the picker value between input and confirm; cleared on tab switch or after save.
+- `apps/bingo/teacher.html`:
+  - Added `.t-avatar-color-layer` CSS class (uses `mask-image: url('../../media/avatar_faceshapes.png')`).
+  - Added `_tColorLayerStyle(col, row, size, color)` helper.
+  - `renderAvatarCircleT` updated: replaces `.t-avatar-layer` with `.t-avatar-color-layer` using the student's saved `baseColor` (falls back to `#c8b4e8` for missing/invalid colors). Color is now visible in roster, podium, and Hall of Fame.
+- Tests:
+  - Added `tests/avatar_color_purchase.test.mjs` — 24 assertions covering SQL patch content, fresh install inclusion, index.html CSS/JS, teacher.html CSS/JS, and the RPC call shape.
+
+**Verification run:**
+
+- `node tests/avatar_color_purchase.test.mjs` ✅
+- `node tests/avatar_accessory_costs.test.mjs` ✅
+- `node tests/avatar_faceshapes_config.test.mjs` ✅
+- Full `tests/*.test.mjs` suite ✅ (all exit 0)
+- Inline JavaScript parse check for all four HTML files ✅
+
+**Next task:** Avatar-10 — hair sheet (generate ~20 hair silhouettes, 5 fem / 5 masc-coded / 10 neutral-strange styles, same 4×5 PNG grid; integrate as a new layer between face shape and accessories).
+
+---
+
 ### 2026-06-27 — Automated: Head accessory XP costs (Avatar-8)
 
 **What was done:**
@@ -536,7 +574,7 @@ Three providers selectable in a dropdown:
 - [x] **Avatar-6: create aligned prop sheet generator** — `tools/generate_avatar_accessories.py` generates `media/avatar_head_accessories.png` (1024×1280, 4×5 grid, 20 accessories). ✅
 - [x] **Avatar-7: layered renderer refactor** — ACCESSORY_CATALOGUE added, `.avatar-acc-layer` CSS, `renderSingleAccSprite`, two-layer rendering in `renderAvatarCircle` and `renderAvatarCircleT`, Hode/Tilbehør shop tabs. All accessories free (xp:0) until Avatar-8. ✅
 - [x] **Avatar-8: head accessories shop** — added XP costs to accessories (SQL v20 + updated `ACCESSORY_CATALOGUE` xp values in index.html); `purchase_avatar_item` RPC already worked generically for acc_* keys, no new RPC needed. ✅
-- [ ] **Avatar-9: paid color changes** — add color picker/slider and server-verified XP cost per saved color change.
+- [x] **Avatar-9: paid color changes** — color picker in Farge tab, `purchase_avatar_color` RPC (25 XP/change), CSS mask-based coloring of face silhouette in both index.html and teacher.html; SQL v21 ✅
 - [ ] **Avatar-10+: hair, eyes/glasses, beards, mouths** — add one sheet/category at a time after the accessory layer is working.
 - [x] **Glosebingo content improvements** — cloud-saved teaching word lists (SQL v18 `teacher_word_lists`, teacher.html hybrid cloud/localStorage save/load, usage stats shown in list panel) ✅
 - [ ] **Custom winning patterns** — diagonal only, T-form, full card
@@ -586,3 +624,4 @@ Three providers selectable in a dropdown:
 17. `supabase/sql/supabase_bingo_v18_avatar_faceshapes.sql` ✅ applied
 18. `supabase/sql/archive/Patches/supabase_bingo_v19_matte_correct_answers_patch.sql` ✅ applied
 19. `supabase/sql/archive/Patches/supabase_bingo_v20_avatar_accessory_costs_patch.sql` ✅ applied
+20. `supabase/sql/archive/Patches/supabase_bingo_v21_avatar_color_patch.sql` ✅ applied
