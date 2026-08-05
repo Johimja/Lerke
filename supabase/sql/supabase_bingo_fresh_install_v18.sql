@@ -1652,3 +1652,56 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+
+-- >>> START FILE: supabase_bingo_v21_avatar_color_patch.sql
+-- Avatar-9: paid color changes (25 XP per color save, stored in avatar_data.<slot>Color)
+-- Supported slots: 'head' (face-shape silhouette color). Future slots: 'hair', 'accessory'.
+
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid          uuid    := auth.uid();
+  v_cost         integer := 25;
+  v_student      student_profiles%rowtype;
+  v_color_key    text;
+  v_new_avatar   jsonb;
+  v_new_xp       integer;
+begin
+  if p_color_slot not in ('head') then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargespalte: ' || coalesce(p_color_slot, ''));
+  end if;
+  if p_color is null or p_color !~ '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$' then
+    return jsonb_build_object('ok', false, 'error', 'Ugyldig fargeformat');
+  end if;
+  select * into v_student from student_profiles where auth_user_id = v_uid;
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'Elevprofil ikke funnet');
+  end if;
+  if coalesce(v_student.total_xp, 0) < v_cost then
+    return jsonb_build_object('ok', false, 'error', 'Ikke nok XP (trenger 25)');
+  end if;
+  v_color_key  := p_color_slot || 'Color';
+  v_new_avatar := coalesce(v_student.avatar_data, '{}'::jsonb)
+                  || jsonb_build_object(v_color_key, p_color);
+  v_new_xp     := coalesce(v_student.total_xp, 0) - v_cost;
+  update student_profiles
+  set    total_xp   = v_new_xp,
+         avatar_data = v_new_avatar
+  where  auth_user_id = v_uid;
+  return jsonb_build_object(
+    'ok',         true,
+    'total_xp',   v_new_xp,
+    'avatar_data', v_new_avatar
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text) to authenticated;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_patch.sql
