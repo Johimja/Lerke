@@ -1652,3 +1652,61 @@ $$;
 grant execute on function public.get_avatar_item_cost(text) to authenticated, anon;
 -- <<< END FILE: supabase_bingo_v20_avatar_accessory_costs_patch.sql
 
+-- >>> BEGIN FILE: supabase_bingo_v21_avatar_color_changes_patch.sql
+create or replace function public.purchase_avatar_color(
+  p_color_slot text,
+  p_color      text
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_student_id  uuid;
+  v_profile_id  uuid;
+  v_current_xp  integer;
+  v_cost        integer := 25;
+  v_avatar_data jsonb;
+  v_hex         text;
+begin
+  if p_color_slot not in ('skinColor') then
+    return json_build_object('ok', false, 'error', 'Ugyldig fargespor');
+  end if;
+  if p_color !~ '^#[0-9a-fA-F]{6}$' then
+    return json_build_object('ok', false, 'error', 'Ugyldig fargeformat');
+  end if;
+  v_hex := lower(p_color);
+  v_student_id := auth.uid();
+  if v_student_id is null then
+    return json_build_object('ok', false, 'error', 'Ikke innlogget');
+  end if;
+  select id, total_xp, coalesce(avatar_data, '{}'::jsonb)
+    into v_profile_id, v_current_xp, v_avatar_data
+    from student_profiles
+   where auth_id = v_student_id;
+  if v_profile_id is null then
+    return json_build_object('ok', false, 'error', 'Elevprofil ikke funnet');
+  end if;
+  if v_current_xp < v_cost then
+    return json_build_object('ok', false, 'error', 'Ikke nok XP');
+  end if;
+  update student_profiles
+     set total_xp    = total_xp - v_cost,
+         avatar_data = v_avatar_data || jsonb_build_object(p_color_slot, v_hex),
+         updated_at  = now()
+   where id = v_profile_id;
+  return json_build_object(
+    'ok',        true,
+    'total_xp',  v_current_xp - v_cost,
+    'level',     floor((v_current_xp - v_cost) / 100.0)::int + 1,
+    'color_slot', p_color_slot,
+    'color',     v_hex,
+    'xp_spent',  v_cost
+  );
+end;
+$$;
+
+grant execute on function public.purchase_avatar_color(text, text) to authenticated;
+-- <<< END FILE: supabase_bingo_v21_avatar_color_changes_patch.sql
+

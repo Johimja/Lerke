@@ -1427,6 +1427,27 @@ function _tSpriteStyle(col,row,size){
   const s=size/256;
   return `background-size:${Math.round(1024*s)}px ${Math.round(1280*s)}px;background-position:${-col*size}px ${-row*size}px`;
 }
+function _tFaceColorStyle(col,row,size,skinColor){
+  const s=size/256;
+  const bsW=Math.round(1024*s);
+  const bsH=Math.round(1280*s);
+  const pos=`${-col*size}px ${-row*size}px`;
+  if(!skinColor||skinColor==='#ffffff'){
+    return `background-size:${bsW}px ${bsH}px;background-position:${pos}`;
+  }
+  return [
+    `background-color:${skinColor}`,
+    'background-image:none',
+    `-webkit-mask-image:url('../../media/avatar_faceshapes.png')`,
+    `mask-image:url('../../media/avatar_faceshapes.png')`,
+    `-webkit-mask-size:${bsW}px ${bsH}px`,
+    `mask-size:${bsW}px ${bsH}px`,
+    `-webkit-mask-position:${pos}`,
+    `mask-position:${pos}`,
+    `-webkit-mask-repeat:no-repeat`,
+    `mask-repeat:no-repeat`
+  ].join(';');
+}
 let studentAvatarCache={};
 let avatarCacheSessionId=null;
 async function fetchSessionAvatars(sessionId){
@@ -1441,7 +1462,8 @@ function renderAvatarCircleT(avatarData,name,size){
   if(avatarData&&avatarData.head){
     const h=AVATAR_CATALOGUE_T.find(i=>i.key===avatarData.head)||AVATAR_CATALOGUE_T[0];
     const a=ACCESSORY_CATALOGUE_T.find(i=>i.key===(avatarData.acc||'acc_none'));
-    let layers=`<span class="t-avatar-layer" style="${_tSpriteStyle(h.col,h.row,size)}"></span>`;
+    const skinColor=(avatarData.skinColor&&/^#[0-9a-fA-F]{6}$/i.test(avatarData.skinColor))?avatarData.skinColor.toLowerCase():'#ffffff';
+    let layers=`<span class="t-avatar-layer" style="${_tFaceColorStyle(h.col,h.row,size,skinColor)}"></span>`;
     if(a&&a.key!=='acc_none') layers+=`<span class="t-avatar-acc-layer" style="${_tSpriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="t-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
