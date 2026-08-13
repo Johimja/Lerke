@@ -324,6 +324,7 @@ html{scroll-behavior:smooth}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
 .avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
 .avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_head_accessories.png');background-repeat:no-repeat}
+.avatar-color-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-image:url('media/avatar_faceshapes.png');mask-image:url('media/avatar_faceshapes.png');-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
 .avatar-shop-tab{flex:1;padding:6px 2px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted,#7c8099);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -344,6 +345,11 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .avatar-shop-item.equipped{border-color:var(--lerke-green-deep);background:rgba(31,147,71,.15)}
 [data-theme="dark"] .avatar-shop-name{color:#e8e2f2}
 [data-theme="dark"] .avatar-shop-btn.s-buy{background:rgba(180,140,220,.1);color:#c8b8e2;border-color:rgba(180,140,220,.22)}
+.avatar-color-tab{padding:8px 2px}
+.avatar-color-desc{font-size:.72rem;color:var(--muted,#7c8099);margin:0 0 10px;line-height:1.5}
+.avatar-color-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.avatar-color-swatch{display:inline-block;width:32px;height:32px;border-radius:6px;border:1px solid rgba(0,0,0,.18);flex-shrink:0;vertical-align:middle}
+.avatar-color-hex{font-size:.7rem;font-family:monospace;color:var(--lerke-ink,#2a1a3a)}
 .class-admin{
   display:none;
   width:100%;
@@ -1085,7 +1091,7 @@ const ACCESSORY_CATALOGUE=[
   {key:'acc_bunny_ears', label:'Kaninører',       cat:'acc', col:3,row:4,xp:100},
 ];
 
-let pendingAvatar={head:'head_basic',acc:'acc_none'};
+let pendingAvatar={head:'head_basic',acc:'acc_none',skinColor:null};
 let currentShopTab='head';
 
 function _itemByKey(key){
@@ -1094,7 +1100,8 @@ function _itemByKey(key){
 function normalizeAvatarData(avatarData){
   const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
   const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
-  return {head,acc};
+  const skinColor=(avatarData&&/^#[0-9a-fA-F]{6}$/.test(avatarData.skinColor))?avatarData.skinColor:null;
+  return {head,acc,skinColor};
 }
 
 function _spriteStyle(col,row,size){
@@ -1120,7 +1127,17 @@ function renderAvatarCircle(avatarData,name,size){
     const normalized=normalizeAvatarData(avatarData);
     const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
     const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
-    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    const bsW=Math.round(1024*(size/256));
+    const bsH=Math.round(1280*(size/256));
+    const pos=`${-h.col*size}px ${-h.row*size}px`;
+    const sz=`${bsW}px ${bsH}px`;
+    let faceLayer;
+    if(normalized.skinColor){
+      faceLayer=`<span class="avatar-color-layer" style="background-color:${normalized.skinColor};-webkit-mask-size:${sz};mask-size:${sz};-webkit-mask-position:${pos};mask-position:${pos}"></span>`;
+    } else {
+      faceLayer=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    }
+    let layers=faceLayer;
     if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
@@ -1154,36 +1171,106 @@ function updateXPBar(){
 
 function setShopTab(tab){currentShopTab=tab;renderAvatarShop();}
 
+function renderColorTab(xp){
+  const currentColor=pendingAvatar.skinColor||'#f5c590';
+  const canAfford=xp>=25;
+  const btnClass=canAfford?'s-buy':'s-locked';
+  const btnLabel=canAfford?'Sett farge (25 XP)':`Trenger ${25-xp} mer XP`;
+  return `<div class="avatar-color-tab">`+
+    `<p class="avatar-color-desc">Velg hudfarge for avataren. Koster 25 XP per endring.</p>`+
+    `<div class="avatar-color-row">`+
+      `<span class="avatar-color-swatch" id="avatar-color-swatch" style="background:${currentColor}"></span>`+
+      `<input type="color" id="avatar-skin-color-picker" value="${currentColor}" oninput="previewSkinColor(this.value)">`+
+      `<span class="avatar-color-hex" id="avatar-color-hex">${currentColor}</span>`+
+    `</div>`+
+    `<button class="avatar-shop-btn ${btnClass}" onclick="onColorPickerBuy()" ${!canAfford?'disabled':''}>${btnLabel}</button>`+
+  `</div>`;
+}
+
+function previewSkinColor(color){
+  const swatch=document.getElementById('avatar-color-swatch');
+  const hexEl=document.getElementById('avatar-color-hex');
+  if(swatch) swatch.style.background=color;
+  if(hexEl) hexEl.textContent=color;
+  const el=document.getElementById('student-avatar-display');
+  if(el&&pendingAvatar.head){
+    el.innerHTML=renderAvatarCircle({...pendingAvatar,skinColor:color},
+      currentStudentProfile&&currentStudentProfile.display_name,48);
+  }
+}
+
+function onColorPickerBuy(){
+  const picker=document.getElementById('avatar-skin-color-picker');
+  if(!picker) return;
+  purchaseAvatarColor(picker.value);
+}
+
+async function purchaseAvatarColor(color){
+  const statusEl=()=>document.getElementById('avatar-save-status');
+  const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
+  if(xp<25){
+    if(statusEl()) statusEl().textContent='Ikke nok XP (trenger 25 XP)';
+    return;
+  }
+  if(statusEl()) statusEl().textContent='Kjøper…';
+  try{
+    const {data,error}=await supabaseClient.rpc('purchase_avatar_color',{p_color_slot:'skinColor',p_color:color});
+    if(error) throw error;
+    if(!data.ok){
+      if(statusEl()) statusEl().textContent=data.error||'Kjøp mislyktes';
+      return;
+    }
+    if(currentStudentProfile&&data.total_xp!=null) currentStudentProfile.total_xp=data.total_xp;
+    pendingAvatar={...pendingAvatar,skinColor:color};
+    await saveStudentAvatar();
+    updateXPBar();
+    updateAvatarDisplay();
+    renderAvatarShop();
+    if(statusEl()){
+      statusEl().textContent=`✓ Farge lagret! −25 XP`;
+      setTimeout(()=>{const s=statusEl();if(s)s.textContent='';},2500);
+    }
+  }catch(e){
+    if(statusEl()) statusEl().textContent='Feil: '+e.message;
+  }
+}
+
 function renderAvatarShop(){
   const wrap=document.getElementById('avatar-shop-wrap');
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
   const tabsHtml=`<div class="avatar-shop-tabs">`+
     `<div class="avatar-shop-tab${currentShopTab==='head'?' active':''}" onclick="setShopTab('head')">Hode</div>`+
     `<div class="avatar-shop-tab${currentShopTab==='acc'?' active':''}" onclick="setShopTab('acc')">Tilbehør</div>`+
+    `<div class="avatar-shop-tab${currentShopTab==='color'?' active':''}" onclick="setShopTab('color')">Farge</div>`+
   `</div>`;
-  const itemsHtml=catalogue.map(item=>{
-    const isFree=item.xp===0;
-    const isOwned=isFree||unlocked.includes(item.key);
-    const isEquipped=pendingAvatar[item.cat]===item.key;
-    const canAfford=xp>=item.xp;
-    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
-    let btnClass,btnLabel;
-    if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
-    else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
-    else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
-    else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
-    return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
-      preview+
-      `<div class="avatar-shop-name">${item.label}</div>`+
-      (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
-      `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
-    `</div>`;
-  }).join('');
-  wrap.innerHTML=tabsHtml+
-    `<div class="avatar-shop-grid">${itemsHtml}</div>`+
+  let contentHtml;
+  if(currentShopTab==='color'){
+    contentHtml=renderColorTab(xp);
+  } else {
+    const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
+    const itemsHtml=catalogue.map(item=>{
+      const isFree=item.xp===0;
+      const isOwned=isFree||unlocked.includes(item.key);
+      const isEquipped=pendingAvatar[item.cat]===item.key;
+      const canAfford=xp>=item.xp;
+      const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
+      let btnClass,btnLabel;
+      if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
+      else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
+      else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
+      else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
+      return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
+        preview+
+        `<div class="avatar-shop-name">${item.label}</div>`+
+        (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
+        `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
+      `</div>`;
+    }).join('');
+    contentHtml=`<div class="avatar-shop-grid">${itemsHtml}</div>`;
+  }
+  wrap.innerHTML=tabsHtml+contentHtml+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
 }
 
