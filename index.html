@@ -324,6 +324,7 @@ html{scroll-behavior:smooth}
 .lerke-avatar-sprite{display:inline-block;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0;user-select:none}
 .avatar-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_faceshapes.png');background-repeat:no-repeat}
 .avatar-acc-layer{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url('media/avatar_head_accessories.png');background-repeat:no-repeat}
+.avatar-skin-layer{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-mask-image:url('media/avatar_faceshapes.png');mask-image:url('media/avatar_faceshapes.png');-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .avatar-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .avatar-shop-tabs{display:flex;border-bottom:1px solid rgba(67,32,92,.14);margin-bottom:8px}
 .avatar-shop-tab{flex:1;padding:6px 2px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted,#7c8099);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -344,6 +345,14 @@ html{scroll-behavior:smooth}
 [data-theme="dark"] .avatar-shop-item.equipped{border-color:var(--lerke-green-deep);background:rgba(31,147,71,.15)}
 [data-theme="dark"] .avatar-shop-name{color:#e8e2f2}
 [data-theme="dark"] .avatar-shop-btn.s-buy{background:rgba(180,140,220,.1);color:#c8b8e2;border-color:rgba(180,140,220,.22)}
+.avatar-color-picker{display:flex;flex-direction:column;gap:8px;padding:4px 2px}
+.color-swatches{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px}
+.color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .12s,transform .1s;flex-shrink:0}
+.color-swatch.selected{border-color:rgba(0,0,0,.7);transform:scale(1.18)}
+.color-preview-row{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--muted,#7c8099)}
+.color-swatch-preview{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.18);display:inline-block;vertical-align:middle;flex-shrink:0}
+.color-change-info{font-size:.68rem;color:var(--muted,#7c8099);margin-top:2px}
+[data-theme="dark"] .color-swatch.selected{border-color:rgba(255,255,255,.8)}
 .class-admin{
   display:none;
   width:100%;
@@ -1087,6 +1096,19 @@ const ACCESSORY_CATALOGUE=[
 
 let pendingAvatar={head:'head_basic',acc:'acc_none'};
 let currentShopTab='head';
+let pendingColorHex=null;
+
+const COLOR_CHANGE_COST=25;
+const COLOR_PRESETS=[
+  {label:'Natur',   hex:'#f5d5b8'},{label:'Sand',    hex:'#e8b090'},
+  {label:'Brun',    hex:'#c07840'},{label:'Mørk',    hex:'#7b4a2a'},
+  {label:'Grønn',   hex:'#7ec89a'},{label:'Blå',     hex:'#7bb8e8'},
+  {label:'Gull',    hex:'#ffd666'},{label:'Rosa',     hex:'#f090b8'},
+  {label:'Lilla',   hex:'#b87fcc'},{label:'Rød',     hex:'#e87070'},
+  {label:'Oransje', hex:'#f09060'},{label:'Turkis',  hex:'#50c8b4'},
+  {label:'Hvit',    hex:'#f0f0f0'},{label:'Grå',     hex:'#a0a0a0'},
+  {label:'Kull',    hex:'#404040'},{label:'Laks',    hex:'#ffb8a0'},
+];
 
 function _itemByKey(key){
   return AVATAR_ITEM_CATALOGUE.find(i=>i.key===key)||ACCESSORY_CATALOGUE.find(i=>i.key===key);
@@ -1094,13 +1116,20 @@ function _itemByKey(key){
 function normalizeAvatarData(avatarData){
   const head=AVATAR_ITEM_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.head))?avatarData.head:'head_basic';
   const acc=ACCESSORY_CATALOGUE.find(i=>i.key===(avatarData&&avatarData.acc))?avatarData.acc:'acc_none';
-  return {head,acc};
+  const skinColor=(avatarData&&typeof avatarData.skinColor==='string'&&/^#[0-9a-f]{6}$/i.test(avatarData.skinColor))?avatarData.skinColor:null;
+  return {head,acc,skinColor};
 }
 
 function _spriteStyle(col,row,size){
   const bsW=Math.round(1024*(size/256));
   const bsH=Math.round(1280*(size/256));
   return `background-size:${bsW}px ${bsH}px;background-position:${-col*size}px ${-row*size}px`;
+}
+function _skinLayerStyle(col,row,size,color){
+  const bsW=Math.round(1024*(size/256));
+  const bsH=Math.round(1280*(size/256));
+  const pos=`${-col*size}px ${-row*size}px`;
+  return `background-color:${color};-webkit-mask-size:${bsW}px ${bsH}px;mask-size:${bsW}px ${bsH}px;-webkit-mask-position:${pos};mask-position:${pos}`;
 }
 
 function renderSingleSprite(col,row,size){
@@ -1120,7 +1149,12 @@ function renderAvatarCircle(avatarData,name,size){
     const normalized=normalizeAvatarData(avatarData);
     const h=AVATAR_ITEM_CATALOGUE.find(i=>i.key===normalized.head)||AVATAR_ITEM_CATALOGUE[0];
     const a=ACCESSORY_CATALOGUE.find(i=>i.key===normalized.acc);
-    let layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    let layers;
+    if(normalized.skinColor){
+      layers=`<span class="avatar-skin-layer" style="${_skinLayerStyle(h.col,h.row,size,normalized.skinColor)}"></span>`;
+    } else {
+      layers=`<span class="avatar-layer" style="${_spriteStyle(h.col,h.row,size)}"></span>`;
+    }
     if(a&&a.key!=='acc_none') layers+=`<span class="avatar-acc-layer" style="${_spriteStyle(a.col,a.row,size)}"></span>`;
     return `<span class="lerke-avatar-sprite" style="width:${size}px;height:${size}px">${layers}</span>`;
   }
@@ -1152,38 +1186,120 @@ function updateXPBar(){
   }
 }
 
-function setShopTab(tab){currentShopTab=tab;renderAvatarShop();}
+function setShopTab(tab){currentShopTab=tab;if(tab!=='color')pendingColorHex=null;renderAvatarShop();}
+
+function renderColorTab(){
+  const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
+  const currentColor=pendingAvatar.skinColor||null;
+  const canAfford=xp>=COLOR_CHANGE_COST;
+  const swatchesHtml=COLOR_PRESETS.map(c=>`<span class="color-swatch${pendingColorHex===c.hex?' selected':''}" style="background:${c.hex}" onclick="selectAvatarColor('${c.hex}')" title="${c.label}"></span>`).join('');
+  const activeColor=pendingColorHex||currentColor;
+  const previewHtml=`<div class="color-preview-row">`+
+    `<span>Valgt:</span>`+
+    (activeColor?`<span class="color-swatch-preview" style="background:${activeColor}"></span><span>${activeColor}</span>`:`<span style="font-style:italic">ingen (standard hvit)</span>`)+
+  `</div>`;
+  const customHtml=`<div style="display:flex;align-items:center;gap:6px;margin-top:2px">`+
+    `<label style="font-size:.7rem;color:var(--muted,#7c8099)">Egendefinert:</label>`+
+    `<input type="color" id="custom-color-input" value="${activeColor||'#f5d5b8'}" oninput="selectAvatarColor(this.value)" style="width:34px;height:26px;border:none;border-radius:6px;cursor:pointer;padding:2px;background:transparent">`+
+  `</div>`;
+  const btnHtml=pendingColorHex?
+    `<button class="avatar-shop-btn ${canAfford?'s-buy':'s-locked'}" onclick="purchaseAvatarColor()"${canAfford?'':' disabled'}>Kjøp farge − ${COLOR_CHANGE_COST} XP</button>`:
+    `<button class="avatar-shop-btn s-locked" disabled>Velg en farge ovenfor</button>`;
+  const resetHtml=currentColor?`<button class="avatar-shop-btn s-equip" style="margin-top:4px" onclick="resetAvatarColor()">Fjern farge (standard hvit)</button>`:'';
+  return `<div class="avatar-color-picker">`+
+    `<div class="color-swatches">${swatchesHtml}</div>`+
+    previewHtml+customHtml+
+    `<div class="color-change-info">Fargeskifte koster ${COLOR_CHANGE_COST} XP · du har ${xp} XP</div>`+
+    btnHtml+resetHtml+
+  `</div>`;
+}
+
+function selectAvatarColor(hex){
+  if(!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  pendingColorHex=hex.toLowerCase();
+  renderAvatarShop();
+}
+
+async function purchaseAvatarColor(){
+  if(!pendingColorHex) return;
+  const statusEl=()=>document.getElementById('avatar-save-status');
+  if(statusEl()) statusEl().textContent='Kjøper fargeendring…';
+  try{
+    const {data,error}=await supabaseClient.rpc('purchase_avatar_color',{p_color_slot:'skinColor',p_color:pendingColorHex});
+    if(error) throw error;
+    if(!data.ok){
+      if(statusEl()) statusEl().textContent=data.error||'Kjøp mislyktes';
+      return;
+    }
+    if(currentStudentProfile){
+      if(data.total_xp!=null) currentStudentProfile.total_xp=data.total_xp;
+      if(data.avatar_data) currentStudentProfile.avatar_data=data.avatar_data;
+    }
+    pendingAvatar={...pendingAvatar,skinColor:pendingColorHex};
+    pendingColorHex=null;
+    updateXPBar();
+    updateAvatarDisplay();
+    renderAvatarShop();
+    if(statusEl()){
+      statusEl().textContent=`✓ Farge lagret! −${COLOR_CHANGE_COST} XP`;
+      setTimeout(()=>{const s=statusEl();if(s)s.textContent='';},2500);
+    }
+  }catch(e){
+    if(statusEl()) statusEl().textContent='Feil: '+e.message;
+  }
+}
+
+async function resetAvatarColor(){
+  const newAvatar={...pendingAvatar};
+  delete newAvatar.skinColor;
+  pendingAvatar=newAvatar;
+  pendingColorHex=null;
+  await saveStudentAvatar();
+  if(currentStudentProfile&&currentStudentProfile.avatar_data){
+    const ad={...currentStudentProfile.avatar_data};
+    delete ad.skinColor;
+    currentStudentProfile.avatar_data=ad;
+  }
+  updateAvatarDisplay();
+  renderAvatarShop();
+}
 
 function renderAvatarShop(){
   const wrap=document.getElementById('avatar-shop-wrap');
   if(!wrap) return;
   const unlocked=(currentStudentProfile&&currentStudentProfile.unlocked_avatar_items)||[];
   const xp=(currentStudentProfile&&currentStudentProfile.total_xp)||0;
-  const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
   const tabsHtml=`<div class="avatar-shop-tabs">`+
     `<div class="avatar-shop-tab${currentShopTab==='head'?' active':''}" onclick="setShopTab('head')">Hode</div>`+
     `<div class="avatar-shop-tab${currentShopTab==='acc'?' active':''}" onclick="setShopTab('acc')">Tilbehør</div>`+
+    `<div class="avatar-shop-tab${currentShopTab==='color'?' active':''}" onclick="setShopTab('color')">Farge</div>`+
   `</div>`;
-  const itemsHtml=catalogue.map(item=>{
-    const isFree=item.xp===0;
-    const isOwned=isFree||unlocked.includes(item.key);
-    const isEquipped=pendingAvatar[item.cat]===item.key;
-    const canAfford=xp>=item.xp;
-    const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
-    let btnClass,btnLabel;
-    if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
-    else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
-    else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
-    else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
-    return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
-      preview+
-      `<div class="avatar-shop-name">${item.label}</div>`+
-      (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
-      `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
-    `</div>`;
-  }).join('');
-  wrap.innerHTML=tabsHtml+
-    `<div class="avatar-shop-grid">${itemsHtml}</div>`+
+  let contentHtml;
+  if(currentShopTab==='color'){
+    contentHtml=renderColorTab();
+  } else {
+    const catalogue=currentShopTab==='acc'?ACCESSORY_CATALOGUE:AVATAR_ITEM_CATALOGUE;
+    const itemsHtml=catalogue.map(item=>{
+      const isFree=item.xp===0;
+      const isOwned=isFree||unlocked.includes(item.key);
+      const isEquipped=pendingAvatar[item.cat]===item.key;
+      const canAfford=xp>=item.xp;
+      const preview=item.cat==='acc'?renderSingleAccSprite(item.col,item.row,52):renderSingleSprite(item.col,item.row,52);
+      let btnClass,btnLabel;
+      if(isEquipped){btnClass='s-equipped';btnLabel='Ibrukt';}
+      else if(isOwned){btnClass='s-equip';btnLabel='Bruk';}
+      else if(canAfford){btnClass='s-buy';btnLabel=`Kjøp ${item.xp} XP`;}
+      else{btnClass='s-locked';btnLabel=`${item.xp} XP`;}
+      return `<div class="avatar-shop-item${isEquipped?' equipped':''}">`+
+        preview+
+        `<div class="avatar-shop-name">${item.label}</div>`+
+        (isFree?'<div class="avatar-shop-cost">Gratis</div>':`<div class="avatar-shop-cost">${item.xp} XP</div>`)+
+        `<button class="avatar-shop-btn ${btnClass}" onclick="shopItemClick('${item.key}')"${btnClass==='s-locked'?' disabled':''}>${btnLabel}</button>`+
+      `</div>`;
+    }).join('');
+    contentHtml=`<div class="avatar-shop-grid">${itemsHtml}</div>`;
+  }
+  wrap.innerHTML=tabsHtml+contentHtml+
     `<div id="avatar-save-status" style="font-size:.74rem;color:var(--muted,#7c8099);margin-top:6px;min-height:1em;text-align:center"></div>`;
 }
 
